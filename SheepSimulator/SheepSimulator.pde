@@ -123,7 +123,7 @@ float dragCircleScaling = 60;
 void mouseDragged() {
   float x = (mouseX - pmouseX);
   float y = (mouseY - pmouseY);
-  println("x="+x+" y="+y);
+  //println("x="+x+" y="+y);
   
   if (mouseButton == RIGHT) {
     camera.boom(y);
@@ -138,7 +138,7 @@ void mouseDragged() {
   
   // Correct for being below ground
   float[] pos = camera.position();
-  println("camera y = "+pos[1]);
+  //println("camera y = "+pos[1]);
   if (pos[1] > -38f) {
     camera.jump(pos[0], -38f, pos[2]);
   }
@@ -265,7 +265,7 @@ void processCommand(String cmd) {
   int g    = Integer.valueOf(m.group(4));
   int b    = Integer.valueOf(m.group(5));
 
-  System.out.println("side:"+side+" "+String.format("panel:%d to r:%d g:%d b:%d", panel, r, g, b));
+  //System.out.println("side:"+side+" "+String.format("panel:%d to r:%d g:%d b:%d", panel, r, g, b));
   
   if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255 ) {
      System.out.println("Bypassing last entry because an r,g,b value was not between 0 and 255:"+r+","+g+","+b); 
@@ -603,7 +603,7 @@ class Sheep {
     final float TILT_CONVERSION = (1.5 * PI) / (float)(0x0000ffff);
 
     private void updateDMX() {
-      println("Updating DMX");
+      //println("Updating DMX");
       // Set to false now, but reset to true if we don't achieve our goals for animated things
       // like pan & tilt
       dmxDirty = false;
@@ -626,14 +626,14 @@ class Sheep {
         int currentPan = ((currentValues[DMX_PAN] << 8) & 0x0000ff00) + currentValues[DMX_PAN_FINE];
         int channelPan = ((channelValues[DMX_PAN] << 8) & 0x0000ff00) + channelValues[DMX_PAN_FINE];
         
-        println("currentPan = "+currentPan+"  channelPan="+channelPan);
+        //println("currentPan = "+currentPan+"  channelPan="+channelPan);
         
         // We lose a tiny amount of precision with rounding into a 16-bit integer
         // space, but it's pretty irrelevant for our purposes
         int maxPan = (int)(MAX_PAN_PER_SECOND * watch.lapTime());
         
         int delta = channelPan - currentPan;
-        println("maxPan = "+maxPan + "  delta = "+delta);
+        //println("maxPan = "+maxPan + "  delta = "+delta);
         if (delta > maxPan) {
           delta = maxPan;
           dmxDirty = true;
@@ -644,7 +644,7 @@ class Sheep {
         
         // Save the new position
         currentPan += delta;
-        println("Saving currentPan of "+currentPan);
+        //println("Saving currentPan of "+currentPan);
         currentValues[DMX_PAN] = (currentPan >> 8 ) & 0x00ff;
         currentValues[DMX_PAN_FINE] = currentPan & 0x00ff;
         
@@ -681,7 +681,7 @@ class Sheep {
         
         // Save the new position
         current += delta;
-        println("Saving currentTilt of "+current);
+        //println("Saving currentTilt of "+current);
         currentValues[DMX_TILT] = (current >> 8 ) & 0x00ff;
         currentValues[DMX_TILT_FINE] = current & 0x00ff;
         
@@ -770,10 +770,10 @@ class Sheep {
       }
       
       if (value < 0) {
-        println("Capping value "+value+" at 0");
+        //println("Capping value "+value+" at 0");
         value = 0;
       } else if (value > 255) {
-        println("Capping value "+value+" at 255");
+        //println("Capping value "+value+" at 255");
         value = 255;
       }
       
