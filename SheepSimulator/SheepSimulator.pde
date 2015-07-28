@@ -3,8 +3,7 @@ import java.util.regex.*;
 import java.util.*;
 
 // External libraries. To install, select the menu Sketch | Import Library | Add Library
-// Search for PeasyCam and Shapes 3D
-//import peasy.*;
+// Search for G4P and Shapes 3D
 import shapes3d.*;
 import shapes3d.animation.*;
 import g4p_controls.*;
@@ -13,10 +12,6 @@ import g4p_controls.*;
 Sheep theSheep;
 int currentPanel=0;
 PShape selectedPanel;
-float lastMouseX= 0;
-float lastMouseY= 0;
-int clickCount = 0;
-boolean firstRun = true;
 HashMap<Integer, ArrayList<Integer>> partySideMap = new HashMap<Integer, ArrayList<Integer>>();
 HashMap<Integer, ArrayList<Integer>> boringSideMap = new HashMap<Integer, ArrayList<Integer>>();
 
@@ -49,13 +44,7 @@ void setup() {
   btnGroundRear = new GButton(this, 115, 5, 50, 15, "Rear Q");
   
   // Initialize camera movements
-  camera = new Camera(this, 0, -1000, 1000);
-//  cam = new PeasyCam(this, 200);
-//  cam.setMinimumDistance(10);
-//  cam.setMaximumDistance(5000);
-//  cam.lookAt(0,0,0);
-//  cam.setSuppressRollRotationMode();
-//  cam.setYawRotationMode();
+  camera = new Camera(this, 0, -300, 500);
   
   // Load the .csv file which contains a mapping from logical panel
   // numbers used by the shows (and by the construction documents) into
@@ -73,10 +62,10 @@ void setup() {
   ground = createShape();
   ground.beginShape();
   ground.fill(#241906);
-  ground.vertex(-1000,0,-1000);
-  ground.vertex(1000,0,-1000);
-  ground.vertex(1000,0,1000);
-  ground.vertex(-1000,0,1000);
+  ground.vertex(-10000,0,-10000);
+  ground.vertex(10000,0,-10000);
+  ground.vertex(10000,0,10000);
+  ground.vertex(-10000,0,10000);
   ground.endShape(CLOSE);
 
   // The server is a TCP server listening on a defined port which accepts
@@ -85,8 +74,6 @@ void setup() {
   // a buffer which is periodically polled during the draw process.
   _server = new Server(this, port);
   println("server listening:" + _server);
-  
-
 }
 
 // The draw() function can be considered the main event loop of the application.
@@ -114,11 +101,7 @@ void draw() {
   line(0, 0, 0, 0, 10, 0);
   stroke(#0000ff);
   line(0, 0, 0, 0, 0, 10);
-
-//  cam.beginHUD();
-//  btnReset.draw();
-//  cam.endHUD();
-  
+ 
   // Check for any updates from the network. These won't be visible 
   // until the next time this function is called.
   pollServer();
@@ -143,19 +126,21 @@ void mouseDragged() {
   println("x="+x+" y="+y);
   
   if (mouseButton == RIGHT) {
-    camera.boom(x);
-    camera.truck(y);
+    camera.boom(y);
+    camera.truck(x);
+  } else if (mouseButton == CENTER) {
+    camera.pan(x / dragCircleScaling);
+    camera.tilt(y / dragArcScaling);
   } else {
     camera.circle(x / dragCircleScaling);
-    
-    float elevation = camera.attitude()[1];
-    float offset = y / dragArcScaling;
-    float limit = -0.07f;
-    println("new elevation = " + (elevation + offset));
-    if (elevation + offset > limit) {
-      offset = limit - elevation;
-    }
-    camera.arc(offset);
+    camera.arc(y / dragArcScaling);
+  }
+  
+  // Correct for being below ground
+  float[] pos = camera.position();
+  println("camera y = "+pos[1]);
+  if (pos[1] > -38f) {
+    camera.jump(pos[0], -38f, pos[2]);
   }
 }
 
@@ -195,11 +180,14 @@ void keyTyped() {
  */
 void handleButtonEvents(GButton button, GEvent event) {
   if (button == btnGroundFront) {
-    camera.jump(-500, -50, 800);
+    camera.jump(-500, -50, 400);
+    camera.aim(0,-200,0);
   } else if(button == btnGroundRear) {
-    camera.jump(500, -50, 800);
+    camera.jump(500, -60, 400);
+    camera.aim(0,-100,0);
   } else if (button == btnGroundSide) {
-    camera.jump(0, -1000, 1000);
+    camera.jump(0, -300, 500);
+    camera.aim(0,0,0);
   }
 }
 //
