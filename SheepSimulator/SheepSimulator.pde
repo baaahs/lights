@@ -1,3 +1,35 @@
+//
+//   SHIT TO START WITH
+//
+//   Did you install the external libraries yet?
+//       - Use the Sketch menu -> Import Library -> Add Library
+//       - Search for G4P - Click Install
+//       - Search for Shapes - Click Install on Shapes 3D
+//
+//   It should run now. Hit the play button in the upper left corner of this window.
+//
+//   OMG! Is that window too F-ing big???  Change these two numbers right here
+//   to something smaller for your tiny little screen. Try a width of 640 and a
+//   height of 480 as if your computer is from 1993.
+//                          |
+//                          V
+final int WINDOW_WIDTH  = 1200;
+final int WINDOW_HEIGHT =  800;
+
+//
+//   After you change those numbers you have to hit the stop button and then the
+//   play button again to restart things.
+//
+//   Now go start the python server to make the colors change.
+//
+//   Enjoy. (BTW - try dragging with your mouse in the simulator window. 
+//   That will move the camera around.)
+//
+//   If things totally don't work, feel free to bug Tom Seago via facebook
+//   or via email <tom@tomseago.com>.  I promise to make up as many answers 
+//   as you want.
+//
+
 import processing.net.*;
 import java.util.regex.*;
 import java.util.*;
@@ -10,13 +42,9 @@ import g4p_controls.*;
 
 //Whole Object representation.
 Sheep theSheep;
-int currentPanel=0;
-PShape selectedPanel;
 TreeMap<Integer, ArrayList<Integer>> partySideMap = new TreeMap<Integer, ArrayList<Integer>>();
 TreeMap<Integer, ArrayList<Integer>> boringSideMap = new TreeMap<Integer, ArrayList<Integer>>();
 
-// Translates mouse inputs into camera movements
-//PeasyCam cam;
 Camera camera;
 
 // network vars
@@ -24,23 +52,33 @@ int port = 4444;
 Server _server; 
 StringBuffer _buf = new StringBuffer();
 
+// TODO: The ground should probably be a Shapes3D terrain. Whatevs.
 PShape ground;
 
 GButton btnGroundFront;
 GButton btnGroundSide;
 GButton btnGroundRear;
+GButton btnHighNext;
+GButton btnHighPrev;
 
 GCheckbox cbShowLabels;
+GCheckbox cbLogicalHighlight;
 
+GLabel lblHighNum;
+
+GButton btnColors;
+
+// This scale is applied to the loaded OBJ and then everything else that
+// was originally scaled relative to the baseline OBJ. The issue was that
+// at the original scale, all the font sizes were tiny, and apparently they
+// get prerendered to surfaces because they came out extra fuzzy and crappy.
+// Scaling everything up seems to have resolved that.
 final int SHEEP_SCALE = 3;
 
 
 // setup() is called once by the environment to initialize things
 void setup() {
-  // This determines the size of the output window. Make it whatever
-  // size feels good.
-//  size(640, 360, P3D);
-  size(1200, 800, P3D);
+  size(WINDOW_WIDTH, WINDOW_HEIGHT, P3D);
   
   // Some UI stuff. Need to get G4P up and running before PeasyCam
   G4P.setGlobalColorScheme(G4P.YELLOW_SCHEME);
@@ -48,6 +86,14 @@ void setup() {
   btnGroundSide = new GButton(this, 60, 5, 50, 15, "Side");
   btnGroundRear = new GButton(this, 115, 5, 50, 15, "Rear Q");
   cbShowLabels = new GCheckbox(this, 5, 25, 100, 15, "Show Labels");
+
+  cbLogicalHighlight = new GCheckbox(this, 5, 45, 300, 15, "Show Highlight");
+  btnHighPrev = new GButton(this, 5, 65, 50, 15, "Prev");
+  btnHighNext = new GButton(this, 60, 65, 50, 15, "Next");
+  
+  lblHighNum = new GLabel(this, 115, 65, 30, 15, "1");
+  
+  btnColors = new GButton(this, 5, 85, 120, 15, "Constrasting Colors");
   
   // Initialize camera movements
   camera = new Camera(this, 0, SHEEP_SCALE * -300, SHEEP_SCALE * 500);
@@ -73,6 +119,9 @@ void setup() {
   ground.vertex(SHEEP_SCALE * 10000,0,SHEEP_SCALE * 10000);
   ground.vertex(SHEEP_SCALE * -10000,0,SHEEP_SCALE * 10000);
   ground.endShape(CLOSE);
+  
+  // let's start with contrasting colors because they are prettier
+  theSheep.setContrastingColors();
 
   // The server is a TCP server listening on a defined port which accepts
   // commands from the lighting server to change the color of individual 
@@ -131,14 +180,15 @@ void mouseDragged() {
   float y = (mouseY - pmouseY);
   //println("x="+x+" y="+y);
   
-  if (mouseButton == RIGHT) {
+  if (mouseButton == CENTER) {
     camera.boom(y);
     camera.truck(x);
-  } else if (mouseButton == CENTER) {
+  } else if (mouseButton == RIGHT) {
     camera.pan(x / dragCircleScaling);
     camera.tilt(y / dragArcScaling);
   } else {
-    camera.circle(x / dragCircleScaling);
+    // LEFT
+    camera.circle(-x / dragCircleScaling);
     camera.arc(y / dragArcScaling);
   }
   
@@ -183,18 +233,22 @@ void keyTyped() {
     // The logical cursor
     case ']': // Next
       theSheep.moveLogicalCursor(1);
+      updateHighlightNumber();
       break;
       
     case '}': // Next
       theSheep.moveLogicalCursor(10);
+      updateHighlightNumber();
       break;
       
     case '[': // Prev
       theSheep.moveLogicalCursor(-1);
+      updateHighlightNumber();
       break;
       
     case '{': // Prev
       theSheep.moveLogicalCursor(-10);
+      updateHighlightNumber();
       break;
       
 
@@ -304,13 +358,27 @@ void handleButtonEvents(GButton button, GEvent event) {
   } else if (button == btnGroundSide) {
     camera.jump(0, SHEEP_SCALE * -300, SHEEP_SCALE * 500);
     camera.aim(0,0,0);
+  } else if (button == btnHighNext) {
+    theSheep.moveLogicalCursor(1);
+    updateHighlightNumber();
+  } else if (button == btnHighPrev) {
+    theSheep.moveLogicalCursor(-1);
+    updateHighlightNumber();
+  } else if (button == btnColors) {
+    theSheep.setContrastingColors();
   }
 }
 
 public void handleToggleControlEvents(GToggleControl cb, GEvent event) {
   if (cb == cbShowLabels) {
-    theSheep.showLabels = cb.isSelected();
+    theSheep.setShowLabels(cb.isSelected());
+  } else if (cb == cbLogicalHighlight) {
+    theSheep.showLogicalHighlight = cb.isSelected();
   }
+}
+
+public void updateHighlightNumber() {
+  lblHighNum.setText(Integer.toString(theSheep.logicalCursor));
 }
 
 /**
@@ -391,6 +459,9 @@ void handleDMXCommand(Matcher m) {
     int channel = Integer.valueOf(m.group(1));
     int value = Integer.valueOf(m.group(2));
     
+    // TODO: Make this handle more than one DMX value per line.
+    // TODO: Make this map DMX for the panel colors back onto panels. - low priority
+    
     // DMX is inherently broadcast, so just do that and let each eye be responsible for
     // deciding if it cares or not.
     theSheep.leftEye.handleDMX(channel, value);
@@ -449,9 +520,7 @@ TreeMap<Integer, ArrayList<Integer>> loadPolyMap(String labelFile, String sidePo
         ArrayList<Integer> temp = new ArrayList<Integer>();
         int panel = rowInts.get(0);
   
-        println("Working on panel "+panel);
         for(int i=1; i<rowInts.size(); i++) {
-          println("i="+i);
           temp.add(rowInts.get(i));
         }
   
@@ -464,7 +533,11 @@ TreeMap<Integer, ArrayList<Integer>> loadPolyMap(String labelFile, String sidePo
   return polyMap;
 }
 
-
+/**
+ * Both inverts the Z axis and scales the shape. The .obj uses a slightly
+ * different coordinate system, hence the need for the inversion. The scaling
+ * is for better font rendering on the labels.
+ */
 void invertShape(PShape shape) {
   if (shape==null) return;
   
@@ -473,6 +546,14 @@ void invertShape(PShape shape) {
   }
 }
 
+/*******************************************************************************/
+/*******************************************************************************/
+/*******************************************************************************/
+
+/**
+ * The sheep holds the model and it's surfaces. It further provides access to
+ * the Eyes.
+ */
 class Sheep {
 
   PShape sheepModel;
@@ -485,45 +566,12 @@ class Sheep {
   
   int panelCursor;
   boolean showLabels = false;
+  boolean showLogicalHighlight = false;
   
-  int logicalCursor = -1;
+  int logicalCursor = 1;
 
   public Sheep(PApplet app, String fileName) {
     sheepModel = loadShape(fileName); 
-//
-//    int[] divColors = {
-//color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),color(128,177,211),color(253,180,98),color(179,222,105),color(252,205,229),color(217,217,217),color(188,128,189),color(204,235,197),color(255,237,111)
-//    };
-//    
-//    PShape[] kids = sheepModel.getChildren();
-//    int cIx = 0;
-//    for(int i=0; i<kids.length; i++) {
-//      PShape shape = kids[i];
-//      if (shape == null) continue;
-//      
-//      println(shape.getName());
-//      // Inverting the model seems necessary
-//      invertShape(shape);
-//
-//      if (i < 10) {
-//        // Tail
-//        shape.setStroke(true);
-//        shape.setStroke(#808080);
-//        shape.setStrokeWeight(1f);
-//        shape.setFill(#303030);
-//      } else {
-//        if (i < 40) {
-//          shape.setStroke(true);
-//          shape.setStroke(#ff0000);
-//          shape.setStrokeWeight(4f);
-//        }
-//        
-//        shape.setFill(divColors[cIx++]);
-//        if (cIx == divColors.length) {
-//          cIx = 0;
-//        }
-//      }
-//    }
 
     sheepPanelArray = sheepModel.getChildren();
     
@@ -582,13 +630,10 @@ class Sheep {
       
       // If it's an unmapped shape, make it dark
       if (!all.contains(i)) {
-        shape.setStroke(true);
-        shape.setStroke(#808080);
-        shape.setStrokeWeight(1f);
         shape.setFill(#303030);
       }
       
-      shape.setStroke(true);
+//      shape.setStroke(true);
       shape.setStroke(#303030);
       shape.setStrokeWeight(2f);
     }
@@ -636,11 +681,7 @@ class Sheep {
   
         if (polygon != null && polygon != -1) {
           sheepPanelArray[polygon].setFill(c);
-//          sheepPanelArray[polygon].disableStyle();
-//  
-//          fill(c);
-//  
-//          shape(sheepPanelArray[polygon]);
+
         }
       }
     } else {
@@ -661,18 +702,79 @@ class Sheep {
   
   public void moveLogicalCursor(int direction) {
     if (logicalCursor < 0) {
-      logicalCursor = 0;
+      logicalCursor = 1;
       return;
     }
     
-    int max = partSideMap.keySet().size() - 1;
+    int max = partySideMap.lastKey();
     logicalCursor += direction;
-    if (logicalCursor < 0) {
+    if (logicalCursor < 1) {
       logicalCursor += max;
-    } else if (logicalCursor >= max) {
+    } else if (logicalCursor > max) {
       logicalCursor -= max;
     }      
-  }    
+  }
+  
+  void setShowLabels(boolean shouldDraw) {
+    showLabels = shouldDraw;
+    
+    // Set all the surfaces to stroke
+    for(PShape shape: sheepPanelArray) {
+      if (shape==null) continue;
+      
+      shape.setStroke(showLabels);
+      if (showLabels) {
+        shape.setStroke(#303030);
+        shape.setStrokeWeight(2f);
+      }    
+    }
+  }
+  
+  /**
+   * Set all of the panels (including non-mapped ones) to colors from a contrasting list.
+   * This isn't pretty, but it lets you see where the panels are instead of just
+   * the surfaces (which you can see with showLabels mode)
+   */
+  public void setContrastingColors() {
+    int[] divColors = {
+color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),color(128,177,211),color(253,180,98),color(179,222,105),color(252,205,229),color(217,217,217),color(188,128,189),color(204,235,197),color(255,237,111)
+    };
+    
+    int cIx = 0;
+    for(Map.Entry e: partySideMap.entrySet()) {
+      int logIx = (Integer)e.getKey();
+      ArrayList<Integer> list;
+      
+      // First the party side
+      list = (ArrayList<Integer>)e.getValue();
+      for(int sIx: list) {
+        try {
+          PShape panel = sheepPanelArray[sIx];
+          panel.setFill(divColors[cIx]);
+        } catch (Exception ex) {
+          // ignore
+        }
+      }
+      
+      // Then the bidness
+      list = (ArrayList<Integer>)boringSideMap.get(logIx);
+      if (list != null) {
+        for(int sIx: list) {
+          try {
+            PShape panel = sheepPanelArray[sIx];
+            panel.setFill(divColors[cIx]);
+          } catch (Exception ex) {
+            // ignore
+          }
+        }
+      }
+      
+      cIx++;
+      if (cIx == divColors.length) {
+        cIx = 0;
+      }
+    }
+  }
   
   public void draw() {
     // Wrapping this draw in push & pop matrix means that any
@@ -703,7 +805,7 @@ class Sheep {
     }
     
     // Logical panel cursor
-    if (logicalCursor != -1) {
+    if (logicalCursor != -1 && showLogicalHighlight) {
       paintList(partySideMap.get(logicalCursor), true);
       paintList(boringSideMap.get(logicalCursor), false);
     }
@@ -747,6 +849,8 @@ class Sheep {
   
   void drawLabels(boolean isParty) {
     
+    colorMode(HSB, 255);
+
     StringBuffer buf = new StringBuffer();
     
     for(Map.Entry e: (isParty ? partySideMap.entrySet() : boringSideMap.entrySet()) ) {
@@ -771,7 +875,6 @@ class Sheep {
         if (center != null) {
           PShape shape = sheepPanelArray[sIx];
           if (shape!=null) {
-            colorMode(HSB, 255);
             color fc = shape.getFill(0);
             float h = hue(fc) + 0.5f;
             if (h > 1.0f) h-=0.5f;
@@ -781,18 +884,31 @@ class Sheep {
           
           float x = center.x;
           if (logical > 49 && logical < 60) {
-            // Tail so go other way
+            // Tail move right
             x += 20;
-          } else {
+          } else if (logical > 60) {
+            // Head move left
             x -= 20;
+          } else if (logical > 0 && logical < 4) {
+            // front shoulder region a little left
+            x -= 10;
+          } else if (logical > 31) {
+            // Rump section, go right
+            x += 20;
           }
           float z = center.z + (isParty ? 10 : -10);
           text(buf.toString(),  x, center.y, z);
         }
       }
-    }    
+    }  
+   
+    colorMode(RGB, 255); 
   }
   
+  /*******************************************************************************/
+  /*******************************************************************************/
+  /*******************************************************************************/
+
   /**
    * An instance of Eye represents one of the DMX controlled sharpies. Using 16 channel
    * mode.
@@ -871,18 +987,7 @@ class Sheep {
       }
       
       cone.draw();
-      
-//      if (watch.currTime() > ANIMATION_TIME) {
-//        watch.reset();
-//        
-//        if (nextIsPan) {
-//          cone.rotateBy(0f, 0f, 2 * PI, ANIMATION_TIME, 0.0f);
-//        } else {
-//          cone.rotateBy(2 * PI, 0f, 0f, ANIMATION_TIME, 0.0f);
-//        }
-//        
-//        nextIsPan = !nextIsPan;
-//      }
+
     }
     
     // Don't have exact specs so from Sharpy we get max speed pan 2.45s, tilt 1.30s 
@@ -1039,7 +1144,9 @@ class Sheep {
         clr = #0343df;
       }
       
-      // Multiple times a dimmer byte
+      // Handle dimmer. We had this other code for pre-multiplying the dimmer
+      // value into the color, but honestly this alpha channel stuff works
+      // well and probably better.
       int brightness = channelValues[DMX_DIMMER] & 0x00ff;
 //      int r = ( ((clr & 0x00ff0000) >> 16) * brightness ) >> 8;
 //      int g = ( ((clr & 0x0000ff00) >>  8) * brightness ) >> 8;
