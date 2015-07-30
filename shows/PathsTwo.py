@@ -116,6 +116,8 @@ class Path(object):
 				new_head = choice(neighbors)
 				if new_head != prev_cell and new_head <= 43 and new_head > 0:
 					return new_head
+			i -= 1
+			
 		return prev_cell
 		       						
 class PathsTwo(object):
