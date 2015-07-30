@@ -109,7 +109,15 @@ OS X:
 
 Debian / Ubuntu:
 
-    sudo apt-get install ola ola-python ola-rdm-tests
+More info about pre-built packages is at http://opendmx.net/index.php/OLA_Debian_/_Ubuntu
+
+Note that page doesn't mention *trusty*, which is Ubuntu 14.04 LTS, but
+there is a version in the repo that exists for that. Thus you cad
+do the following on 14.04:
+
+    sudo echo deb   http://apt.openlighting.org/ubuntu trusty main >> /etc/apt/sources.list
+    sudo apt-get update 
+    sudo apt-get install ola ola-python 
 
 ## Tips
 
