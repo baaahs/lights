@@ -1,3 +1,8 @@
+BAAAHS 2015 Edition
+===================
+
+![Simulator Screenshot](https://raw.githubusercontent.com/tomseago/baaahs2015/master/data/SheepSimulator.png)
+
 ## Requirements
 
 * Python 2.7
