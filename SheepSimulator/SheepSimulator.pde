@@ -12,8 +12,8 @@ import g4p_controls.*;
 Sheep theSheep;
 int currentPanel=0;
 PShape selectedPanel;
-HashMap<Integer, ArrayList<Integer>> partySideMap = new HashMap<Integer, ArrayList<Integer>>();
-HashMap<Integer, ArrayList<Integer>> boringSideMap = new HashMap<Integer, ArrayList<Integer>>();
+TreeMap<Integer, ArrayList<Integer>> partySideMap = new TreeMap<Integer, ArrayList<Integer>>();
+TreeMap<Integer, ArrayList<Integer>> boringSideMap = new TreeMap<Integer, ArrayList<Integer>>();
 
 // Translates mouse inputs into camera movements
 //PeasyCam cam;
@@ -30,6 +30,10 @@ GButton btnGroundFront;
 GButton btnGroundSide;
 GButton btnGroundRear;
 
+GCheckbox cbShowLabels;
+
+final int SHEEP_SCALE = 3;
+
 
 // setup() is called once by the environment to initialize things
 void setup() {
@@ -39,12 +43,14 @@ void setup() {
   size(1200, 800, P3D);
   
   // Some UI stuff. Need to get G4P up and running before PeasyCam
+  G4P.setGlobalColorScheme(G4P.YELLOW_SCHEME);
   btnGroundFront = new GButton(this, 5, 5, 50, 15, "Front Q");
   btnGroundSide = new GButton(this, 60, 5, 50, 15, "Side");
   btnGroundRear = new GButton(this, 115, 5, 50, 15, "Rear Q");
+  cbShowLabels = new GCheckbox(this, 5, 25, 100, 15, "Show Labels");
   
   // Initialize camera movements
-  camera = new Camera(this, 0, -300, 500);
+  camera = new Camera(this, 0, SHEEP_SCALE * -300, SHEEP_SCALE * 500);
   
   // Load the .csv file which contains a mapping from logical panel
   // numbers used by the shows (and by the construction documents) into
@@ -62,10 +68,10 @@ void setup() {
   ground = createShape();
   ground.beginShape();
   ground.fill(#241906);
-  ground.vertex(-10000,0,-10000);
-  ground.vertex(10000,0,-10000);
-  ground.vertex(10000,0,10000);
-  ground.vertex(-10000,0,10000);
+  ground.vertex(SHEEP_SCALE * -10000,0,SHEEP_SCALE * -10000);
+  ground.vertex(SHEEP_SCALE * 10000,0,SHEEP_SCALE * -10000);
+  ground.vertex(SHEEP_SCALE * 10000,0,SHEEP_SCALE * 10000);
+  ground.vertex(SHEEP_SCALE * -10000,0,SHEEP_SCALE * 10000);
   ground.endShape(CLOSE);
 
   // The server is a TCP server listening on a defined port which accepts
@@ -96,11 +102,11 @@ void draw() {
   // Also draw a center axis for general 3d reference. Red in +X axis,
   // Green in +Y, and Blue in +Z
   stroke(#ff0000);
-  line(0, 0, 0, 10, 0, 0);
+  line(0, 0, 0, SHEEP_SCALE * 10, 0, 0);
   stroke(#00ff00);
-  line(0, 0, 0, 0, 10, 0);
+  line(0, 0, 0, 0, SHEEP_SCALE * 10, 0);
   stroke(#0000ff);
-  line(0, 0, 0, 0, 0, 10);
+  line(0, 0, 0, 0, 0, SHEEP_SCALE * 10);
  
   // Check for any updates from the network. These won't be visible 
   // until the next time this function is called.
@@ -144,6 +150,8 @@ void mouseDragged() {
   }
 }
 
+StringBuffer panelValue = new StringBuffer();
+
 // keyTyped is called outside of calls to the draw() function whenever
 // a key is pressed and released, or possibly, depending on OS, it might
 // be called multiple times if a key value is repeated. This is how we
@@ -152,27 +160,135 @@ void keyTyped() {
   println("typed "+key);
   
   switch(key) {
-    case 'n': // Next
+    case '.': // Next
       theSheep.moveCursor(1);
       println("Next panel = " + theSheep.panelCursor);
       break;
       
-    case 'N': // Next
+    case '>': // Next
       theSheep.moveCursor(10);
       println("Next panel = " + theSheep.panelCursor);
       break;
       
-    case 'p': // Prev
+    case ',': // Prev
       theSheep.moveCursor(-1);
       println("Prev panel = " + theSheep.panelCursor);
       break;
       
-    case 'P': // Prev
+    case '<': // Prev
       theSheep.moveCursor(-10);
       println("Prev panel = " + theSheep.panelCursor);
       break;
-  }
 
+    // The logical cursor
+    case ']': // Next
+      theSheep.moveLogicalCursor(1);
+      break;
+      
+    case '}': // Next
+      theSheep.moveLogicalCursor(10);
+      break;
+      
+    case '[': // Prev
+      theSheep.moveLogicalCursor(-1);
+      break;
+      
+    case '{': // Prev
+      theSheep.moveLogicalCursor(-10);
+      break;
+      
+
+    case 'p': // Assign to P side
+      assignPanel(true);
+      break;
+      
+    case 'b': // Assignt to B side
+      assignPanel(false);
+      break;
+      
+    case 's': // Save to a file
+      savePanelMap();
+      break;
+      
+    default:
+      if (key >= '0' && key <= '9') {
+        panelValue.append(key);
+      }    
+  }
+}
+
+// Assign the current surface to the logical panel in panelValue, assuming it can
+// be parsed as an int
+void assignPanel(boolean isParty) {
+  if (panelValue.length()==0) {
+    println("Type some digits. Nothing to assign");
+    return;
+  }
+  
+  int logicalNum = -1;
+  String toParse = panelValue.toString();
+  panelValue.setLength(0);
+  try {
+    logicalNum = Integer.parseInt(toParse);
+  } catch (NumberFormatException nfe) {
+    println("Could not parse '"+toParse+"' as a number");
+    return;
+  }
+  
+  // First remove this from any logical assignment it might have. THis is slow and bad
+  // and brute force, but that's not important to us right now
+  clearAssignment(partySideMap);
+  clearAssignment(boringSideMap);
+  
+  TreeMap<Integer, ArrayList<Integer>> map = isParty ? partySideMap : boringSideMap;
+  ArrayList<Integer> list = map.get(logicalNum);
+  if (list==null) {
+    list = new ArrayList<Integer>();
+    map.put(logicalNum, list);
+  }
+  
+  list.add(theSheep.panelCursor);
+  println("Assigned surface "+theSheep.panelCursor+" to logical panel "+logicalNum+" on "+(isParty?"party":"business")+" side");
+}
+
+void clearAssignment(TreeMap<Integer, ArrayList<Integer>> map) {
+  Integer toKill = new Integer(theSheep.panelCursor);
+  for(ArrayList<Integer> list: map.values()) {
+    while(list.remove(toKill));
+  }
+}
+
+void savePanelMap() {
+  String filename = "saved-panel-map.csv";
+  PrintWriter out = createWriter(filename);
+  
+  for(Map.Entry e: partySideMap.entrySet()) {
+    writeLine(out, e, "p");
+  }
+  out.println();
+  
+  for(Map.Entry e: boringSideMap.entrySet()) {
+    writeLine(out, e, "b");
+  }
+  
+  out.flush();
+  out.close();
+  
+  println("Saved current map to "+filename);
+}
+
+void writeLine(PrintWriter out, Map.Entry e, String side) {
+
+    out.print((Integer)e.getKey());
+    out.print(",");
+    
+    for(Integer i: (ArrayList<Integer>)e.getValue()) {
+      out.print(i);
+      out.print(",");
+    }
+    
+    out.print(side);
+    out.print("\n");
 }
 
 /**
@@ -180,27 +296,22 @@ void keyTyped() {
  */
 void handleButtonEvents(GButton button, GEvent event) {
   if (button == btnGroundFront) {
-    camera.jump(-500, -50, 400);
-    camera.aim(0,-200,0);
+    camera.jump(SHEEP_SCALE * -500, SHEEP_SCALE * -50, SHEEP_SCALE * 400);
+    camera.aim(0,SHEEP_SCALE * -200,0);
   } else if(button == btnGroundRear) {
-    camera.jump(500, -60, 400);
-    camera.aim(0,-100,0);
+    camera.jump(SHEEP_SCALE * 500, SHEEP_SCALE * -60, SHEEP_SCALE * 400);
+    camera.aim(0,SHEEP_SCALE * -100,0);
   } else if (button == btnGroundSide) {
-    camera.jump(0, -300, 500);
+    camera.jump(0, SHEEP_SCALE * -300, SHEEP_SCALE * 500);
     camera.aim(0,0,0);
   }
 }
-//
-//public void handleToggleControlEvents(GToggleControl cb, GEvent event) {
-//  if (cb == checkFreeRotate) {
-//    if (cb.isSelected()) {
-//      //cam.setFreeRotationMode();
-//    } else {
-//      //cam.setSuppressRollRotationMode();
-//      //cam.setYawRotationMode();
-//    }
-//  }
-//}
+
+public void handleToggleControlEvents(GToggleControl cb, GEvent event) {
+  if (cb == cbShowLabels) {
+    theSheep.showLabels = cb.isSelected();
+  }
+}
 
 /**
  * Check the network server for waiting data and make any necessary
@@ -290,35 +401,75 @@ void handleDMXCommand(Matcher m) {
   }
 }
 
-/*
- * Load label mapping file
+/**
+ * Loads the mapping file to go from logical panel identifiers to integer indexes
+ * of surfaces in the 3D mesh. The file is filtered to only load one side at a time
+ * as specified by the last parameter.
+ *
+ * The format of the file is a CSV file where each row has 3 sections. The first
+ * element of a row is the logical id, which is an integer. The last element of
+ * a row is a string that must match the filter string (so that means it's either
+ * a p or a b character). Everything inbetween the first and last elements is an
+ * integer index of a surface in the sheep mesh which is part of this panel. -1
+ * may be given as an index and will be ignored.
+ *
+ * Something like:
+ *
+ * 43,73,p
+ * 60,159,160,161,162,163,164,165,166,167,168,169,170,172,173,174,175,p
+ *
+ * Any row not conforming to the above should be safely ignored, so comments that
+ * don't match that ordering shouldn't cause problems. Probably.
  */
-HashMap<Integer, ArrayList<Integer>> loadPolyMap(String labelFile, String sidePorB) {
-  HashMap<Integer, ArrayList<Integer>> polyMap = new HashMap<Integer, ArrayList<Integer>>();  
+TreeMap<Integer, ArrayList<Integer>> loadPolyMap(String labelFile, String sidePorB) {
+  TreeMap<Integer, ArrayList<Integer>> polyMap = new TreeMap<Integer, ArrayList<Integer>>();  
   Table table = loadTable(labelFile);
 
   println(table.getRowCount() + " total rows in table"); 
 
+  int cols = table.getColumnCount();
+  ArrayList<Integer> rowInts = new ArrayList<Integer>();
   for (TableRow row : table.rows ()) {
-    if (row.getString(4).equals(sidePorB)) {
-      ArrayList<Integer> temp = new ArrayList<Integer>();
-      int panel = row.getInt(0);
-
-      temp.add(row.getInt(1));
-      temp.add(row.getInt(2)); 
-      temp.add(row.getInt(3));
-
-      polyMap.put(panel, temp);
+    try {
+      rowInts.clear();
+      String last = null;
+      
+      for(int i=0; i<cols; i++) {
+        last = row.getString(i);
+        try {
+          rowInts.add(Integer.parseInt(last));
+        } catch (NumberFormatException nfe) {
+          break;
+        }
+      }
+      
+      // Minimum number of elements for a row is 3
+      if (rowInts.size() < 2) continue;
+      if (sidePorB.equals(last)) {
+        ArrayList<Integer> temp = new ArrayList<Integer>();
+        int panel = rowInts.get(0);
+  
+        println("Working on panel "+panel);
+        for(int i=1; i<rowInts.size(); i++) {
+          println("i="+i);
+          temp.add(rowInts.get(i));
+        }
+  
+        polyMap.put(panel, temp);
+      }
+    } catch (Exception ex) {
+      println(ex);
     }
   }
   return polyMap;
 }
 
+
 void invertShape(PShape shape) {
   if (shape==null) return;
   
   for(int i=0; i<shape.getVertexCount(); i++) {
-    shape.setVertex(i, shape.getVertexX(i), shape.getVertexY(i), -1 * shape.getVertexZ(i));
+    shape.setVertex(i, SHEEP_SCALE * shape.getVertexX(i), SHEEP_SCALE * shape.getVertexY(i), SHEEP_SCALE * -1 * shape.getVertexZ(i));
   }
 }
 
@@ -326,11 +477,16 @@ class Sheep {
 
   PShape sheepModel;
   PShape[] sheepPanelArray;
+  
+  PVector[] panelCenters;
 
   Eye leftEye;
   Eye rightEye;
   
   int panelCursor;
+  boolean showLabels = false;
+  
+  int logicalCursor = -1;
 
   public Sheep(PApplet app, String fileName) {
     sheepModel = loadShape(fileName); 
@@ -385,13 +541,45 @@ class Sheep {
         all.add(i);
       }
     }
+
+    // These are the same transforms that we baked into the sheep model. We
+    // apply them again so that these direct text calls we are about to issue
+    // will align with the sheep sides
+    PMatrix3D matrix = new PMatrix3D();
+    matrix.rotateX(PI);
+    matrix.rotateY(PI*0.5);
+    matrix.translate(SHEEP_SCALE * 30, SHEEP_SCALE * 10, SHEEP_SCALE * 550); // Shit, still in model coord space. Lame!
+        
+    panelCenters = new PVector[sheepPanelArray.length];
     for(int i=0; i<sheepPanelArray.length; i++) {
       PShape shape = sheepPanelArray[i];
-      if (shape == null) continue;
-      
+      if (shape == null) {
+        panelCenters[i] = new PVector(0.0f, 0.0f, 0.0f);
+        continue;
+      }
       // Must invert all shapes
       invertShape(shape);
+      
+      // Calculate the center by averaging all vertexes
+      float x = 0.0f;
+      float y = 0.0f;
+      float z = 0.0f;
+      
+      int count = shape.getVertexCount();
+      
+      for(int j=0; j<count; j++) {
+        x += shape.getVertexX(j);
+        y += shape.getVertexY(j);
+        z += shape.getVertexZ(j);
+      }
+      
+      x = x / count;
+      y = y / count;
+      z = z / count;
+      
+      panelCenters[i] = matrix.mult(new PVector(x,y,z), null);
    
+      
       // If it's an unmapped shape, make it dark
       if (!all.contains(i)) {
         shape.setStroke(true);
@@ -399,14 +587,18 @@ class Sheep {
         shape.setStrokeWeight(1f);
         shape.setFill(#303030);
       }
+      
+      shape.setStroke(true);
+      shape.setStroke(#303030);
+      shape.setStrokeWeight(2f);
     }
 
     sheepModel.rotateX(PI);
     sheepModel.rotateY(PI*0.5);
-    sheepModel.translate(30, 10, 550); // Shit, still in model coord space. Lame!
+    sheepModel.translate(SHEEP_SCALE * 30, SHEEP_SCALE * 10, SHEEP_SCALE * 550); // Shit, still in model coord space. Lame!
     
-    leftEye = new Eye(app, "Left eye", 400, new PVector(-135, -215, 27));
-    rightEye = new Eye(app, "Right eye", 416, new PVector(-135, -215, -27));
+    leftEye = new Eye(app, "Left eye", 400, new PVector(SHEEP_SCALE * -135, SHEEP_SCALE * -215, SHEEP_SCALE * 27));
+    rightEye = new Eye(app, "Right eye", 416, new PVector(SHEEP_SCALE * -135, SHEEP_SCALE * -215, SHEEP_SCALE * -27));
     
   }
 
@@ -467,6 +659,21 @@ class Sheep {
     }        
   }
   
+  public void moveLogicalCursor(int direction) {
+    if (logicalCursor < 0) {
+      logicalCursor = 0;
+      return;
+    }
+    
+    int max = partSideMap.keySet().size() - 1;
+    logicalCursor += direction;
+    if (logicalCursor < 0) {
+      logicalCursor += max;
+    } else if (logicalCursor >= max) {
+      logicalCursor -= max;
+    }      
+  }    
+  
   public void draw() {
     // Wrapping this draw in push & pop matrix means that any
     // visual changes we make here (such as camera position,
@@ -495,9 +702,95 @@ class Sheep {
       sheepPanelArray[panelCursor].enableStyle(); 
     }
     
+    // Logical panel cursor
+    if (logicalCursor != -1) {
+      paintList(partySideMap.get(logicalCursor), true);
+      paintList(boringSideMap.get(logicalCursor), false);
+    }
+    
+    // For all panels, draw their logical name on the first element of them
+    if (showLabels) {
+      pushMatrix();
+      
+      fill(#ff0000);
+      textAlign(CENTER, CENTER);
+      textSize(14);
+      
+      drawLabels(true);
+      drawLabels(false);
+      
+      popMatrix();
+    }
+    
+ 
     // This restores the matrix that was pushed at the beginning of 
     // this function.
     popMatrix();
+  }
+  
+  void paintList(ArrayList<Integer> list, boolean isParty) {
+    if (list==null) return;
+    
+    for(int i=0; i<list.size(); i++) {
+      int surfaceIx = list.get(i);
+      if (surfaceIx < 0 || surfaceIx > sheepPanelArray.length - 1) continue;
+      
+      PShape shape = sheepPanelArray[surfaceIx];
+      if (shape == null) continue;
+      
+      shape.disableStyle();
+      fill(isParty ? 0xFFFF0000 : 0xFF0000FF);
+      shape(shape);
+      shape.enableStyle();
+    }
+  }
+  
+  void drawLabels(boolean isParty) {
+    
+    StringBuffer buf = new StringBuffer();
+    
+    for(Map.Entry e: (isParty ? partySideMap.entrySet() : boringSideMap.entrySet()) ) {
+      int logical = (Integer)e.getKey();
+      ArrayList<Integer> list = (ArrayList<Integer>)e.getValue();
+      if (list.size() < 1) continue;
+      
+      buf.setLength(0);
+      buf.append(logical);
+      buf.append(isParty ? "p" : "b");
+
+      for(int j=0; j<list.size(); j++) {
+        int sIx = list.get(j);
+        
+        if (j==0) {
+          textSize(14);
+        } else {
+          textSize(8);
+        }
+       
+        PVector center = panelCenters[sIx]; 
+        if (center != null) {
+          PShape shape = sheepPanelArray[sIx];
+          if (shape!=null) {
+            colorMode(HSB, 255);
+            color fc = shape.getFill(0);
+            float h = hue(fc) + 0.5f;
+            if (h > 1.0f) h-=0.5f;
+            color nc = color(255 * h, 255 * saturation(fc), 255 * brightness(fc));
+            fill(nc);
+          }
+          
+          float x = center.x;
+          if (logical > 49 && logical < 60) {
+            // Tail so go other way
+            x += 20;
+          } else {
+            x -= 20;
+          }
+          float z = center.z + (isParty ? 10 : -10);
+          text(buf.toString(),  x, center.y, z);
+        }
+      }
+    }    
   }
   
   /**
@@ -525,8 +818,8 @@ class Sheep {
     
     StopWatch watch;
     final float ANIMATION_TIME = 10.0f;
-    final float BEAM_LENGTH = 1000;
-    final float BEAM_MAX_SPOT = 50;
+    final float BEAM_LENGTH = SHEEP_SCALE * 1000;
+    final float BEAM_MAX_SPOT = SHEEP_SCALE * 50;
     boolean nextIsPan;
     
     final int DMX_PAN = 1;
