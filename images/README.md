@@ -34,10 +34,10 @@ that the driver can see through them. These will probably not be lit.
 Some panels on the centerline exist on the party side but not the business
 side. These are
 
-    * 83 - The breastplate/neck
-    * 72 - Top of the head
-    * 52 - Top of the rear above the tail
-    * 50 - The tail itself
+  * 83 - The breastplate/neck
+  * 72 - Top of the head
+  * 52 - Top of the rear above the tail
+  * 50 - The tail itself
 
 Panels 55 on the tail, and 89 on the breastplate, are two panels that come
 together, but are indeed separate panels. Because the simulator colored them
@@ -45,3 +45,11 @@ the same becase 55p & 55b have the same number, this might appear a little
 confusing in the pictures.
 
 ![Party Side](./PartySide.png)
+
+![Business Side](./BusinessSide.png)
+
+![Party Head](./PartyHead.png)
+
+![Full Frontal](./FullFront.png)
+
+![Rear View](./Rear.png)
