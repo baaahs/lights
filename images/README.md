@@ -44,4 +44,4 @@ together, but are indeed separate panels. Because the simulator colored them
 the same becase 55p & 55b have the same number, this might appear a little
 confusing in the pictures.
 
-![Party Side]()
+![Party Side](./PartySide.png)
