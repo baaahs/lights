@@ -789,8 +789,8 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
 
     // The eyes also have to get rendered. They are not part of
     // the loaded model but were added later
-    leftEye.draw();
-    rightEye.draw();
+    // leftEye.draw();
+    // rightEye.draw();
     
     // Finally (for the sheep at least) we re-render one surface
     // in a different color. Do this by re-rendering rather than 

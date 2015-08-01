@@ -22,69 +22,110 @@ import math
 # obsolete. Leaving the comment above for reference.
 
 # All panels (except the feet)
-ALL = [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 39, 40, 41, 42, 43, 
+# ALL = [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 39, 40, 41, 42, 43, 
     
-    44, 45,  # Tip of shoulder near head
+#     44, 45,  # Tip of shoulder near head
 
-    50, # Tail
-    51, 52, 53, 54, 55, 56, 57, 58,  # Butt. Symetrical except for 51
+#     50, # Tail
+#     51, 52, 53, 54, 55, 56, 57, 58,  # Butt. Symetrical except for 51
 
-    60, # Ears
-    61, 62, 63, 64, 65, # Head
-    66, 68, 70, 72, # Face
-    73, 74, 75, 77, 78, 79, 82, # Nose
-    80, 83, # Throat
+#     60, # Ears
+#     61, 62, 63, 64, 65, # Head
+#     66, 68, 70, 72, # Face
+#     73, 74, 75, 77, 78, 79, 82, # Nose
+#     80, 83, # Throat
 
-    84, 85, 89 # Breast
+#     84, 85, 89 # Breast
 
-    # Unlit??
-    #86, 87, 88, # Arm
-    ]
+#     # Unlit??
+#     #86, 87, 88, # Arm
+#     ]
+
+ALL = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42]
 
 #100, 101, 102, 103, 104, 105, 106, 107, 108, 109]
 
 # Rough grouping of panels by height on the bus, forming horizontal bands
-LOW    = [3, 8, 9, 14, 18, 23, 22, 31, 30, 34, 37, 43, 42]
-MEDIUM = [1, 2, 7, 13, 16, 17, 20, 21, 26, 27, 28, 29, 33, 35, 36, 40, 41]
-HIGH   = [4, 5, 6, 12, 11, 15, 19, 25, 24, 32, 39]
+# LOW    = [3, 8, 9, 14, 18, 23, 22, 31, 30, 34, 37, 43, 42]
+# MEDIUM = [1, 2, 7, 13, 16, 17, 20, 21, 26, 27, 28, 29, 33, 35, 36, 40, 41]
+# HIGH   = [4, 5, 6, 12, 11, 15, 19, 25, 24, 32, 39]
+
+LOW = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+MEDIUM = [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
+HIGH = [29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42]
 
 # Vertical stripes, ordered from front to rear
-# Note that this is a list of lists!
-VSTRIPES = [[73, 74, 75, 77, 78, 79, 82],
-            [4, 85, 89, 80, 83, 66, 68, 70, 72],
-            [60, 61, 62, 63, 64, 65],
-            [1,2,3],
-            [4,5,6,7,8,9],
-            [11,12,13,14],
-            [15,16,17,18,23],
-            [19,20,21,22],
-            [24,25,26,27,28,29,30,31],
-            [32,35,36,33,34,37,43],
-            [39,40,41,42],
-            [51, 52, 53, 54, 55, 56, 57, 58],
-            [50]]
+# # Note that this is a list of lists!
+# VSTRIPES = [[73, 74, 75, 77, 78, 79, 82],
+#             [4, 85, 89, 80, 83, 66, 68, 70, 72],
+#             [60, 61, 62, 63, 64, 65],
+#             [1,2,3],
+#             [4,5,6,7,8,9],
+#             [11,12,13,14],
+#             [15,16,17,18,23],
+#             [19,20,21,22],
+#             [24,25,26,27,28,29,30,31],
+#             [32,35,36,33,34,37,43],
+#             [39,40,41,42],
+#             [51, 52, 53, 54, 55, 56, 57, 58],
+#             [50]]
+VSTRIPES = [
+    [1, 15, 29],
+    [2, 16, 30],
+    [3, 17, 31],
+    [4, 18, 32],
+    [5, 19, 33],
+    [6, 20, 34],
+    [7, 21, 35],
+    [8, 22, 36],
+    [9, 23, 37],
+    [10, 24, 38],
+    [11, 25, 39],
+    [12, 26, 40],
+    [13, 27, 41],
+    [14, 28, 42]
+    ]
 
 # Front spiral, panels arranged clockwise
-FRONT_SPIRAL = [13,16,17,18,14,9,8,7]
+#FRONT_SPIRAL = [13,16,17,18,14,9,8,7]
+
+#FRONT_SPIRAL = [4,5,6,7,8,9,10,11, 28,27,26, 39,38,37,36,35,34,33,32,  17,16,15]
+FRONT_SPIRAL = [4,5,6,7,8,9,10,11, 24,23,22,21,19]
 
 # From tom's "sheep tailoring" diagram (link?)
 # Split the sheep into four rough quadrants
-SHOULDER    = [4,5,1,6,2,7,3,8,9]
-RACK        = [11,12,13,16,15,14,18,17,21,20,19]
-LOIN        = [23,22,31,30,29,28,27,34,33,26,25,24]
-LEG         = [37,43,42,41,35,40,39,32]
+# SHOULDER    = [4,5,1,6,2,7,3,8,9]
+# RACK        = [11,12,13,16,15,14,18,17,21,20,19]
+# LOIN        = [23,22,31,30,29,28,27,34,33,26,25,24]
+# LEG         = [37,43,42,41,35,40,39,32]
+
+SHOULDER = [ 1, 2, 3,           15, 6,                      29, 30, 31 ]
+RACK     = [ 4, 5, 6,           17, 18, 19, 20, 21, 22,     32, 33, 34 ]
+LOIN     = [ 7, 8, 9, 10,       23,24,                      35, 36, 37, 38, 39 ]
+LEG      = [11, 12, 13, 14,     24,26,27,28,                40, 41, 42 ]
+
+
 
 # Newer things for fun and profit
-TAIL = [50] # Tail
-BUTT = [51, 52, 53, 54, 55, 56, 57, 58]  # Butt. Symetrical except for 51
+# TAIL = [50] # Tail
+# BUTT = [51, 52, 53, 54, 55, 56, 57, 58]  # Butt. Symetrical except for 51
 
-EARS = [60] # Ears
-HEAD = [61, 62, 63, 64, 65] # Head
-FACE = [66, 68, 70, 72] # Face
-NOSE = [73, 74, 75, 77, 78, 79, 82] # Nose
-THROAT = [80, 83] # Throat
-BREAST = [84, 85, 89] # Breast
+# EARS = [60] # Ears
+# HEAD = [61, 62, 63, 64, 65] # Head
+# FACE = [66, 68, 70, 72] # Face
+# NOSE = [73, 74, 75, 77, 78, 79, 82] # Nose
+# THROAT = [80, 83] # Throat
+# BREAST = [84, 85, 89] # Breast
 
+TAIL = [14] # Tail
+BUTT = [28, 42]  # Butt. Symetrical except for 51
+
+EARS = [2] # Ears
+HEAD = [1] # Head
+FACE = [15] # Face
+NOSE = [] # Nose
+THROAT = [] # Throat
+BREAST = [] # Breast
 
 def load_geometry(mapfile):
     """
@@ -117,7 +158,51 @@ def load_geometry(mapfile):
         dat[int(num)] = p(rest.strip())
     return dat
 
-_neighbor_map = load_geometry('data/geom.txt')
+#_neighbor_map = load_geometry('data/geom.txt')
+
+def square_neighbor_map():
+    out = {}
+
+    for pNum in range(1,43):
+        close = []
+        near = []
+        
+        # -1, -14, +2, +14
+        if pNum % 14 != 1 :
+            close.append(pNum - 1)
+            # Check to the left
+            if (pNum > 14):
+                # Top 
+                near.append(pNum - 15)
+            if (pNum < 29):
+                # Bottom
+                near.append(pNum + 13)
+
+        if pNum > 14:
+            close.append(pNum - 14)
+
+        if pNum % 14 != 0 :
+            close.append(pNum + 1)
+            # Check to the right
+            if (pNum > 14):
+                # Top 
+                near.append(pNum - 13)
+            if (pNum < 29):
+                # Bottom
+                near.append(pNum + 15)
+
+        if pNum < 29:
+            close.append(pNum + 14)
+
+        out[pNum] = [ close, near ]
+
+        print "%d => %s  %s" % (pNum, close, near)
+
+    return out
+
+
+_neighbor_map = square_neighbor_map()
+
 
 def edge_neighbors(panel):
     "Return the list of panel ids that share an edge with a given panel"
