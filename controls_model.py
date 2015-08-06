@@ -45,29 +45,47 @@ PREDEFINED_COLOR_POS = [
 
 class ControlsModel(object):
     """
-    Models a set of controls & states that serves as a meeting place for
-    both shows, who want to know what the values of various controls are,
-    OSC clients that will change those controls, TouchOSC clients that
-    are able to modify their behavior based on some of those states, and
-    (potentially) web pages or other clients that are similar.
+    Holds the state of the user interface for the overall show server. This
+    is useful both for re-establishing state in clients that come and go, like
+    the TouchOSC client, but also as THE place that shows come to in order
+    to understand how they should modify their behavior.
 
-    Every control that shows up in a TouchOSC layout should be represented
-    here so that we can save the state when it is modified and broadcast
-    that state to all other TouchOSC instances. This also lets us restore
-    the control to it's proper value when you leave the TouchOSC app and
-    return.
+    From the show side, there are a lot of un-encapsulated properties/attributes
+    of a ControlsModel instance that can be read. Some key ones are:
+
+        chosenColors[]
+        speedMulti
+        intensified
+        colorized
+        modifiers[]
+
+    Shows should try to change what they are doing based on these values. See
+    the individual documentation below for more detail about each of them.
+
+    This class understands OSC messages and will update it's internal
+    state based on received messages. What happens based on which message
+    can be see in incomingOSC()
+
+    The normal MVC interaction is that an OSC message comes in, modifying the
+    state stored here. This class then notifies all of it's listeners about
+    the state change (via some form of control_XXX method call). One of those
+    listeners is probably an instance of the TouchOSC class, which then
+    broadcasts a whole bunch of messages to TouchOSC clients so that their
+    UIs all stay in sync based on whatever the state modification was.
+
+    Presumably state modifications could come from other UIs like a web
+    interface, although nothing like that is currently implemented.
+
+    In general, a show implementation should read from here, but almost
+    certainly shouldn't be writing to this object. If anything DOES want
+    to write to this guy, then it should be using the setters to ensure that
+    appropriate notifications are sent to interested listeners.
+    
     """
 
     
 
     def __init__(self):
-        self.listeners = set()
-
-        self._tapTimes = []
-
-        # Start with a muddy yellow because starting with black goes badly/is silly
-        self.color = color.RGB(255,255,0)
-
         # Pan and tilt are stored in degrees from the central
         # position. Pan has a range of +/- 270 and tilt has a 
         # range of +/- 135
@@ -153,6 +171,13 @@ class ControlsModel(object):
         # Conventions may be established around general concepts that these toggles
         # represent, but until that happens it's a free for all.
         self.modifiers = [False,False,False,False,False,False,False]
+
+        self.listeners = set()
+
+        self._tapTimes = []
+
+        # Start with a muddy yellow because starting with black goes badly/is silly
+        self.color = color.RGB(255,255,0)
 
 
     def addListener(self, listener):
