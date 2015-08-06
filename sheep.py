@@ -50,8 +50,7 @@ HIGH   = [4, 5, 6, 12, 11, 15, 19, 25, 24, 32, 39]
 
 # Vertical stripes, ordered from front to rear
 # Note that this is a list of lists!
-VSTRIPES = [[73, 74, 75, 77, 78, 79, 82],
-            [4, 85, 89, 80, 83, 66, 68, 70, 72],
+VSTRIPES = [[4, 84, 85, 89, 80, 83, 66, 68, 70, 72],
             [60, 61, 62, 63, 64, 65],
             [1,2,3],
             [4,5,6,7,8,9],
@@ -164,6 +163,8 @@ class Sheep(object):
             raise Exception("%s is not a valid side. use one of a,b,p")
         self.side = side
         self.cells = set(ALL)
+        self.cm = None
+        self.handle_colorized = False
 
     def __repr__(self):
         return "Sheep(%s, side='%s')" % (self.model, self.side)
@@ -190,6 +191,10 @@ class Sheep(object):
     def set_cell(self, cell, color):
         # a single set_cell call may result in two panels being set
         c = self._resolve(cell)
+
+        if self.handle_colorized and self.cm:
+            color = color.colorize(self.cm.colorized)
+
         if c:
             # print "setting", c
             self.model.set_cells(c, color)

@@ -25,6 +25,12 @@ from lib.OSC import _readString, _readFloat, _readInt
 
 
 class TouchOSC(object):
+    """
+    This class handles pushing changes in the controls model out to any 
+    discovered TouchOSC clients. As such, it is the second half of the roundtrip
+    where a human uses a phone to change a value, which updates the internal
+    model, which will then update that user's phone.
+    """
     resolved = []
     timeout = 5
 
@@ -106,6 +112,43 @@ class TouchOSC(object):
         else:
             self._send1("/eyes/bColorEnable", 0.0)
 
+    def control_chosenColorChanged(self, cIx):
+
+        addr = "/main/color/%d/" % cIx
+        for i in range(1,8):
+            a = "%s%d" % (addr, i)
+            if self.cm.chosenColorsIx[cIx] == i:
+                self._send1(a, 1.0)
+            else:
+                self._send1(a, 0.0)
+
+        for i in range(101,108):
+            a = "%s%d" % (addr, i)
+            if self.cm.chosenColorsIx[cIx] == i:
+                self._send1(a, 1.0)
+            else:
+                self._send1(a, 0.0)
+
+    def control_speedChanged(self):
+        pos = self.cm.speedMulti - 1.0
+        self._send1("/main/speed/changeRel", pos)
+        self._send1("/main/speed/lblMulti", "%.2fx" % self.cm.speedMulti)
+        self._send1("/main/speed/lblBPM", "%.1f bpm" % (120.0 * self.cm.speedMulti))
+
+
+    def control_intensifiedChanged(self):
+        self._send1("/main/intensified", self.cm.intensified)
+
+    def control_colorizedChanged(self):
+        self._send1("/main/colorized", self.cm.colorized)
+
+    def control_modifiersChanged(self):
+        for ix,val in enumerate(self.cm.modifiers):
+            addr = "/main/modifier/%d" % ix
+            if val:
+                self._send1(addr, 1.0)
+            else:
+                self._send1(addr, 0.0)
 
     def control_refreshAll(self):
         self._sendAllState()
@@ -123,6 +166,12 @@ class TouchOSC(object):
     def _sendAllState(self):
         self.control_colorChanged()
         self.control_eyeMovementLockChanged()
+        self.control_eyeChanged(True)
+        self.control_eyeChanged(False)
+        self.control_chosenColorChanged(0)
+        self.control_chosenColorChanged(1)
+        self.control_intensifiedChanged()
+        self.control_colorizedChanged()
 
 
     def serve_forever(self):

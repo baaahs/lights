@@ -1,22 +1,47 @@
 import sys
 import color
 import math
+import time
 
-EYE_COLOR_WHITE         = 5
-EYE_COLOR_RED           = 13
-EYE_COLOR_ORANGE        = 21
-EYE_COLOR_AQUAMARINE    = 29
-EYE_COLOR_DEEP_GREEN    = 37
-EYE_COLOR_LIGHT_GREEN   = 45
-EYE_COLOR_LAVENDER      = 53
-EYE_COLOR_PINK          = 62
-EYE_COLOR_YELLOW        = 70
-EYE_COLOR_MAGENTA       = 79
-EYE_COLOR_CYAN          = 88
-EYE_COLOR_CTO2          = 97
-EYE_COLOR_CTO1          = 106
-EYE_COLOR_CTB           = 115
-EYE_COLOR_BLUE          = 124
+EYE_COLOR_WHITE         = 0
+EYE_COLOR_RED           = 9
+EYE_COLOR_ORANGE        = 17
+EYE_COLOR_AQUAMARINE    = 25
+EYE_COLOR_DEEP_GREEN    = 33
+EYE_COLOR_LIGHT_GREEN   = 41
+EYE_COLOR_LAVENDER      = 49
+EYE_COLOR_PINK          = 57
+EYE_COLOR_YELLOW        = 66
+EYE_COLOR_MAGENTA       = 74
+EYE_COLOR_CYAN          = 83
+EYE_COLOR_CTO2          = 92
+EYE_COLOR_CTO1          = 101
+EYE_COLOR_CTB           = 110
+EYE_COLOR_BLUE          = 119
+
+PREDEFINED_COLORS = [
+    color.Hex("#000000"),   # Black, but not really used
+    color.Hex("#FF0000"),   # Red
+    color.Hex("#f97306"),   # Orage
+    color.Hex("#ffff00"),   # Yellow
+    color.Hex("#00ff00"),   # Green
+    color.Hex("#0000ff"),   # Blue
+    color.Hex("#7e1e9c"),   # Purple
+    color.Hex("#ffffff"),   # White
+]
+
+PREDEFINED_COLOR_POS = [
+    EYE_COLOR_WHITE,
+    EYE_COLOR_RED,
+    EYE_COLOR_ORANGE,
+    EYE_COLOR_YELLOW,
+    EYE_COLOR_DEEP_GREEN,
+    EYE_COLOR_BLUE,
+    EYE_COLOR_MAGENTA,
+    EYE_COLOR_WHITE
+]
+
+
 
 class ControlsModel(object):
     """
@@ -37,6 +62,8 @@ class ControlsModel(object):
 
     def __init__(self):
         self.listeners = set()
+
+        self._tapTimes = []
 
         # Start with a muddy yellow because starting with black goes badly/is silly
         self.color = color.RGB(255,255,0)
@@ -76,6 +103,58 @@ class ControlsModel(object):
         self.colorMix = False
         self.colorCycleSpeed = 0
 
+        # The RGB values of the chosen colors
+        self.chosenColors = [ color.RGB(255, 255, 0), color.RGB(0,255,255) ]
+        # Color wheel positions
+        self.chosenColorsPos = [ EYE_COLOR_WHITE, EYE_COLOR_WHITE ]
+
+        # Chosen indexes. Could be -1
+        self.chosenColorsIx = [7, 7]
+
+
+        # Color presets. Mapped to 100+ix for choices above
+        self.colorPresets = [ 
+            color.Hex("#000000"),   # 0 isn't used in the UI
+            color.Hex("#ff8080"),   # carnation pink
+            color.Hex("#ff964f"),   # pastel orange
+            color.Hex("#feff7f"),   # faded yellow
+            color.Hex("#cffdbc"),   # very pale green
+            color.Hex("#d6fffe"),   # very pale blue
+            color.Hex("#eecffe"),   # pale lavender
+            color.Hex("#808080"),   # mid gray
+        ]
+
+        # Since pos calculations from RGB are complex we try to cache this for the
+        # presets at least
+        self.colorPresetsToPos = []
+        for ix in range(0, len(self.colorPresets)):
+            self.colorPresetsToPos.append(self.colorPresets[ix].pos)
+
+
+        ## Speed setting. This is multiplied against the "rate", so that
+        # means if you're calculating delays, 2.0 here should result in 
+        # calculating a delay half as long. This will be done automatically
+        # by the show runner if you are yielding something more than about 0.001,
+        # but if you are doing proper time based "as fast as we can" calculations
+        # yourself, you will need to respect this value.
+        self.speedMulti = 1.0
+
+        # A value that ranges from -1.0 (maximum calm) to 1.0 (maximum intensity).
+        # It should be interpretted by each show in a show appropriate manner
+        self.intensified = 0.0
+
+        # A value that ranges from -1.0 (totally monochrome) to 1.0 (max color).
+        # If the currently running show does not set handles_colorized to True this
+        # will be handled by the system, otherwise it is left to the show to modify
+        # it's colors appropriately
+        self.colorized = 0.0
+
+        # There are 7 modifiers that a show can interpret as it wishes.
+        # Conventions may be established around general concepts that these toggles
+        # represent, but until that happens it's a free for all.
+        self.modifiers = [False,False,False,False,False,False,False]
+
+
     def addListener(self, listener):
         self.listeners.add(listener)
 
@@ -88,7 +167,32 @@ class ControlsModel(object):
         aSplit = addr.split("/")
         print aSplit
 
-        if aSplit[1] == "color":
+        if aSplit[1] == "main":
+            if aSplit[2] == "color":
+                try:
+                    self.setColorIx(int(aSplit[3]), int(aSplit[4]))
+                except:
+                    pass
+
+            elif aSplit[2] == "speed":
+                if aSplit[3] == "reset":
+                    self.speedReset()
+                elif aSplit[3] == "changeRel":
+                    self.speedChangeRel(data[0])
+                elif aSplit[3] == "tap":
+                    if int(data[0]) == 1:
+                        self.speedTap()
+
+
+            elif aSplit[2] == "intensified":
+                self.setIntensified(data[0])
+            elif aSplit[2] == "colorized":
+                self.setColorized(data[0])
+            elif aSplit[2] == "modifier":
+                self.toggleModifier(int(aSplit[3]))
+
+
+        elif aSplit[1] == "color":
             if aSplit[2] == "red":
                 self.setColorR(data[0])
             elif aSplit[2] == "green":
@@ -464,3 +568,164 @@ class ControlsModel(object):
                 listener.control_refreshAll()
             except AttributeError:
                 pass # whatever...
+
+
+    ############
+    # Main interface
+
+    def setColorIx(self, cIx, vIx):
+        """
+        Set the color at index cIx to the value at index vIx. For vIx < 100
+        this is a predefined color. For vIx > 100 it is a macro color that
+        can be changed using the tech interface.
+        """
+        if cIx < 0 or cIx > 1:
+            print "Don't understand color ix %d" % cIx
+            return
+
+        self.chosenColorsIx[cIx] = vIx
+
+        if vIx < 100:
+            self.chosenColors[cIx] = PREDEFINED_COLORS[vIx]
+            self.chosenColorsPos[cIx] = PREDEFINED_COLOR_POS[vIx]
+        else:
+            self.chosenColors[cIx] = self.colorPresets[vIx-100]
+            self.chosenColorsPos[cIx] = self.colorPresetsToPos[vIx-100]
+
+        self._notifyChosenColorChanged(cIx)
+
+    def _notifyChosenColorChanged(self, cIx):
+        for listener in self.listeners:
+            try:
+                listener.control_chosenColorChanged(cIx)
+            except AttributeError:
+                pass # ignore
+
+
+    def speedReset(self):
+        self.speedMulti = 1.0
+
+        self._notifySpeedChanged()
+
+    def speedChangeRel(self, amt):
+        # Scale this value some so it's a log scale or similar?
+        self.speedMulti = 1.0 + amt
+        if self.speedMulti <= 0.0:
+            self.speedMulti = 0.01
+
+        self._notifySpeedChanged()
+
+    def speedTap(self):
+        now = time.time()
+        if len(self._tapTimes) == 0:
+            # It is the first tap so record it and move on
+            self._tapTimes.append(now)
+            print "First tap"
+            return
+
+        # There is at least one previous time.
+
+        # How long has it been? There is a maximum amount of time between taps
+        # that corresponds to some low bpm after which we start over
+        elapsed = now - self._tapTimes[len(self._tapTimes) - 1] 
+
+        if elapsed > 2.0:
+            # OMG! So long ago! It's totally time to reset
+            self._tapTimes = [now]
+            print "Elapsed was %f, resettting" % elapsed
+            return
+
+        # Hmm, okay, not all that old, so let's add it and then process
+        # all of them if we can
+        self._tapTimes.append(now)
+
+        while len(self._tapTimes) > 16:
+            self._tapTimes.pop(0)
+
+        # There are now 1 to 8 elements in the list
+        if len(self._tapTimes) < 4:
+            # Not enough
+            print "Only have %d taps, not enough" % len(self._tapTimes)
+            return
+
+        # I'm not sure if this is the "right" way to find intervals, but it makes sense to me.
+        # Rather than just average from the begining time to the end time, we convert the times
+        # into intervals and then average the intervals
+        intTotal = 0.0
+        numInts = 0
+        last = 0.0
+        for ix, v in enumerate(self._tapTimes):            
+            if ix == 0:
+                last = v
+                continue
+            intTotal += v - last
+            last = v
+            numInts += 1
+
+        avgInterval = intTotal / numInts
+
+        # Reference time is 120bpm, which is 0.5s between quarter notes (i.e. taps)
+        print "avgInterval=%f  intTotal=%f numInts=%d" % (avgInterval, intTotal, numInts)
+        self.speedMulti = 0.5 / avgInterval
+
+        self._notifySpeedChanged()
+
+
+
+
+
+    def _notifySpeedChanged(self):
+        print "_notifySpeedChanged"
+        for listener in self.listeners:
+            try:
+                listener.control_speedChanged()
+            except AttributeError:
+                pass # ignore
+
+
+
+    def setIntensified(self, val):
+        self.intensified = val
+
+        self._notifyIntensifiedChanged()
+
+
+    def _notifyIntensifiedChanged(self):
+        print "_notifyIntensifiedChanged"
+        for listener in self.listeners:
+            try:
+                listener.control_intensifiedChanged()
+            except AttributeError:
+                pass # ignore
+
+    def setColorized(self, val):
+        self.colorized = val
+
+        self._notifyColorizedChanged()
+
+
+    def _notifyColorizedChanged(self):
+        print "_notifyColorizedChanged"
+        for listener in self.listeners:
+            try:
+                listener.control_colorizedChanged()
+            except AttributeError:
+                pass # ignore
+
+    def toggleModifier(self, mIx):
+        mIx = color.clamp(mIx, 0, len(self.modifiers))
+
+        self.modifiers[mIx] = not self.modifiers[mIx]
+
+        self._notifyModifiersChanged()
+
+    def _notifyModifiersChanged(self):
+        print "_notifyModifiersChanged"
+        for listener in self.listeners:
+            try:
+                listener.control_modifiersChanged()
+            except AttributeError:
+                pass # ignore
+
+
+

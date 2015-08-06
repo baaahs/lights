@@ -59,6 +59,8 @@ class ShowRunner(threading.Thread):
         self.queue = queue
         self.cm = cm
 
+        self.cm.addListener(self)
+
         self.running = True
         self.max_show_time = max_showtime
         self.show_runtime = 0
@@ -83,6 +85,12 @@ class ShowRunner(threading.Thread):
         # 1.0 is normal speed
         # lower numbers mean faster speeds, higher is slower
         self.speed_x = 1.0
+
+    def control_speedChanged(self):
+        print "Setting default show speed to %f" % self.cm.speedMulti
+
+        # speed_x is opposite of speedMulti, so we have to invert speedMulti
+        self.speed_x = 1.0 / self.cm.speedMulti
 
     def status(self):
         if self.running:
@@ -184,9 +192,19 @@ class ShowRunner(threading.Thread):
         self.show = s(self.model)
         print "next show:" + self.show.name
         self.framegen = self.show.next_frame()
-        self.show_params = hasattr(self.show, 'set_param')
-        if self.show_params:
-            print "Show can accept OSC params!"
+        # self.show_params = hasattr(self.show, 'set_param')
+        # if self.show_params:
+        #     print "Show can accept OSC params!"
+
+        if hasattr(self.show, "handles_colorized"):
+            self.model.party.handle_colorized = not self.show.handles_colorized
+            self.model.business.handle_colorized = not self.show.handles_colorized
+            self.model.both.handle_colorized = not self.show.handles_colorized
+        else:
+            self.model.party.handle_colorized = True
+            self.model.business.handle_colorized = True            
+            self.model.both.handle_colorized = True
+
         self.show_runtime = 0
 
         # Don't worry about whether a show can _actually_ accept control parameters
@@ -352,10 +370,20 @@ class SheepServer(object):
         self.queue = Queue.LifoQueue()
         self.controls_model = controls_model.ControlsModel()
 
-        # Gotta tell the eyes about the controls model so that they
-        # know where to get override mode values
+        # All of the sheep_model elements need to know about the
+        # controls_model for various reasons, so we inject it here
+        # into all of them
+        self.sheep_model.party.cm = self.controls_model
+        self.sheep_model.business.cm = self.controls_model
+        self.sheep_model.both.cm = self.controls_model
         self.sheep_model.partyEye.cm = self.controls_model
         self.sheep_model.businessEye.cm = self.controls_model
+
+        # We _might_ want to make the eyes listeners so they can update
+        # DMX values that aren't otherwise mapped, although our hope is to
+        # map all functions, so maybe we won't do that just yet. (We did have to
+        # do it for IG3 so we could get the "random DMX value" functionality passed
+        # directly into the pixel array)
 
         self.runner = None
 

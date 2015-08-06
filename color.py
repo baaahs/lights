@@ -65,7 +65,10 @@ For example: to gradually dim a color
 import colorsys
 from copy import deepcopy
 
+import math
+
 __all__=['RGB', 'HSV', 'Hex', 'Color']
+
 
 def clamp(val, min_value, max_value):
     "Restrict a value between a minimum and a maximum value"
@@ -92,6 +95,17 @@ def hsv_to_rgb(hsv):
     b = int(_rgb[2] * 0xff)
     return (r,g,b)
 
+
+POS_BY_IX = [0, 9, 17, 25, 33, 41, 49, 57, 66, 74, 83, 92, 101, 110, 119]
+def ix_to_pos(colIx):
+    """
+    returns a DMX position for color wheel index in range 0 (white) to 14 (blue).
+    You would think this would be a simple multiplication, but unfortunately it's not.
+    """
+    colIx = clamp(colIx, 0, 14)
+    return POS_BY_IX[colIx]
+
+
 def RGB(r,g,b):
     "Create a new RGB color"
     t = (r,g,b)
@@ -109,6 +123,60 @@ def Hex(value):
     rgb_t = (int(value[i:i+lv/3], 16) for i in range(0, lv, lv/3))
     return RGB(*rgb_t)
 
+def Pos(pos):
+    "Converts a sharpy color position to an (approximate) rgb value"    
+    if pos < 9:
+        # Open / White
+        return Hex("#ffffff")
+    elif pos < 17:
+        # Color 1 - Dark red
+        return Hex("#e50000")
+    elif pos < 25:
+        # Color 2 - Orange
+        return Hex("#f97306")
+    elif pos < 33:
+        # Color 3 - Aquamarine
+        return Hex("#04d8b2")
+    elif pos < 41:
+        # Color 4 - Deep Green
+        return Hex("#15b01a")
+    elif pos < 49:
+        # Color 5 - Light green
+        return Hex("#96f97b")
+    elif pos < 57:
+        # Color 6 - Lavender
+        return Hex("#c79fef")
+    elif pos < 66:
+        # Color 7 - Pink
+        return Hex("#ff81c0")
+    elif pos < 74:
+        # Color 8 - Yellow
+        return Hex("#ffff14")
+    elif pos < 83:
+        # Color 9 - Magenta
+        return Hex("#c20078")
+    elif pos < 92:
+        # Color 10 - Cyan
+        return Hex("#00ffff")
+    elif pos < 101:
+        # Color 11 - CTO2
+        return Hex("#FFF9ED")
+    elif pos < 110:
+        # Color 12 - CTO1
+        return Hex("#FFF3D8")
+    elif pos < 119:
+        # Color 13 - CTB
+        return Hex("#F7FBFF")
+    elif pos < 128:
+        # Color 14 - Dark Blue
+        return Hex("#0343df")
+
+    # Above 128 it is a rainbow effect, which doesn't map cleanly. So 
+    # pretend it is black I guess???
+    return RGB(255,255,255)
+
+
+
 class Color(object):
     def __init__(self, hsv_tuple):
         self._set_hsv(hsv_tuple)
@@ -123,6 +191,52 @@ class Color(object):
         assert is_hsv_tuple(hsv_tuple)
         # convert to a list for component reassignment
         self.hsv_t = list(hsv_tuple)
+
+    def distance_to(self, other):
+        dr = other.rgb[0] - self.rgb[0]
+        dg = other.rgb[1] - self.rgb[1]
+        db = other.rgb[2] - self.rgb[2]
+        return math.sqrt(dr*dr + dg*dg + db*db)
+
+    def interpolate_to(self, other, amount):
+        return RGB(
+            self.rgb[0] + (amount * float(other.rgb[0] - self.rgb[0])),
+            self.rgb[1] + (amount * float(other.rgb[1] - self.rgb[1])),
+            self.rgb[2] + (amount * float(other.rgb[2] - self.rgb[2])) )
+
+    def colorize(self, val):
+        if val == 0.0:
+            return self
+
+        if val > 0:
+            # Valid saturation range is between val and 1.0
+            r = 1.0 - val
+            n = val + (self.hsv[1] * r)
+
+            return HSV(self.hsv[0], n, self.hsv[2])
+        else:
+            # Valid saturation range is 0 to val
+            return HSV(self.hsv[0], (self.hsv[1] * (1.0 - math.fabs(val))), self.hsv[2])
+
+
+
+    @property
+    def pos(self):
+        """
+        returns a color wheel position that approximates this color. This is an expensive
+        thing to calculate because it has to calculate distance to all posible color wheel
+        values.
+        """
+        bestPos = -1
+        bestDistance = 445 # Further than max distance
+        for i in range(0, 15):
+            pos = ix_to_pos(i)
+            d = self.distance_to(Pos(pos))
+            if d < bestDistance:
+                bestDistance = d
+                bestPos = pos
+
+        return bestPos
 
     @property
     def rgb(self):
@@ -210,6 +324,9 @@ class Color(object):
         new = (r, g, val)
         assert is_rgb_tuple(new)
         self._set_hsv(rgb_to_hsv(new))
+
+
+
 
 if __name__=='__main__':
     import doctest
