@@ -108,7 +108,7 @@ void setup() {
 
   // Most of the fun will happen in the sheep class, at least as far as 
   // display management goes.
-  theSheep =  new Sheep(this, "model.obj");
+  theSheep =  new Sheep(this, "grid.obj");
   
   // Will use the ground when drawing. It is just a really big rectangle
   ground = createShape();
@@ -570,9 +570,27 @@ class Sheep {
   
   int logicalCursor = 1;
 
+//  void collectKids(ArrayList<PShape> pList, PShape[] kids) {
+//    for(int i=0; i<kids.length; i++) {
+//      PShape kid = kids[i];
+//      if (kid == null) continue;
+//      PShape[] grandkids = kid.getChildren();
+//      if (grandkids != null && grandkids.length > 0) {
+//        collectKids(pList, grandkids);
+//      } else {
+//        pList.add(kid);
+//      }
+//    }
+//  }
+//
+
   public Sheep(PApplet app, String fileName) {
     sheepModel = loadShape(fileName); 
 
+//    ArrayList<PShape> pList = new  ArrayList<PShape>();
+//    collectKids(pList, sheepModel.getChildren());
+//    
+//    sheepPanelArray = (PShape[])pList.toArray(new PShape[]{});
     sheepPanelArray = sheepModel.getChildren();
     
     // Darken unmapped surfaces
@@ -796,13 +814,13 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
     // in a different color. Do this by re-rendering rather than 
     // changing the style so that we don't loose the style for this
     // surface just because the cursor traversed it.
-    PShape curPanel = sheepPanelArray[panelCursor];
-    if (curPanel != null) {
-      sheepPanelArray[panelCursor].disableStyle(); 
-      fill(0xff00ff00);
-      shape(sheepPanelArray[panelCursor]);
-      sheepPanelArray[panelCursor].enableStyle(); 
-    }
+//    PShape curPanel = sheepPanelArray[panelCursor];
+//    if (curPanel != null) {
+//      sheepPanelArray[panelCursor].disableStyle(); 
+//      fill(0xff00ff00);
+//      shape(sheepPanelArray[panelCursor]);
+//      sheepPanelArray[panelCursor].enableStyle(); 
+//    }
     
     // Logical panel cursor
     if (logicalCursor != -1 && showLogicalHighlight) {
