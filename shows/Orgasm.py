@@ -22,13 +22,16 @@ stripes = {
 
 
 class Orgasm(object):
+    controls_eyes = True
+    show_type = "master"
+
     def __init__(self, sheep_sides):
         self.name = "Orgasm"
 
         self.sheep_sides = sheep_sides
 
-        self.p = sheep_sides.partyEye
-        self.b = sheep_sides.businessEye
+        self.p = sheep_sides.party_eye
+        self.b = sheep_sides.business_eye
 
         self.stroke_start = time.time()
         self.stroke_length = 1 
@@ -88,8 +91,8 @@ class Orgasm(object):
 
             # Copy over things from CM that we respect.
             # This provides pass through of manual controls
-            self.p.colorPos = self.cm.pColorPos
-            self.b.colorPos = self.cm.bColorPos
+            # self.p.colorPos = self.cm.pColorPos
+            # self.b.colorPos = self.cm.bColorPos
             # self.p.dimmer = self.cm.pDimmer
             # self.b.dimmer = self.cm.bDimmer
 
@@ -137,7 +140,7 @@ class Orgasm(object):
                 (rem, full_color_ix) = math.modf(distance)
                 #print "distance = %f rem=%f  full_color_ix=%f" % (distance, rem, full_color_ix)
                 for x in range(0, int(full_color_ix)):
-                    self.setStripe(x, self.cm.color)
+                    self.setStripe(x, self.cm.chosen_colors[0])
 
                 # If we hit the end then do some cleanup
                 if distance > self.stroke_length + 1:

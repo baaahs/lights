@@ -6,7 +6,9 @@ import random
 
 from util import memoized
 
-@memoized
+# I don't see why we would bother to memoize this. That can almost certainly
+# not be a terribly good thing to do...
+#@memoized
 def load_shows(path=None):
     "Return a list of tuples (name, class) describing shows found in the shows directory"
     if not path:
@@ -35,33 +37,35 @@ def load_shows(path=None):
                     if inspect.isclass(t) and hasattr(t, 'next_frame'):
                         # print "likely show:", name, type(t)
 
-                        ctor = getattr(mod, name)
-                        _shows.append( (name, ctor) )
+                        #ctor = getattr(mod, name)
+                        _shows.append( (name, t) )
 
         except Exception, e:
             print "exception loading module from %s, skipping" % m
             import traceback
             traceback.print_exc()
     # sort show tuples by name before returning them
-    return sorted(_shows, key=itemgetter(0))
+    #return sorted(_shows, key=itemgetter(0))
+    # Don't sort because they just get put into a dictionary anyway
+    return _shows
 
-def random_shows(path=None, norepeat=None):
-    """
-    Return an infinite sequence of randomized show constructors
-    Remembers the last 'norepeat' items to avoid replaying shows too soon
-    Norepeat defaults to 1/3 the size of the sequence
-    """
-    seq = [ctor for (name,ctor) in load_shows(path)]
+# def random_shows(path=None, norepeat=None):
+#     """
+#     Return an infinite sequence of randomized show constructors
+#     Remembers the last 'norepeat' items to avoid replaying shows too soon
+#     Norepeat defaults to 1/3 the size of the sequence
+#     """
+#     seq = [ctor for (name,ctor) in load_shows(path)]
 
-    if not norepeat:
-        norepeat=int(len(seq)/3)
+#     if not norepeat:
+#         norepeat=int(len(seq)/3)
 
-    seen = []
-    while True:
-        n = random.choice(seq)
-        while n in seen:
-            n = random.choice(seq)
-        seen.append(n)
-        if len(seen) >= norepeat:
-            seen = seen[1:]
-        yield n
+#     seen = []
+#     while True:
+#         n = random.choice(seq)
+#         while n in seen:
+#             n = random.choice(seq)
+#         seen.append(n)
+#         if len(seen) >= norepeat:
+#             seen = seen[1:]
+#         yield n

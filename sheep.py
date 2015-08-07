@@ -4,6 +4,7 @@ from color import RGB
 import math
 
 import controls_model as controls
+import eye_effect
 
 ##
 ## Sheep geometry
@@ -150,6 +151,14 @@ def make_eyes_only_sheep(sides):
     null = NullSheep()
     return SheepSides(both=null, party=null, business=null, party_eye = sides.party_eye, business_eye = sides.business_eye)
 
+def make_mutable_sheep(sides):
+    return SheepSides(
+        both=MutableSheep(sides.both),
+        party=MutableSheep(sides.party),
+        business=MutableSheep(sides.business),
+        party_eye=MutableEye(sides.party_eye),
+        business_eye=MutableEye(sides.business_eye)
+        )
 ##
 ## Sheep class to represent one or both sides of the sheep
 ##
@@ -168,8 +177,13 @@ class Sheep(object):
         self.cm = None
         self.handle_colorized = False
 
+        self._brightness = 1.0
+
     def __repr__(self):
         return "Sheep(%s, side='%s')" % (self.model, self.side)
+
+    def set_brightness(self, val):
+        self._brightness = val
 
     def all_cells(self):
         "Return the list of valid cell IDs"
@@ -193,18 +207,31 @@ class Sheep(object):
     def set_cell(self, cell, color):
         # a single set_cell call may result in two panels being set
         c = self._resolve(cell)
+        if not c:
+            return
 
         if self.handle_colorized and self.cm:
             color = color.colorize(self.cm.colorized)
 
-        if c:
-            # print "setting", c
-            self.model.set_cells(c, color)
+        if self._brightness < 1.0:
+            color = color.copy()
+            color.v = color.v * self._brightness
+
+        # print "setting", c
+        self.model.set_cells(c, color)
 
     def set_cells(self, cells, color):
         resolved = []
         for c in cells:
             resolved.extend(self._resolve(c))
+
+        if self.handle_colorized and self.cm:
+            color = color.colorize(self.cm.colorized)
+
+        if self._brightness < 1.0:
+            color = color.copy()
+            color.v = color.v * self._brightness
+
         # print "setting", resolved
         self.model.set_cells(resolved, color)
 
@@ -267,6 +294,55 @@ class NullSheep(object):
 
 
 
+class MutableSheep(object):
+    """
+    An implementation of the Sheep side interface which can be muted -
+    that is, when muted, this sheep will act like the NullSheep, but when
+    unmuted it will pass things to it's parent
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+        self.muted = False
+
+    def set_cell(self, cell, color):
+        if self.muted:
+            return
+
+        self.parent.set_cell(cell, color)
+
+    def set_cells(self, cells, color):
+        if self.muted:
+            return
+        self.parent.set_cells(cells, color)
+
+    def set_all_cells(self, color):
+        if self.muted:
+            return
+        self.parent.set_all_cells(color)
+
+    def clear(self):
+        if self.muted:
+            return
+        self.parent.clear()
+
+    def go(self):
+        if self.muted:
+            return
+
+        self.parent.go()
+
+    def all_cells(self):
+        return self.parent.all_cells()
+
+    def edge_neighbors(self, cell):
+        return self.parent.edge_neighbors(cell)
+
+    def vertex_neighbors(self, cell):
+        return self.parent.vertex_neighbors(cell)
+
+
+
 EYE_DMX_PAN         = 1
 EYE_DMX_PAN_FINE    = 2
 EYE_DMX_TILT        = 3
@@ -274,6 +350,15 @@ EYE_DMX_TILT_FINE   = 4
 EYE_DMX_COLOR       = 5
 EYE_DMX_STROBE      = 6
 EYE_DMX_DIMMER      = 7
+EYE_DMX_GOBO        = 8
+EYE_DMX_EFFECT      = 9
+EYE_DMX_LADDER_ROTATE   = 10
+EYE_DMX_8_ROTATE        = 11
+EYE_DMX_3_ROTATE        = 12
+EYE_DMX_FOCUS           = 13
+EYE_DMX_FROST           = 14
+EYE_DMX_PNT_SPEED       = 15
+EYE_DMX_LAMP            = 16
 
 class Eye(object):
 
@@ -303,9 +388,15 @@ class Eye(object):
         # Range of 0 to 1.0
         self.dimmer = 1.0
 
+        self.effect = None
+
+        self._brightness = 1.0
+
     def __repr__(self):
         return "Eye side=%s" % self.side
 
+    def set_brightness(self, val):
+        self._brightness = val
 
     def go(self):
         """
@@ -320,8 +411,14 @@ class Eye(object):
 
         s = self.side=="p"
 
+        effect = self.effect
+        ext_speed = 0.0
+
         if self.cm:
             if self.cm.eyes_mode == controls.EYES_MODE_HEADLIGHTS:
+                color_pos = 0
+                effect = None
+                dimmer = 1.0
                 if s:
                     pan = float(self.cm.p_eye_pos[controls.PAN])
                     tilt = float(self.cm.p_eye_pos[controls.TILT])
@@ -337,7 +434,17 @@ class Eye(object):
                 tilt = float(self.cm.p_eye_pos[controls.TILT])
                 dimmer = self.cm.disco_brightness
                 color_pos = self.cm.disco_color_pos
-                # TODO: Gobos and effects
+
+                # Add in the mix value here
+                if self.cm.disco_mix:
+                    color_pos += 6
+
+                effect = None
+                if self.cm.disco_effect > 0 and self.cm.disco_effect <= len(self.cm.effects):
+                    ix = self.cm.disco_effect - 1
+                    # print "Using effect %d" % ix
+                    effect = self.cm.effects[ix]
+                    ext_speed = self.cm.disco_effect_speed
         
 
         # Translate these into proper DMX ranged values
@@ -351,9 +458,15 @@ class Eye(object):
 
         self.model.set_eye_dmx(s, EYE_DMX_COLOR, int(color_pos))
 
-        self.model.set_eye_dmx(s, EYE_DMX_DIMMER, int(math.floor(255 * dimmer)))
+        # Add in the brightness at the last moment
+        self.model.set_eye_dmx(s, EYE_DMX_DIMMER, int(math.floor(255 * dimmer * self._brightness)))
 
         #print "pan=%d dPan = %d  dTilt = %d" % (pan, dPan, dTilt)
+        if effect is None:
+            # Clear all effect settings
+            eye_effect.clear_all(self)
+        else:
+            effect.go(self, speed=ext_speed)
 
 
     def set_xy_pos(self, x, y, sky):
@@ -387,5 +500,30 @@ class Eye(object):
         if self.skyPos:
             self.pan = 360-self.pan
 
+    def set_eye_dmx(self, channel, value):
+        # if self.side == "p" and value != 0 and value != 255:
+        #     print "dmx ch=%d  val=%d" % (channel, int(value))
+        self.model.set_eye_dmx(self.side == "p", channel, int(value))
 
+
+class MutableEye(Eye):
+
+    def __init__(self, parent):
+        Eye.__init__(self, parent.model, parent.side)
+        self.muted = False
+        self.parent = parent
+
+    def __repr__(self):
+        return "Mutable Eye side=%s" % self.side
+
+    def go(self):
+        if self.muted:
+            return
+
+        self.parent.pan = self.pan
+        self.parent.tilt = self.tilt
+        self.parent.color_pos = self.color_pos
+        self.parent.dimmer = self.dimmer
+
+        self.parent.go()
 

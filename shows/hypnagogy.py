@@ -8,6 +8,9 @@ A = [1, 3, 4, 7, 9, 12, 16, 18, 19, 21, 22, 24, 27, 30, 33, 35, 37, 39, 42]
 B = [2, 5, 6, 8, 11, 13, 14, 15, 17, 20, 23, 25, 26, 28, 29, 31, 32, 34, 36, 40, 41, 43]
 
 class Hypnagogy(object):
+
+    show_type = "overlay"
+
     def __init__(self, sheep_sides):
         self.name = "Hypnagogy"
         self.cells = sheep_sides.both
@@ -18,6 +21,7 @@ class Hypnagogy(object):
 
         self.color1 = RGB(255,148,0) # orange
         self.color2 = RGB(148,0,255) # purple
+
 
     # XXX needs to play better with OSC speed control
     # def set_param(self, name, val):

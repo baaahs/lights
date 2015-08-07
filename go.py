@@ -5,6 +5,7 @@ import traceback
 import Queue
 import threading
 import signal
+import random
 
 import sheep
 import shows
@@ -56,10 +57,19 @@ class ShowRunner(threading.Thread):
     def __init__(self, model, queue, cm, max_showtime=240):
         super(ShowRunner, self).__init__(name="ShowRunner")
         self.model = model
+        self.mutable_model = sheep.make_mutable_sheep(model)
+
         self.queue = queue
         self.cm = cm
 
+        # Tight coupling - yeah!!!!
         self.cm.add_listener(self)
+        self.cm.show_runner = self        
+
+        # Some cursors for show selection
+        self.master_cursor = 0
+        self.eo_cursor = 0
+        self.overlay_cursor = 0
 
         self.running = True
         self.max_show_time = max_showtime
@@ -67,7 +77,45 @@ class ShowRunner(threading.Thread):
 
         # map of names -> show ctors
         self.shows = dict(shows.load_shows())
-        self.randseq = shows.random_shows()
+
+        # But now let's sort that into more useful lists based on
+        # meta data
+        self.master_shows = []
+        self.overlay_shows = []
+        self.eo_shows = []
+        for name in self.shows:
+            _class = self.shows[name]
+
+            # Overlays are ONLY overlays            
+            if hasattr(_class, "show_type"):
+                if _class.show_type == "overlay":
+                    self.overlay_shows.append(name)
+                    continue
+
+            # If a non-overlay is capable of controlling the eyes, then
+            # it can be added to the eyes only list
+            if hasattr(_class, "controls_eyes") and _class.controls_eyes:
+                self.eo_shows.append(name)
+
+            # If a show doesn't want to be added to the master list,
+            # it has to say that it is an eyes only show
+            if hasattr(_class, "show_type") and _class.show_type != "master":
+                continue
+
+            # Add it to the master list
+            self.master_shows.append(name)
+
+        # Sort all these lists
+        self.master_shows = sorted(self.master_shows)
+        self.overlay_shows = sorted(self.overlay_shows)
+        self.eo_shows = sorted(self.eo_shows)
+
+        # Print them to the console for debugging
+        print "Master shows: %s" % str(self.master_shows)
+        print "Eyes Only shows: %s" % str(self.eo_shows)
+        print "Overlay shows: %s" % str(self.overlay_shows)
+
+        self.randseq = self.random_show_name()
 
         # current show object & frame generator
         self.show = None
@@ -75,9 +123,14 @@ class ShowRunner(threading.Thread):
 
         # The eyeShow is just like a show, except it can be None and it doesn't
         # automatically change when the base show changes. 
-        self.eo_model = sheep.make_eyes_only_sheep(self.model)
+        self.eo_model = sheep.make_eyes_only_sheep(self.mutable_model)
         self.eo_show = None
         self.eo_framegen = None
+
+        # And then ALSO an overlay show - OMG, so many shows!
+        # This uses .model, the unmuted version
+        self.overlay_show = None
+        self.overlay_framegen = None
 
         # current show parameters
 
@@ -86,11 +139,50 @@ class ShowRunner(threading.Thread):
         # lower numbers mean faster speeds, higher is slower
         self.speed_x = 1.0
 
-    def control_speedChanged(self):
+        self._push_master_names()
+        self._push_eo_names()
+        self._push_overlay_names()
+        self.cm.set_max_time(self.max_show_time)
+
+    def random_show_name(self):
+        """
+        Return an infinite sequence of randomized show names
+        Remembers the last 'norepeat' items to avoid replaying shows too soon
+        Norepeat defaults to 1/3 the size of the sequence
+        """
+        seq = self.master_shows
+
+        norepeat=int(len(seq)/3)
+
+        seen = []
+        while True:
+            n = random.choice(seq)
+            while n in seen:
+                n = random.choice(seq)
+            seen.append(n)
+            while len(seen) >= norepeat:
+                seen.pop(0)
+            yield n
+
+    def control_speed_changed(self):
         print "Setting default show speed to %f" % self.cm.speed_multi
 
         # speed_x is opposite of speedMulti, so we have to invert speedMulti
         self.speed_x = 1.0 / self.cm.speed_multi
+
+    def control_max_time_changed(self):
+        self.max_show_time = int(self.cm.max_time)
+
+    # We multiplex this to the models rather than making them listeners
+    # because there are so many other things they won't care about so
+    # let's not waste the time with those
+    def control_brightness_changed(self, val):
+        self.model.both.set_brightness(val)
+        self.model.party.set_brightness(val)
+        self.model.business.set_brightness(val)
+        self.model.party_eye.set_brightness(val)
+        self.model.business_eye.set_brightness(val)
+
 
     def status(self):
         if self.running:
@@ -184,12 +276,13 @@ class ShowRunner(threading.Thread):
 
         if not s:
             print "choosing random show"
-            s = self.randseq.next()
+            name = self.randseq.next()
+            s = self.shows[name]
 
         self.clear()
         self.prev_show = self.show
 
-        self.show = s(self.model)
+        self.show = s(self.mutable_model)
         print "next show:" + self.show.name
         self.framegen = self.show.next_frame()
         # self.show_params = hasattr(self.show, 'set_param')
@@ -222,6 +315,9 @@ class ShowRunner(threading.Thread):
         except AttributeError:
             pass
 
+        self.cm.set_master_name(name)
+
+
     def next_eo_show(self, name):
         """
         Set the next eyes only show which has later access than the base show
@@ -240,6 +336,7 @@ class ShowRunner(threading.Thread):
 
             self.eo_show = None
             self.eo_framegen = None
+            name = "Off"
         else:
             self.eo_show = show_constructor(self.eo_model)
             self.eo_framegen = self.eo_show.next_frame()
@@ -255,6 +352,117 @@ class ShowRunner(threading.Thread):
             except AttributeError:
                 pass
 
+        self.cm.set_eo_name(name)
+
+
+    #######
+    # Interface from controls_model 
+    def move_master_cursor(self, delta):
+        self.master_cursor += delta
+        if self.master_cursor > len(self.master_shows) - 1:
+            self.master_cursor = len(self.master_shows) - 1
+        if self.master_cursor < 0:
+            self.master_cursor = 0
+
+        self._push_master_names()
+
+    def select_master_random(self):
+        self.next_show()
+
+    def select_master(self, index):
+        ix = self.master_cursor + index
+        if ix > len(self.master_shows) - 1:
+            print "Index out of range for master show. Ignoring"
+            return
+
+        name = self.master_shows[ix]
+        self.next_show(name)
+
+
+    def move_eo_cursor(self, delta):
+        self.eo_cursor += delta
+        if self.eo_cursor > len(self.eo_shows) - 1:
+            self.eo_cursor = len(self.eo_shows) - 1
+        if self.eo_cursor < 0:
+            self.eo_cursor = 0
+
+        self._push_eo_names()
+
+    def eo_off(self):
+        self.next_eo_show(None)
+
+    def select_eo(self, index):
+        ix = self.eo_cursor + index
+        if ix > len(self.eo_shows) - 1:
+            print "Index out of range for eo show. Ignoring"
+            return
+
+        name = self.eo_shows[ix]
+        self.next_eo_show(name)
+
+    def start_overlay(self, index):
+        ix = self.overlay_cursor + index
+        if ix > len(self.overlay_shows) - 1:
+            print "Index out of range for overlay show. Ignoring"
+            return
+
+        name = self.overlay_shows[ix]
+        print "Start overlay show %s" % name
+
+        # Mute the mutable model
+        self._set_model_muted(True)
+
+
+        show_constructor = self.shows[name]
+
+        self.overlay_show = show_constructor(self.model)
+        self.overlay_framegen = self.overlay_show.next_frame()
+
+        try:
+            self.eo_show.set_controls_model(self.cm)
+        except AttributeError:
+            pass
+
+        try:
+            self.eo_show.control_refreshAll()
+        except AttributeError:
+            pass
+
+
+
+    def stop_overlay(self, index):
+        ix = self.overlay_cursor + index
+        if ix > len(self.overlay_shows) - 1:
+            print "Index out of range for overlay show. Ignoring"
+            return
+
+        name = self.overlay_shows[ix]
+        print "Stopping overlay show %s" % name
+
+        # Unmute the mutable model
+        self._set_model_muted(False)
+
+        # This should sufficiently make them go away
+        self.overlay_show = None
+        self.overlay_framegen = None
+
+    def _set_model_muted(self, val):
+        self.mutable_model.both.muted = val
+        self.mutable_model.party.muted = val
+        self.mutable_model.business.muted = val
+        self.mutable_model.party_eye.muted = val
+        self.mutable_model.business_eye.muted = val
+
+    def _push_master_names(self):
+        self.cm.set_master_names(self.master_shows[self.master_cursor:])
+
+    def _push_eo_names(self):
+        self.cm.set_eo_names(self.eo_shows[self.eo_cursor:])
+
+    def _push_overlay_names(self):
+        self.cm.set_overlay_names(self.overlay_shows[self.overlay_cursor:])
+
+    #######
 
     def get_next_frame(self):
         "return a delay or None"
@@ -269,12 +477,19 @@ class ShowRunner(threading.Thread):
         except StopIteration:
             return None
 
+    def get_next_overlay_frame(self):
+        try:
+            return self.overlay_framegen.next()
+        except StopIteration:
+            return None
+
     def run(self):
         if not (self.show and self.framegen):
             self.next_show()
 
         next_frame_at = 0.0
         next_eo_frame_at = 0.0
+        next_overlay_frame_at = 0.0
 
         show_started_at = time.time()
         while self.running:
@@ -302,11 +517,22 @@ class ShowRunner(threading.Thread):
                     if deo:
                         next_eo_frame_at = time.time() + (deo * self.speed_x)
 
+                if start >= next_overlay_frame_at and self.overlay_framegen:
+                    doverlay = self.get_next_overlay_frame()
+
+                    if doverlay:
+                        next_overlay_frame_at = time.time() + (doverlay * self.speed_x)
+
                 # Always output things, because they could have
                 # changed by UI controls for instance
-                self.model.party_eye.go()
-                self.model.business_eye.go()
-                self.model.both.go()
+                if self.overlay_show is not None:
+                    self.model.party_eye.go()
+                    self.model.business_eye.go()
+                    self.model.both.go()
+                else:
+                    self.mutable_model.party_eye.go()
+                    self.mutable_model.business_eye.go()
+                    self.mutable_model.both.go()
 
                 # Maybe this show is done?
                 if start - show_started_at > self.max_show_time:
@@ -322,9 +548,13 @@ class ShowRunner(threading.Thread):
                     to_sleep = 0.023 
                     until_next = next_frame_at - now
                     until_next_eo = next_eo_frame_at - now
+                    until_next_overlay = next_overlay_frame_at - now
 
                     if until_next_eo < until_next and until_next_eo > 0.001:
-                        until_next = until_next_eo      
+                        until_next = until_next_eo
+
+                    if until_next_overlay < until_next and until_next_overlay > 0.001:
+                        until_next = until_next_overlay
 
                     if until_next < to_sleep and until_next > 0.001:
                         to_sleep = until_next

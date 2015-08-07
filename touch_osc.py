@@ -141,6 +141,9 @@ class TouchOSC(object):
     def control_colorized_changed(self):
         self._send1("/main/colorized", self.cm.colorized)
 
+    def control_brightness_changed(self, val):
+        self._send1("/main/brightness", val)
+
     def control_modifiers_changed(self):
         for ix,val in enumerate(self.cm.modifiers):
             addr = "/main/modifier/%d" % ix
@@ -249,12 +252,12 @@ class TouchOSC(object):
         else:
             self._send1("/eyes/disco/noEffect", 0.0)
 
-            if self.cm.disco_effect > 8:
-                y = 2
-                x = self.cm.disco_effect - 8
-            else:
-                y = 1
-                x = self.cm.disco_effect
+            y = (self.cm.disco_effect / 8) + 1
+            x = self.cm.disco_effect % 8
+
+            if x == 0:
+                x = 8
+                y -= 1
 
             self._send1("/eyes/disco/effect/%d/%d" % (x,y), 1.0)
 
@@ -302,6 +305,58 @@ class TouchOSC(object):
             v = 1.0
         self._send1("/eyes/target/pnt", v);
 
+    def control_master_names_changed(self):
+        addr_base = "/shows/master/choice/%d/lbl"
+
+        l = len(self.cm.master_names)
+        for ix in range(0, 6):
+            s = ""
+            if ix < l:
+                s = self.cm.master_names[ix]
+            self._send1(addr_base % ix, s)
+
+    def control_eo_names_changed(self):
+        addr_base = "/shows/eo/choice/%d/lbl"
+
+        l = len(self.cm.eo_names)
+        for ix in range(0, 4):
+            s = ""
+            if ix < l:
+                s = self.cm.eo_names[ix]
+            self._send1(addr_base % ix, s)
+
+    def control_overlay_names_changed(self):
+        addr_base = "/shows/overlay/choice/%d/lbl"
+
+        l = len(self.cm.overlay_names)
+        for ix in range(0, 4):
+            s = ""
+            if ix < l:
+                s = self.cm.overlay_names[ix]
+            self._send1(addr_base % ix, s)            
+
+
+    def control_master_name_changed(self):
+        self._send1("/shows/master/name", self.cm.master_name)
+
+    def control_eo_name_changed(self):
+        self._send1("/shows/eo/name", self.cm.eo_name)
+
+
+    def control_max_time_changed(self):
+        _range = self.cm.time_limits[1] - self.cm.time_limits[0]
+        scaled = (self.cm.max_time - self.cm.time_limits[0]) / _range
+
+        if scaled > 1.0:
+            scaled = 1.0
+
+        minsf, mins = math.modf(self.cm.max_time / 60.0)
+        secs = math.floor(self.cm.max_time - (60.0 * mins))
+
+        self._send1("/shows/master/maxTime", scaled)
+        self._send1("/shows/master/maxTimeLbl", "%dm %ds" % (int(mins), int(secs)))
+
+
 
     def control_refresh_all(self):
         self._send_all_state()
@@ -325,6 +380,7 @@ class TouchOSC(object):
         self.control_chosen_color_changed(1)
         self.control_intensified_changed()
         self.control_colorized_changed()
+        self.control_brightness_changed(self.cm.brightness)
         self.control_eyes_mode_changed()
 
         self.control_disco_color_changed()
@@ -333,6 +389,16 @@ class TouchOSC(object):
 
         self.control_headlights_mode_changed()
         self.control_show_target_mode_changed()
+
+        self.control_master_names_changed()
+        self.control_eo_names_changed()
+        self.control_overlay_names_changed()
+
+        self.control_master_name_changed()
+        self.control_eo_name_changed()
+
+        self.control_max_time_changed()
+
 
     def serve_forever(self):
         print "TouchOSC starting serve_forever"

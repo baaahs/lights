@@ -9,6 +9,9 @@ import controls_model as controls
 
 
 class EyeSwirl(object):
+    controls_eyes = True
+    show_type = "eyes_only"
+    
     def __init__(self, sheep_sides):
         self.name = "EyeSwirl"
 

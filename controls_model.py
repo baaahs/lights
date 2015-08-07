@@ -3,6 +3,8 @@ import color
 import math
 import time
 
+import eye_effect
+
 EYE_COLOR_WHITE         = 0
 EYE_COLOR_RED           = 9
 EYE_COLOR_ORANGE        = 17
@@ -219,6 +221,78 @@ class ControlsModel(object):
         self.set_eyes_mode(EYES_MODE_SHOW)
 
 
+        self.master_names = []
+        self.eo_names = []
+        self.overlay_names = []
+
+        self.master_name = ""
+        self.eo_name = ""
+
+        self.time_limits = [30, 20 * 60]
+        self.max_time = 42.0
+
+        self.brightness = 1.0
+
+        self.effects = [
+            eye_effect.EyeEffect(gobo=1, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=2, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=3, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=4, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=5, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=6, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=7, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=8, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+
+
+            eye_effect.EyeEffect(gobo=9, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=10, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=11, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=12, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=13, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=14, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=15, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=16, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+
+
+            eye_effect.EyeEffect(gobo=0,
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_ROTATION),
+            eye_effect.EyeEffect(shutter_type=eye_effect.SHUTTER_STROBE,
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_SHUTTER),
+            eye_effect.EyeEffect(shutter_type=eye_effect.SHUTTER_PULSE,
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_SHUTTER),
+            eye_effect.EyeEffect(shutter_type=eye_effect.SHUTTER_RANDOM,
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_SHUTTER),
+
+            eye_effect.EyeEffect(effect_mode=eye_effect.EFFECT_LADDER,
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_EFFECT_ROTATION),
+            eye_effect.EyeEffect(effect_mode=eye_effect.EFFECT_8_FACET,
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_EFFECT_ROTATION),
+            eye_effect.EyeEffect(effect_mode=eye_effect.EFFECT_3_FACET,
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_EFFECT_ROTATION),
+
+            eye_effect.EyeEffect(gobo=eye_effect.GOBOS["five_stars"],
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_FOCUS),
+
+        ]
+
+
+
     def add_listener(self, listener):
         self.listeners.add(listener)
 
@@ -233,10 +307,7 @@ class ControlsModel(object):
 
         if parts[1] == "main":
             if parts[2] == "color":
-                try:
-                    self.set_color_ix(int(parts[3]), int(parts[4]))
-                except:
-                    pass
+                self.set_color_ix(int(parts[3]), int(parts[4]))
 
             elif parts[2] == "speed":
                 if parts[3] == "reset":
@@ -255,6 +326,8 @@ class ControlsModel(object):
             elif parts[2] == "modifier":
                 self.toggle_modifier(int(parts[3]))
 
+            elif parts[2] == "brightness":
+                self.set_brightness(data[0])
 
         elif parts[1] == "color":
             if parts[2] == "red":
@@ -269,6 +342,49 @@ class ControlsModel(object):
                 self.set_color_s(data[0])
             elif parts[2] == "val":
                 self.set_color_v(data[0])
+
+        elif parts[1] == "shows":
+            if parts[2] == "master":
+
+                # Button presses
+                if parts[3] == "maxTime":
+                    self.set_max_time_scaled(data[0])
+                elif data[0] >= 1.0:
+                    if parts[3] == "up":
+                        self.show_runner.move_master_cursor(-1 * int(data[0]))
+                    elif parts[3] == "down":
+                        self.show_runner.move_master_cursor(1 * int(data[0]))
+                    elif parts[3] == "random":
+                        self.show_runner.select_master_random()
+                    elif parts[3] == "choice":
+                        self.show_runner.select_master(int(parts[4]))
+
+            elif parts[2] == "eo":
+
+                # Button presses
+                if data[0] >= 1.0:
+                    if parts[3] == "up":
+                        self.show_runner.move_eo_cursor(-1 * int(data[0]))
+                    elif parts[3] == "down":
+                        self.show_runner.move_eo_cursor(1 * int(data[0]))
+                    elif parts[3] == "off":
+                        self.show_runner.eo_off()
+                    elif parts[3] == "choice":
+                        self.show_runner.select_eo(int(parts[4]))
+
+            elif parts[2] == "overlay":
+
+                # Button presses
+                if data[0] >= 1.0:
+                    if parts[3] == "up":
+                        self.show_runner.move_overlay_cursor(-1 * int(data[0]))
+                    elif parts[3] == "down":
+                        self.show_runner.move_overlay_cursor(1 * int(data[0]))
+                    elif parts[3] == "choice":
+                        self.show_runner.start_overlay(int(parts[4]))
+                elif parts[3] == "choice":
+                    self.show_runner.stop_overlay(int(parts[4]))
+
 
         elif parts[1] == "eyes":
 
@@ -734,12 +850,13 @@ class ControlsModel(object):
             self.chosen_colors[c_ix] = self.color_presets[v_ix-100]
             self.chosen_colors_pos[c_ix] = self.color_presets_to_pos[v_ix-100]
 
-        self._notify_chosen_color_changed(cIx)
+        self._notify_chosen_color_changed(c_ix)
 
-    def _notify_chosen_color_changed(self, cIx):
+    def _notify_chosen_color_changed(self, c_ix):
+        print "_notify_chosen_color_changed"
         for listener in self.listeners:
             try:
-                listener.control_chosen_color_changed(cIx)
+                listener.control_chosen_color_changed(c_ix)
             except AttributeError:
                 pass # ignore
 
@@ -854,6 +971,20 @@ class ControlsModel(object):
             except AttributeError:
                 pass # ignore
 
+    def set_brightness(self, val):
+        self.brightness = val
+
+        self._notify_brightness_changed()
+
+
+    def _notify_brightness_changed(self):
+        print "_notify_brightness_changed"
+        for listener in self.listeners:
+            try:
+                listener.control_brightness_changed(self.brightness)
+            except AttributeError:
+                pass # ignore
+                
     def toggle_modifier(self, mIx):
         mIx = color.clamp(mIx, 0, len(self.modifiers))
 
@@ -904,10 +1035,20 @@ class ControlsModel(object):
 
     def set_disco_cycle_speed(self, v):        
         self.disco_cycle_speed = v
+        if v < 0:
+            self.disco_color_pos = 189 + int(v * 61.0)
+        elif v > 0:
+            self.disco_color_pos = 194 + int(v * 61.0)
+
         self._notify_disco_color_changed()
 
     def set_disco_color_pos(self, v):
         self.disco_color_pos = v
+
+        # instead of mixing in the disco_mix here, we do it
+        # when we set the color in the eye so that we can tap mix
+        # on and off
+
         self.disco_cycle_speed = 0.0
         self._notify_disco_color_changed()
 
@@ -1061,3 +1202,82 @@ class ControlsModel(object):
                 pass # ignore      
 
 
+    def set_master_names(self, names):
+        self.master_names = names
+        self._notify_master_names_changed()
+
+    def _notify_master_names_changed(self):
+        print "_notify_master_names_changed"
+        for listener in self.listeners:
+            try:
+                listener.control_master_names_changed()
+            except AttributeError:
+                pass # ignore      
+
+    def set_eo_names(self, names):
+        self.eo_names = names
+        self._notify_eo_names_changed()
+
+    def _notify_eo_names_changed(self):
+        print "_notify_eo_names_changed"
+        for listener in self.listeners:
+            try:
+                listener.control_eo_names_changed()
+            except AttributeError:
+                pass # ignore      
+
+
+    def set_overlay_names(self, names):
+        self.overlay_names = names
+        self._notify_overlay_names_changed()
+
+    def _notify_overlay_names_changed(self):
+        print "_notify_overlay_names_changed"
+        for listener in self.listeners:
+            try:
+                listener.control_overlay_names_changed()
+            except AttributeError:
+                pass # ignore      
+
+
+    def set_master_name(self, name):
+        self.master_name = name
+        self._notify_master_name_changed()
+
+    def _notify_master_name_changed(self):
+        print "_notify_master_name_changed"
+        for listener in self.listeners:
+            try:
+                listener.control_master_name_changed()
+            except AttributeError:
+                pass # ignore      
+
+    def set_eo_name(self, name):
+        self.eo_name = name
+        self._notify_eo_name_changed()
+
+    def _notify_eo_name_changed(self):
+        print "_notify_eo_name_changed"
+        for listener in self.listeners:
+            try:
+                listener.control_eo_name_changed()
+            except AttributeError:
+                pass # ignore      
+
+
+    def set_max_time(self, secs):
+        self.max_time = float(secs)
+        self._notify_max_time_changed()
+
+    def set_max_time_scaled(self, scaled):
+        _range = self.time_limits[1] - self.time_limits[0]
+        self.max_time = self.time_limits[0] + (scaled * _range)
+        self._notify_max_time_changed()
+
+    def _notify_max_time_changed(self):
+        print "_notify_max_time_changed"
+        for listener in self.listeners:
+            try:
+                listener.control_max_time_changed()
+            except AttributeError:
+                pass # ignore      
