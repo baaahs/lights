@@ -5,16 +5,18 @@ import time
 import random
 import math
 
+import controls_model as controls
+
 
 class EyeSwirl(object):
     def __init__(self, sheep_sides):
         self.name = "EyeSwirl"
 
-        self.createdAt = time.time()
+        self.created_at = time.time()
         self.sheep_sides = sheep_sides
 
-        self.p = sheep_sides.partyEye
-        self.b = sheep_sides.businessEye
+        self.p = sheep_sides.party_eye
+        self.b = sheep_sides.business_eye
 
     #     self.sheep = sheep_sides.both
 
@@ -49,20 +51,21 @@ class EyeSwirl(object):
 
     def next_frame(self):
         while True:
-            delta = 5.0 * (time.time() - self.createdAt)
+            delta = 5.0 * (time.time() - self.created_at)
             #print "************** next_frame delta = %f" % delta
 
             # Copy over things from CM that we respect
-            self.p.colorPos = self.cm.pColorPos
-            self.b.colorPos = self.cm.bColorPos
-            self.p.dimmer = self.cm.pDimmer
-            self.b.dimmer = self.cm.bDimmer
+            # self.p.color_pos = self.cm.pColorPos
+            # self.b.color_pos = self.cm.bColorPos
+            # self.p.dimmer = self.cm.pDimmer
+            # self.b.dimmer = self.cm.bDimmer
 
             # Control the pos ourselves. We could use the the cm as base values????
-            self.p.pan = self.cm.pEyePan
-            self.p.tilt = self.cm.pEyeTilt
-            self.b.pan = self.cm.bEyePan
-            self.b.tilt = self.cm.bEyeTilt
+
+            self.p.pan = self.cm.p_eye_pos[controls.PAN]
+            self.p.tilt = self.cm.p_eye_pos[controls.TILT]
+            self.b.pan = self.cm.b_eye_pos[controls.PAN]
+            self.b.tilt = self.cm.b_eye_pos[controls.TILT]
 
             panPos = math.sin(delta)
             tiltPos = math.cos(delta)

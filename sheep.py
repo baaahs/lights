@@ -3,6 +3,8 @@ from color import RGB
 
 import math
 
+import controls_model as controls
+
 ##
 ## Sheep geometry
 ##
@@ -135,18 +137,18 @@ def vertex_neighbors(panel):
 ##
 ## Convenience wrapper to pass around three separate sheep objects
 ##
-SheepSides = namedtuple('SheepSides', ['both', 'party', 'business', 'partyEye', 'businessEye'])
+SheepSides = namedtuple('SheepSides', ['both', 'party', 'business', 'party_eye', 'business_eye'])
 
 def make_sheep(model):
     return SheepSides(both=Sheep(model, 'a'),
                       party=Sheep(model, 'p'),
                       business=Sheep(model, 'b'),
-                      partyEye=Eye(model, 'p'),
-                      businessEye=Eye(model, 'b'))
+                      party_eye=Eye(model, 'p'),
+                      business_eye=Eye(model, 'b'))
 
 def make_eyes_only_sheep(sides):
     null = NullSheep()
-    return SheepSides(both=null, party=null, business=null, partyEye = sides.partyEye, businessEye = sides.businessEye)
+    return SheepSides(both=null, party=null, business=null, party_eye = sides.party_eye, business_eye = sides.business_eye)
 
 ##
 ## Sheep class to represent one or both sides of the sheep
@@ -291,25 +293,19 @@ class Eye(object):
         # Tilt is -135 to +135
         self.tilt = 0
 
-        self.lastXPos = 0
-        self.lastYPos = 0
+        self.last_x_pos = 0
+        self.last_y_pos = 0
 
         # Color wheel position ranges from 0 to 127. See comments in
         # controls_model.py
-        self.colorPos = 0
+        self.color_pos = 0
 
         # Range of 0 to 1.0
         self.dimmer = 1.0
 
-        self.overrideMode = False
-
     def __repr__(self):
         return "Eye side=%s" % self.side
 
-
-    def set_override_mode(self, mode):
-        if mode == self.overrideMode:
-            return
 
     def go(self):
         """
@@ -319,22 +315,29 @@ class Eye(object):
 
         pan = float(self.pan)
         tilt = float(self.tilt)
-        colorPos = self.colorPos
+        color_pos = self.color_pos
         dimmer = self.dimmer
 
         s = self.side=="p"
 
-        if self.overrideMode and self.cm:
-            if s:
-                pan = float(self.cm.pEyePan)
-                tilt = float(self.cm.pEyeTilt)
-                colorPos = self.cm.pColorPos
-                dimmer = self.cm.pDimmer
-            else:
-                pan = self.cm.bEyePan
-                tilt = self.cm.bEyeTilt
-                colorPos = self.cm.bColorPos
-                dimmer = self.cm.bDimmer
+        if self.cm:
+            if self.cm.eyes_mode == controls.EYES_MODE_HEADLIGHTS:
+                if s:
+                    pan = float(self.cm.p_eye_pos[controls.PAN])
+                    tilt = float(self.cm.p_eye_pos[controls.TILT])
+                #     color_pos = self.cm.pColorPos
+                #     dimmer = self.cm.pDimmer
+                else:
+                    pan = float(self.cm.b_eye_pos[controls.PAN])
+                    tilt = float(self.cm.b_eye_pos[controls.TILT])
+                    # color_pos = self.cm.bColorPos
+                    # dimmer = self.cm.bDimmer
+            elif self.cm.eyes_mode == controls.EYES_MODE_DISCO and s:
+                pan = float(self.cm.p_eye_pos[controls.PAN])
+                tilt = float(self.cm.p_eye_pos[controls.TILT])
+                dimmer = self.cm.disco_brightness
+                color_pos = self.cm.disco_color_pos
+                # TODO: Gobos and effects
         
 
         # Translate these into proper DMX ranged values
@@ -346,14 +349,14 @@ class Eye(object):
         self.model.set_eye_dmx(s, EYE_DMX_TILT, ((dTilt >> 8) & 0x00ff))
         self.model.set_eye_dmx(s, EYE_DMX_TILT_FINE, (dTilt & 0x00ff))
 
-        self.model.set_eye_dmx(s, EYE_DMX_COLOR, int(colorPos))
+        self.model.set_eye_dmx(s, EYE_DMX_COLOR, int(color_pos))
 
         self.model.set_eye_dmx(s, EYE_DMX_DIMMER, int(math.floor(255 * dimmer)))
 
         #print "pan=%d dPan = %d  dTilt = %d" % (pan, dPan, dTilt)
 
 
-    def setXYPos(self, x, y, sky):
+    def set_xy_pos(self, x, y, sky):
         """
         Set the XY position of the light on the ground. The left eyet
         is at 0,0. Negative X is to the left and negative Y is towards
@@ -362,17 +365,17 @@ class Eye(object):
         a point directly under the left eye)
         """
 
-        self.lastXPos = x
-        self.lastYPos = y
+        self.last_x_pos = x
+        self.last_y_pos = y
 
         if self.side == "b":
             # Adjust for parallax
             x -= 0.25
 
-        panRads = math.atan2(x,1)
-        tiltRads = math.atan2( y * math.sin(math.fabs(panRads)), x)
-        self.pan = math.degrees(panRads)
-        self.tilt = math.degrees(tiltRads) - 90
+        pan_rads = math.atan2(x,1)
+        tilt_rads = math.atan2( y * math.sin(math.fabs(pan_rads)), x)
+        self.pan = math.degrees(pan_rads)
+        self.tilt = math.degrees(tilt_rads) - 90
         if self.tilt < 0:
             self.tilt += 360
         if self.tilt > 180:

@@ -77,17 +77,17 @@ def create_server(listen_address, queue, cm, debug=False):
 
     def _handler(addr, tags, data, source):
         # No throttling for the controls model
-        cm.incomingOSC(addr, tags, data, source)
+        cm.incoming_osc(addr, tags, data, source)
         
-        now = time.time()
-        sincelast = now - last_msg[addr]
+        # now = time.time()
+        # sincelast = now - last_msg[addr]
 
-        if sincelast >= THROTTLE_TIME:
-            if debug:
-                print "%s [%s] %s" % (addr, tags, str(data))
+        # if sincelast >= THROTTLE_TIME:
+        #     if debug:
+        #         print "%s [%s] %s" % (addr, tags, str(data))
 
-            last_msg[addr] = now
-            queue.put( (addr, data) )
+        #     last_msg[addr] = now
+        #     queue.put( (addr, data) )
 
     s = OSCServer(listen_address)
 

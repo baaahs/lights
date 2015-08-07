@@ -59,7 +59,7 @@ class ShowRunner(threading.Thread):
         self.queue = queue
         self.cm = cm
 
-        self.cm.addListener(self)
+        self.cm.add_listener(self)
 
         self.running = True
         self.max_show_time = max_showtime
@@ -87,10 +87,10 @@ class ShowRunner(threading.Thread):
         self.speed_x = 1.0
 
     def control_speedChanged(self):
-        print "Setting default show speed to %f" % self.cm.speedMulti
+        print "Setting default show speed to %f" % self.cm.speed_multi
 
         # speed_x is opposite of speedMulti, so we have to invert speedMulti
-        self.speed_x = 1.0 / self.cm.speedMulti
+        self.speed_x = 1.0 / self.cm.speed_multi
 
     def status(self):
         if self.running:
@@ -210,8 +210,8 @@ class ShowRunner(threading.Thread):
         # Don't worry about whether a show can _actually_ accept control parameters
         # or not. Just call them a listener and if they don't accept things then the
         # exceptions will get surpressed
-        self.cm.delListener(self.prev_show)
-        self.cm.addListener(self.show)
+        self.cm.del_listener(self.prev_show)
+        self.cm.add_listener(self.show)
         try:
             self.show.set_controls_model(self.cm)
         except AttributeError:
@@ -236,7 +236,7 @@ class ShowRunner(threading.Thread):
         if not show_constructor:
             # Clear any existing show
             if self.eo_show:
-                self.cm.delListener(self.eo_show)
+                self.cm.del_listener(self.eo_show)
 
             self.eo_show = None
             self.eo_framegen = None
@@ -244,7 +244,7 @@ class ShowRunner(threading.Thread):
             self.eo_show = show_constructor(self.eo_model)
             self.eo_framegen = self.eo_show.next_frame()
 
-            self.cm.addListener(self.eo_show)
+            self.cm.add_listener(self.eo_show)
             try:
                 self.eo_show.set_controls_model(self.cm)
             except AttributeError:
@@ -304,8 +304,8 @@ class ShowRunner(threading.Thread):
 
                 # Always output things, because they could have
                 # changed by UI controls for instance
-                self.model.partyEye.go()
-                self.model.businessEye.go()
+                self.model.party_eye.go()
+                self.model.business_eye.go()
                 self.model.both.go()
 
                 # Maybe this show is done?
@@ -376,8 +376,8 @@ class SheepServer(object):
         self.sheep_model.party.cm = self.controls_model
         self.sheep_model.business.cm = self.controls_model
         self.sheep_model.both.cm = self.controls_model
-        self.sheep_model.partyEye.cm = self.controls_model
-        self.sheep_model.businessEye.cm = self.controls_model
+        self.sheep_model.party_eye.cm = self.controls_model
+        self.sheep_model.business_eye.cm = self.controls_model
 
         # We _might_ want to make the eyes listeners so they can update
         # DMX values that aren't otherwise mapped, although our hope is to

@@ -41,7 +41,22 @@ PREDEFINED_COLOR_POS = [
     EYE_COLOR_WHITE
 ]
 
+EYES_MODE_DISCO = "disco"
+EYES_MODE_HEADLIGHTS = "headlights"
+EYES_MODE_SHOW = "show"
 
+HEADLIGHTS_MODE_NORMAL = "normal"
+HEADLIGHTS_MODE_LEFT = "left"
+HEADLIGHTS_MODE_BOTH = "both"
+HEADLIGHTS_MODE_RIGHT = "right"
+
+SHOW_TARGET_MODE_NONE = "none"
+SHOW_TARGET_MODE_PNT = "pnt"
+SHOW_TARGET_MODE_UP = "up"
+SHOW_TARGET_MODE_DOWN = "down"
+
+PAN = 0
+TILT = 1
 
 class ControlsModel(object):
     """
@@ -53,8 +68,8 @@ class ControlsModel(object):
     From the show side, there are a lot of un-encapsulated properties/attributes
     of a ControlsModel instance that can be read. Some key ones are:
 
-        chosenColors[]
-        speedMulti
+        chosen_colors[]
+        speed_multi
         intensified
         colorized
         modifiers[]
@@ -80,7 +95,7 @@ class ControlsModel(object):
     certainly shouldn't be writing to this object. If anything DOES want
     to write to this guy, then it should be using the setters to ensure that
     appropriate notifications are sent to interested listeners.
-    
+
     """
 
     
@@ -89,49 +104,71 @@ class ControlsModel(object):
         # Pan and tilt are stored in degrees from the central
         # position. Pan has a range of +/- 270 and tilt has a 
         # range of +/- 135
-        self.pEyePan  = 0
-        self.pEyeTilt = 0
-        self.bEyePan  = 0
-        self.bEyeTilt = 0
+        self.p_eye_pos  = [0,0]
+        self.b_eye_pos = [0,0]
 
         # Range 0.0 to 1.0
-        self.pDimmer = 1.0
-        self.bDimmer = 1.0
+        self.p_brightness = 1.0
+        self.b_brightness = 1.0
 
-        self.eyeMovementLocked = False
+        self.eye_positions = {}
+        self.eye_positions["disco"] = [[-75, 115], [0,0]]  # Really only the left is used
+        self.eye_positions["headlights"] = [[0,5], [0,5]]  # Probably want this slightly down
 
-        self._lastEyeTouchedWasParty = True
+        self.eye_movement_locked = False
 
-        self.pEyeXYEnable = True
-        self.bEyeXYEnable = True
-        self.eyeSkyPos = False # If true, XY position is in sky, otherwise on ground
-        self.lastYPos = 0
-        self.lastXPos = 0
+        self._last_eye_touched_was_party = True
 
-        # The color pos values range from 0 to 127 and refer to
-        # a position of the color wheel. Each color occupies an 8
-        # value range with the "full" position of that color being
-        # in the center of the range. The edge of the ranges are positions
-        # where both colors are visible in the output at one time.
-        self.pColorPos = 0
-        self.bColorPos = 0
+        self.p_eye_xy_enable = True
+        self.b_eye_xy_enable = True
+        self.eye_sky_pos = False # If true, XY position is in sky, otherwise on ground
+        # self.lastYPos = 0.0
+        # self.lastXPos = 0.0
 
-        self.pColorEnable = True
-        self.bColorEnable = True
-        self.colorMix = False
-        self.colorCycleSpeed = 0
+        # # The color pos values range from 0 to 127 and refer to
+        # # a position of the color wheel. Each color occupies an 8
+        # # value range with the "full" position of that color being
+        # # in the center of the range. The edge of the ranges are positions
+        # # where both colors are visible in the output at one time.
+        # self.pColorPos = 0
+        # self.bColorPos = 0
+
+        # self.pColorEnable = True
+        # self.bColorEnable = True
+        # self.colorMix = False
+        # self.colorCycleSpeed = 0
+
+        ########
+        self.disco_mix = False
+        self.disco_cycle_speed = 0.0
+        self.disco_color_pos = EYE_COLOR_WHITE
+        self.disco_brightness = 1.0
+        self.disco_effect = 0
+        self.disco_effect_speed = 0.0
+        ###
+
+        ########
+        self.headlights_target = [0.0, 0.0]
+        self.headlights_mode = HEADLIGHTS_MODE_NORMAL
+
+        ###
+
+        ########        
+        self.show_target = [0.0, 0.0]
+        self.show_target_mode = SHOW_TARGET_MODE_NONE
+        ###
 
         # The RGB values of the chosen colors
-        self.chosenColors = [ color.RGB(255, 255, 0), color.RGB(0,255,255) ]
+        self.chosen_colors = [ color.RGB(255, 255, 0), color.RGB(0,255,255) ]
         # Color wheel positions
-        self.chosenColorsPos = [ EYE_COLOR_WHITE, EYE_COLOR_WHITE ]
+        self.chosen_colors_pos = [ EYE_COLOR_WHITE, EYE_COLOR_WHITE ]
 
         # Chosen indexes. Could be -1
-        self.chosenColorsIx = [7, 7]
+        self.chosen_colors_ix = [7, 7]
 
 
         # Color presets. Mapped to 100+ix for choices above
-        self.colorPresets = [ 
+        self.color_presets = [ 
             color.Hex("#000000"),   # 0 isn't used in the UI
             color.Hex("#ff8080"),   # carnation pink
             color.Hex("#ff964f"),   # pastel orange
@@ -144,9 +181,9 @@ class ControlsModel(object):
 
         # Since pos calculations from RGB are complex we try to cache this for the
         # presets at least
-        self.colorPresetsToPos = []
-        for ix in range(0, len(self.colorPresets)):
-            self.colorPresetsToPos.append(self.colorPresets[ix].pos)
+        self.color_presets_to_pos = []
+        for ix in range(0, len(self.color_presets)):
+            self.color_presets_to_pos.append(self.color_presets[ix].pos)
 
 
         ## Speed setting. This is multiplied against the "rate", so that
@@ -155,7 +192,7 @@ class ControlsModel(object):
         # by the show runner if you are yielding something more than about 0.001,
         # but if you are doing proper time based "as fast as we can" calculations
         # yourself, you will need to respect this value.
-        self.speedMulti = 1.0
+        self.speed_multi = 1.0
 
         # A value that ranges from -1.0 (maximum calm) to 1.0 (maximum intensity).
         # It should be interpretted by each show in a show appropriate manner
@@ -174,287 +211,367 @@ class ControlsModel(object):
 
         self.listeners = set()
 
-        self._tapTimes = []
+        self._tap_times = []
 
         # Start with a muddy yellow because starting with black goes badly/is silly
         self.color = color.RGB(255,255,0)
 
+        self.set_eyes_mode(EYES_MODE_SHOW)
 
-    def addListener(self, listener):
+
+    def add_listener(self, listener):
         self.listeners.add(listener)
 
-    def delListener(self, listener):
+    def del_listener(self, listener):
         self.listeners.discard(listener)
 
-    def incomingOSC(self, addr, tags, data, source):
-        print "incomingOSC %s: %s [%s] %s" % (source, addr, tags, str(data))
+    def incoming_osc(self, addr, tags, data, source):
+        print "incoming_osc %s: %s [%s] %s" % (source, addr, tags, str(data))
 
-        aSplit = addr.split("/")
-        print aSplit
+        parts = addr.split("/")
+        print parts
 
-        if aSplit[1] == "main":
-            if aSplit[2] == "color":
+        if parts[1] == "main":
+            if parts[2] == "color":
                 try:
-                    self.setColorIx(int(aSplit[3]), int(aSplit[4]))
+                    self.set_color_ix(int(parts[3]), int(parts[4]))
                 except:
                     pass
 
-            elif aSplit[2] == "speed":
-                if aSplit[3] == "reset":
-                    self.speedReset()
-                elif aSplit[3] == "changeRel":
-                    self.speedChangeRel(data[0])
-                elif aSplit[3] == "tap":
+            elif parts[2] == "speed":
+                if parts[3] == "reset":
+                    self.speed_reset()
+                elif parts[3] == "changeRel":
+                    self.speed_change_rel(data[0])
+                elif parts[3] == "tap":
                     if int(data[0]) == 1:
-                        self.speedTap()
+                        self.speed_tap()
 
 
-            elif aSplit[2] == "intensified":
-                self.setIntensified(data[0])
-            elif aSplit[2] == "colorized":
-                self.setColorized(data[0])
-            elif aSplit[2] == "modifier":
-                self.toggleModifier(int(aSplit[3]))
+            elif parts[2] == "intensified":
+                self.set_intensified(data[0])
+            elif parts[2] == "colorized":
+                self.set_colorized(data[0])
+            elif parts[2] == "modifier":
+                self.toggle_modifier(int(parts[3]))
 
 
-        elif aSplit[1] == "color":
-            if aSplit[2] == "red":
-                self.setColorR(data[0])
-            elif aSplit[2] == "green":
-                self.setColorG(data[0])
-            elif aSplit[2] == "blue":
-                self.setColorB(data[0])
-            elif aSplit[2] == "hue":
-                self.setColorH(data[0])
-            elif aSplit[2] == "sat":
-                self.setColorS(data[0])
-            elif aSplit[2] == "val":
-                self.setColorV(data[0])
+        elif parts[1] == "color":
+            if parts[2] == "red":
+                self.set_color_r(data[0])
+            elif parts[2] == "green":
+                self.set_color_g(data[0])
+            elif parts[2] == "blue":
+                self.set_color_b(data[0])
+            elif parts[2] == "hue":
+                self.set_color_h(data[0])
+            elif parts[2] == "sat":
+                self.set_color_s(data[0])
+            elif parts[2] == "val":
+                self.set_color_v(data[0])
 
-        elif aSplit[1] == "eyes":
-            if aSplit[2] == "pPan":
-                self.setEyePan(True, data[0])
-            elif aSplit[2] == "bPan":
-                self.setEyePan(False, data[0])
-            elif aSplit[2] == "pTilt":
-                self.setEyeTilt(True, data[0])
-            elif aSplit[2] == "bTilt":
-                self.setEyeTilt(False, data[0])
-            elif aSplit[2] == "movementLock":
-                self.setEyeMovementLock(data[0] == 1.0)
+        elif parts[1] == "eyes":
 
-            elif aSplit[2] == "xyPos":
-                self.setEyeXYPos(data[0], data[1])
-            elif aSplit[2] == "xPos":
-                self.setEyeXYPos(data[0],self.lastYPos)
-            elif aSplit[2] == "yPos":
-                self.setEyeXYPos(self.lastXPos,data[0])
+            # if parts[2] == "pPan":
+            #     self.set_eye_pan(True, data[0])
+            # elif parts[2] == "bPan":
+            #     self.set_eye_pan(False, data[0])
+            # elif parts[2] == "pTilt":
+            #     self.set_eye_tilt(True, data[0])
+            # elif parts[2] == "bTilt":
+            #     self.set_eye_tilt(False, data[0])
+            # elif parts[2] == "movementLock":
+            #     self.set_eye_movement_lock(data[0] == 1.0)
 
-            elif aSplit[2] == "pXYEnable":
-                self.toggleEyeXYEnable(True)
-            elif aSplit[2] == "bXYEnable":
-                self.toggleEyeXYEnable(False)
-            elif aSplit[2] == "skyPos":
-                self.toggleEyeSkyPos()
+            # elif parts[2] == "xyPos":
+            #     self.setEyeXYPos(data[0], data[1])
+            # elif parts[2] == "xPos":
+            #     self.setEyeXYPos(data[0],self.lastYPos)
+            # elif parts[2] == "yPos":
+            #     self.setEyeXYPos(self.lastXPos,data[0])
 
-            elif aSplit[2] == "dimmer":
-                self.setDimmer(aSplit[3]=="1", data[0])
+            # elif parts[2] == "pXYEnable":
+            #     self.toggleEyeXYEnable(True)
+            # elif parts[2] == "bXYEnable":
+            #     self.toggleEyeXYEnable(False)
+            # elif parts[2] == "skyPos":
+            #     self.toggleEyeSkyPos()
 
-            elif aSplit[2] == "pColorEnable":
-                self.toggleEyeColorEnabled(True)
-            elif aSplit[2] == "bColorEnable":
-                self.toggleEyeColorEnabled(False)
-            elif aSplit[2] == "colorMix":
-                self.toggleEyeColorMix()
-            elif aSplit[2] == "colorCycle":
-                self.toggleEyeColorCycle(data[0])
+            # elif parts[2] == "dimmer":
+            #     self.setDimmer(parts[3]=="1", data[0])
+
+            # elif parts[2] == "pColorEnable":
+            #     self.toggleEyeColorEnabled(True)
+            # elif parts[2] == "bColorEnable":
+            #     self.toggleEyeColorEnabled(False)
+            # elif parts[2] == "colorMix":
+            #     self.toggleEyeColorMix()
+            # elif parts[2] == "colorCycle":
+            #     self.toggleEyeColorCycle(data[0])
 
             # The colors, all the colors
             # These are pushbuttons, so we will get a 1.0 and a 0.0 event. Thus
             # we only bother setting it on the 1.0 event, although technically it
             # wouldn't hurt to set it twice. It would just be wasteful.
-            elif aSplit[2] == "colorWhite":
+            # elif parts[2] == "colorWhite":
+            #     if data[0] == 1.0:
+            #         self.setEyeColor(EYE_COLOR_WHITE)
+            # elif parts[2] == "colorRed":
+            #     if data[0] == 1.0:
+            #         self.setEyeColor(EYE_COLOR_RED)
+            # elif parts[2] == "colorOrange":
+            #     if data[0] == 1.0:
+            #         self.setEyeColor(EYE_COLOR_ORANGE)
+            # elif parts[2] == "colorAquamarine":
+            #     if data[0] == 1.0:
+            #         self.setEyeColor(EYE_COLOR_AQUAMARINE)
+            # elif parts[2] == "colorDeepGreen":
+            #     if data[0] == 1.0:
+            #         self.setEyeColor(EYE_COLOR_DEEP_GREEN)
+            # elif parts[2] == "colorLightGreen":
+            #     if data[0] == 1.0:
+            #         self.setEyeColor(EYE_COLOR_LIGHT_GREEN)
+            # elif parts[2] == "colorLavender":
+            #     if data[0] == 1.0:
+            #         self.setEyeColor(EYE_COLOR_LAVENDER)
+            # elif parts[2] == "colorPink":
+            #     if data[0] == 1.0:
+            #         self.setEyeColor(EYE_COLOR_PINK)
+            # elif parts[2] == "colorYellow":
+            #     if data[0] == 1.0:
+            #         self.setEyeColor(EYE_COLOR_YELLOW)
+            # elif parts[2] == "colorMagenta":
+            #     if data[0] == 1.0:
+            #         self.setEyeColor(EYE_COLOR_MAGENTA)
+            # elif parts[2] == "colorCyan":
+            #     if data[0] == 1.0:
+            #         self.setEyeColor(EYE_COLOR_CYAN)
+            # elif parts[2] == "colorCTO2":
+            #     if data[0] == 1.0:
+            #         self.setEyeColor(EYE_COLOR_CTO2)
+            # elif parts[2] == "colorCTO1":
+            #     if data[0] == 1.0:
+            #         self.setEyeColor(EYE_COLOR_CTO1)
+            # elif parts[2] == "colorCTB":
+            #     if data[0] == 1.0:
+            #         self.setEyeColor(EYE_COLOR_CTB)
+            # elif parts[2] == "colorBlue":
+            #     if data[0] == 1.0:
+            #         self.setEyeColor(EYE_COLOR_BLUE)
+
+            if parts[2] == "mode":
                 if data[0] == 1.0:
-                    self.setEyeColor(EYE_COLOR_WHITE)
-            elif aSplit[2] == "colorRed":
-                if data[0] == 1.0:
-                    self.setEyeColor(EYE_COLOR_RED)
-            elif aSplit[2] == "colorOrange":
-                if data[0] == 1.0:
-                    self.setEyeColor(EYE_COLOR_ORANGE)
-            elif aSplit[2] == "colorAquamarine":
-                if data[0] == 1.0:
-                    self.setEyeColor(EYE_COLOR_AQUAMARINE)
-            elif aSplit[2] == "colorDeepGreen":
-                if data[0] == 1.0:
-                    self.setEyeColor(EYE_COLOR_DEEP_GREEN)
-            elif aSplit[2] == "colorLightGreen":
-                if data[0] == 1.0:
-                    self.setEyeColor(EYE_COLOR_LIGHT_GREEN)
-            elif aSplit[2] == "colorLavender":
-                if data[0] == 1.0:
-                    self.setEyeColor(EYE_COLOR_LAVENDER)
-            elif aSplit[2] == "colorPink":
-                if data[0] == 1.0:
-                    self.setEyeColor(EYE_COLOR_PINK)
-            elif aSplit[2] == "colorYellow":
-                if data[0] == 1.0:
-                    self.setEyeColor(EYE_COLOR_YELLOW)
-            elif aSplit[2] == "colorMagenta":
-                if data[0] == 1.0:
-                    self.setEyeColor(EYE_COLOR_MAGENTA)
-            elif aSplit[2] == "colorCyan":
-                if data[0] == 1.0:
-                    self.setEyeColor(EYE_COLOR_CYAN)
-            elif aSplit[2] == "colorCTO2":
-                if data[0] == 1.0:
-                    self.setEyeColor(EYE_COLOR_CTO2)
-            elif aSplit[2] == "colorCTO1":
-                if data[0] == 1.0:
-                    self.setEyeColor(EYE_COLOR_CTO1)
-            elif aSplit[2] == "colorCTB":
-                if data[0] == 1.0:
-                    self.setEyeColor(EYE_COLOR_CTB)
-            elif aSplit[2] == "colorBlue":
-                if data[0] == 1.0:
-                    self.setEyeColor(EYE_COLOR_BLUE)
+                    self.set_eyes_mode(parts[3])
+                elif data[0] == 0.0:
+                    # They turned off the mode, which we don't care for,
+                    # so do a full refresh
+                    self._notify_eyes_mode_changed()
+
+            elif parts[2] == "disco":
+                if parts[3] == "mix":
+                    self.set_disco_mix(data[0])
+                elif parts[3] == "cycleSpeed":
+                    self.set_disco_cycle_speed(data[0])
+                elif parts[3] == "brightness":
+                    self.set_disco_brightness(data[0])
+
+                elif parts[3] == "noEffect":
+                    self.set_disco_no_effect()
+                elif parts[3] == "effectSpeed":
+                    self.set_disco_effect_speed(data[0])
+                elif parts[3] == "effect":
+                    if data[0] == 1.0:
+                        self.set_disco_effect(int(parts[4]), int(parts[5]))
+                    else:
+                        self.maybe_unset_disco_effect(int(parts[4]), int(parts[5]))
+
+                elif data[0] == 1.0:
+
+                    if parts[3] == "colorWhite":
+                        self.set_disco_color_pos(EYE_COLOR_WHITE)
+                    elif parts[3] == "colorRed":
+                        self.set_disco_color_pos(EYE_COLOR_RED)
+                    elif parts[3] == "colorOrange":
+                        self.set_disco_color_pos(EYE_COLOR_ORANGE)
+                    elif parts[3] == "colorAquamarine":
+                        self.set_disco_color_pos(EYE_COLOR_AQUAMARINE)
+                    elif parts[3] == "colorDeepGreen":
+                        self.set_disco_color_pos(EYE_COLOR_DEEP_GREEN)
+                    elif parts[3] == "colorLightGreen":
+                        self.set_disco_color_pos(EYE_COLOR_LIGHT_GREEN)
+                    elif parts[3] == "colorLavender":
+                        self.set_disco_color_pos(EYE_COLOR_LAVENDER)
+                    elif parts[3] == "colorPink":
+                        self.set_disco_color_pos(EYE_COLOR_PINK)
+                    elif parts[3] == "colorYellow":
+                        self.set_disco_color_pos(EYE_COLOR_YELLOW)
+                    elif parts[3] == "colorMagenta":
+                        self.set_disco_color_pos(EYE_COLOR_MAGENTA)
+                    elif parts[3] == "colorCyan":
+                        self.set_disco_color_pos(EYE_COLOR_CYAN)
+                    elif parts[3] == "colorCTO2":
+                        self.set_disco_color_pos(EYE_COLOR_CTO2)
+                    elif parts[3] == "colorCTO1":
+                        self.set_disco_color_pos(EYE_COLOR_CTO1)
+                    elif parts[3] == "colorCTB":
+                        self.set_disco_color_pos(EYE_COLOR_CTB)
+                    elif parts[3] == "colorBlue":
+                        self.set_disco_color_pos(EYE_COLOR_BLUE)                
+
+            elif parts[2] == "hmode":
+                self.set_headlights_mode(parts[3])
+
+            elif parts[2] == "target":
+                if parts[3] == "xy":
+                    self.set_eyes_target(data[0], data[1])
+
+                else:
+                    self.set_show_target_mode(parts[3])
 
 
-        elif aSplit[1] == "global":
-            if aSplit[2] == "refresh":
-                self._notifyRefresh()
+
+        elif parts[1] == "global":
+            if parts[2] == "refresh":
+                if data[0] == 1.0:
+                    self._notify_refresh()
+
+        # Separate from global because this one gets hidden on a refresh
+        # whereas the global one doesn't
+        elif parts[1] == "onetime":
+            if parts[2] == "refresh":
+                if data[0] == 1.0:
+                    self._notify_refresh()
 
 
 
-
-    def setColorR(self, r):
+    def set_color_r(self, r):
         # Convert from float to byte
-        rNew = round(255 * r)
-        if rNew == self.color.r:
+        n = round(255 * r)
+        if n == self.color.r:
             return
 
-        self.color.r = rNew
-        self._notifyColor()
+        self.color.r = n
+        self._notify_color()
 
-    def setColorG(self, v):
+    def set_color_g(self, v):
         # Convert from float to byte
-        vNew = round(255 * v)
-        if vNew == self.color.g:
+        n = round(255 * v)
+        if n == self.color.g:
             return
 
-        self.color.g = vNew
-        self._notifyColor()
+        self.color.g = n
+        self._notify_color()
 
-    def setColorB(self, v):
+    def set_color_b(self, v):
         # Convert from float to byte
-        vNew = round(255 * v)
-        if vNew == self.color.b:
+        n = round(255 * v)
+        if n == self.color.b:
             return
 
-        self.color.b = vNew
-        self._notifyColor()
+        self.color.b = n
+        self._notify_color()
 
-    def setColorH(self, v):
+    def set_color_h(self, v):
         if v == self.color.h:
             return
 
         self.color.h = v
-        self._notifyColor()
+        self._notify_color()
 
-    def setColorS(self, v):
+    def set_color_s(self, v):
         if v == self.color.s:
             return
 
         self.color.s = v
-        self._notifyColor()
+        self._notify_color()
 
-    def setColorV(self, v):
+    def set_color_v(self, v):
         if v == self.color.v:
             return
 
         self.color.v = v
-        self._notifyColor()
+        self._notify_color()
 
-    def _notifyColor(self):
-        print "_notifyColor"
+    def _notify_color(self):
+        print "_notify_color"
         for listener in self.listeners:
-            if listener.control_colorChanged:
-                listener.control_colorChanged()
+            if listener.control_color_changed:
+                listener.control_color_changed()
     
-    def setEyeMovementLock(self, locked):
-        print "setEyeMovementLock %s" % str(locked)
-        # if locked == self.eyeMovementLocked:
-        #     return
+    # def set_eye_movement_lock(self, locked):
+    #     print "set_eye_movement_lock %s" % str(locked)
+    #     # if locked == self.eye_movement_locked:
+    #     #     return
 
-        self.eyeMovementLocked = locked
-        if self.eyeMovementLocked:
-            if self._lastEyeTouchedWasParty:
-                # Make the business eye match the party eye
-                self.bEyeTilt = self.pEyeTilt
-                self.bEyePan = self.pEyePan
-                self._notifyEyeChanged(False)
-            else:
-                # Make the party eye follow the business eye
-                self.pEyeTilt = self.bEyeTilt
-                self.pEyePan = self.bEyePan
-                self._notifyEyeChanged(True)
+    #     self.eye_movement_locked = locked
+    #     if self.eye_movement_locked:
+    #         if self._last_eye_touched_was_party:
+    #             # Make the business eye match the party eye
+    #             self.bEyeTilt = self.pEyeTilt
+    #             self.bEyePan = self.pEyePan
+    #             self._notify_eye_changed(False)
+    #         else:
+    #             # Make the party eye follow the business eye
+    #             self.pEyeTilt = self.bEyeTilt
+    #             self.pEyePan = self.bEyePan
+    #             self._notify_eye_changed(True)
 
-        self._notifyEyeMovementLockChanged()
+    #     self._notifyEyeMovementLockChanged()
 
-    def setEyeTilt(self, isParty, tiltValue):
-        tiltValue = math.floor(tiltValue)
-        if tiltValue < -135:
-            tiltValue = -135
-        if tiltValue > 135:
-            tiltValue = 135
+    # def set_eye_tilt(self, isParty, tiltValue):
+    #     tiltValue = math.floor(tiltValue)
+    #     if tiltValue < -135:
+    #         tiltValue = -135
+    #     if tiltValue > 135:
+    #         tiltValue = 135
 
-        self._lastEyeTouchedWasParty = isParty
+    #     self._last_eye_touched_was_party = isParty
 
-        if self.pEyeTilt != tiltValue and (isParty or self.eyeMovementLocked):
-            self.pEyeTilt = tiltValue
-            self.pEyeXYEnable = False
-            self._notifyEyeChanged(True)
+    #     if self.pEyeTilt != tiltValue and (isParty or self.eye_movement_locked):
+    #         self.pEyeTilt = tiltValue
+    #         self.p_eye_xy_enable = False
+    #         self._notify_eye_changed(True)
 
-        if self.bEyeTilt != tiltValue and (not isParty or self.eyeMovementLocked):
-            self.bEyeTilt = tiltValue
-            self.bEyeXYEnable = False
-            self._notifyEyeChanged(False)
+    #     if self.bEyeTilt != tiltValue and (not isParty or self.eye_movement_locked):
+    #         self.bEyeTilt = tiltValue
+    #         self.b_eye_xy_enable = False
+    #         self._notify_eye_changed(False)
 
-    def setEyePan(self, isParty, panValue):
-        panValue = math.floor(panValue)
-        if panValue < -270:
-            panValue = -270
-        if panValue > 270:
-            panValue = 270
+    # def set_eye_pan(self, isParty, panValue):
+    #     panValue = math.floor(panValue)
+    #     if panValue < -270:
+    #         panValue = -270
+    #     if panValue > 270:
+    #         panValue = 270
 
-        self._lastEyeTouchedWasParty = isParty
+    #     self._last_eye_touched_was_party = isParty
 
-        if self.pEyePan != panValue and (isParty or self.eyeMovementLocked):
-            self.pEyePan = panValue
-            self.pEyeXYEnable = False
-            self._notifyEyeChanged(True)
+    #     if self.pEyePan != panValue and (isParty or self.eye_movement_locked):
+    #         self.pEyePan = panValue
+    #         self.p_eye_xy_enable = False
+    #         self._notify_eye_changed(True)
 
-        if self.bEyePan != panValue and (not isParty or self.eyeMovementLocked):
-            self.bEyePan = panValue
-            self.bEyeXYEnable = False
-            self._notifyEyeChanged(False)
+    #     if self.bEyePan != panValue and (not isParty or self.eye_movement_locked):
+    #         self.bEyePan = panValue
+    #         self.b_eye_xy_enable = False
+    #         self._notify_eye_changed(False)
 
-    def setDimmer(self, isParty, dimVal):
-        "Sets dimmer for one eye to dimVal. Range of 0.0 to 1.0"
-        if dimVal < 0:
-            dimVal = 0
-        elif dimVal > 1.0:
-            dimVal = 1.0
+    # def setDimmer(self, isParty, dimVal):
+    #     "Sets dimmer for one eye to dimVal. Range of 0.0 to 1.0"
+    #     if dimVal < 0:
+    #         dimVal = 0
+    #     elif dimVal > 1.0:
+    #         dimVal = 1.0
 
-        if self.pDimmer != dimVal and (isParty or self.eyeMovementLocked):
-            self.pDimmer = dimVal
-            self._notifyEyeChanged(True)
+    #     if self.p_brightness != dimVal and (isParty or self.eye_movement_locked):
+    #         self.p_brightness = dimVal
+    #         self._notify_eye_changed(True)
 
-        if self.bDimmer != dimVal and (not isParty or self.eyeMovementLocked):
-            self.bDimmer = dimVal
-            self._notifyEyeChanged(False)
+    #     if self.b_brightness != dimVal and (not isParty or self.eye_movement_locked):
+    #         self.b_brightness = dimVal
+    #         self._notify_eye_changed(False)
 
-    def setEyeXYPos(self, x, y):
+    def _set_eye_xy_flat_pos(self, x, y, do_party, do_business, in_sky):
         #
         # Basic formula is pan = atan(x), tilt = atan( (y * sin(pan)) / x )
         #
@@ -462,135 +579,135 @@ class ControlsModel(object):
         if y < -0.5:
             y = -0.5
 
-        self.lastXPos = x
-        self.lastYPos = y
+        # self.lastXPos = x
+        # self.lastYPos = y
 
         # Units for X and Y real are "height of the eye" = 1. Scaling out so
         # that we can tweak it more here than in touch and can define a reasonable
         # addressable area
         xr = 3 * x
-        yr = 3 * y
+        yr = 5 * (y + 0.5)
 
-        if self.pEyeXYEnable:
-            panRads = math.atan2(xr,1)
-            tiltRads = math.atan2( yr * math.sin(math.fabs(panRads)), xr)
-            self.pEyePan = math.degrees(panRads)
-            self.pEyeTilt = math.degrees(tiltRads) - 90
-            if self.pEyeTilt < 0:
-                self.pEyeTilt += 360
-            if self.pEyeTilt > 180:
-                self.pEyeTilt = 360-self.pEyeTilt
+        if do_party:
+            pan_rads = math.atan2(xr,1)
+            tilt_rads = math.atan2( yr * math.sin(math.fabs(pan_rads)), xr)
+            self.p_eye_pos[PAN] = math.degrees(pan_rads)
+            self.p_eye_pos[TILT] = math.degrees(tilt_rads) - 90
+            if self.p_eye_pos[TILT]  < 0:
+                self.p_eye_pos[TILT]  += 360
+            if self.p_eye_pos[TILT]  > 180:
+                self.p_eye_pos[TILT]  = 360-self.p_eye_pos[TILT] 
 
-            print "P x=%f y=%f pan=%f tilt=%f" % (xr,yr, self.pEyePan, self.pEyeTilt)
-            if self.pEyeTilt > 135:
-                self.pEyeTilt = 135
+            print "P x=%f y=%f pan=%f tilt=%f" % (xr,yr, self.p_eye_pos[PAN] , self.p_eye_pos[TILT] )
+            if self.p_eye_pos[TILT]  > 135:
+                self.p_eye_pos[TILT]  = 135
 
-            if self.eyeSkyPos:
-                self.pEyePan = 360-self.pEyePan
+            if in_sky:
+                self.p_eye_pos[PAN]  = 360-self.p_eye_pos[PAN] 
 
-            self._notifyEyeChanged(True)
+            self._notify_eye_changed(True)
 
-        if self.bEyeXYEnable:
+        if do_business:
             xr -= 0.25 # This is (roughly) the distance between the lights in light_to_ground units
-            panRads = math.atan2(xr,1)
-            tiltRads = math.atan2( yr * math.sin(math.fabs(panRads)), xr)
-            self.bEyePan = math.degrees(panRads)
-            self.bEyeTilt = math.degrees(tiltRads) - 90
-            if self.bEyeTilt < 0:
-                self.bEyeTilt += 360
-            if self.bEyeTilt > 180:
-                self.bEyeTilt = 360-self.bEyeTilt
+            pan_rads = math.atan2(xr,1)
+            tilt_rads = math.atan2( yr * math.sin(math.fabs(pan_rads)), xr)
+            self.b_eye_pos[PAN] = math.degrees(pan_rads)
+            self.b_eye_pos[TILT] = math.degrees(tilt_rads) - 90
+            if self.b_eye_pos[TILT] < 0:
+                self.b_eye_pos[TILT] += 360
+            if self.b_eye_pos[TILT] > 180:
+                self.b_eye_pos[TILT] = 360-self.b_eye_pos[TILT]
 
-            print "B x=%f y=%f pan=%f tilt=%f" % (xr,yr, self.bEyePan, self.bEyeTilt)
-            if self.bEyeTilt > 135:
-                self.bEyeTilt = 135
+            print "B x=%f y=%f pan=%f tilt=%f" % (xr,yr, self.b_eye_pos[PAN], self.b_eye_pos[TILT])
+            if self.b_eye_pos[TILT] > 135:
+                self.b_eye_pos[TILT] = 135
 
-            if self.eyeSkyPos:
-                self.bEyePan = 360-self.bEyePan
+            if in_sky:
+                self.b_eye_pos[PAN] = 360-self.b_eye_pos[PAN]
 
-            self._notifyEyeChanged(False)
-
-
-
-    def toggleEyeXYEnable(self, isParty):
-        if isParty:
-            self.pEyeXYEnable = not self.pEyeXYEnable
-        else:
-            self.bEyeXYEnable = not self.bEyeXYEnable
-
-        self._notifyEyeChanged(isParty)
-
-    def toggleEyeSkyPos(self):
-        self.eyeSkyPos = not self.eyeSkyPos
-        self.setEyeXYPos(self.lastXPos, self.lastYPos)
-
-        # Do a fake one here just in case it didn't happen already
-        if not self.pEyeXYEnable and not self.bEyeXYEnable:
-            self._notifyEyeChanged(True)
+            self._notify_eye_changed(False)
 
 
 
-    def _notifyEyeChanged(self, isParty):
-        print "_notifyEyeChanged isParty=%s" % isParty
+    # def toggleEyeXYEnable(self, isParty):
+    #     if isParty:
+    #         self.p_eye_xy_enable = not self.p_eye_xy_enable
+    #     else:
+    #         self.b_eye_xy_enable = not self.b_eye_xy_enable
+
+    #     self._notify_eye_changed(isParty)
+
+    # def toggleEyeSkyPos(self):
+    #     self.eye_sky_pos = not self.eye_sky_pos
+    #     self.setEyeXYPos(self.lastXPos, self.lastYPos)
+
+    #     # Do a fake one here just in case it didn't happen already
+    #     if not self.p_eye_xy_enable and not self.b_eye_xy_enable:
+    #         self._notify_eye_changed(True)
+
+
+
+    def _notify_eye_changed(self, isParty):
+        print "_notify_eye_changed isParty=%s" % isParty
         for listener in self.listeners:
             try:
-                listener.control_eyeChanged(isParty)
+                listener.control_eye_changed(isParty)
             except AttributeError:
                 pass # whatever...
 
-    def _notifyEyeMovementLockChanged(self):
-        for listener in self.listeners:
-            try:
-                listener.control_eyeMovementLockChanged()
-            except AttributeError:
-                pass # whatever...
+    # def _notifyEyeMovementLockChanged(self):
+    #     for listener in self.listeners:
+    #         try:
+    #             listener.control_eyeMovementLockChanged()
+    #         except AttributeError:
+    #             pass # whatever...
 
 
 
-    def setEyeColor(self, val):
-        val = math.floor(val)
-        if self.colorMix:
-            val += 4
+    # def setEyeColor(self, val):
+    #     val = math.floor(val)
+    #     if self.colorMix:
+    #         val += 4
 
-        if self.pColorEnable:
-            self.pColorPos = val
-        if self.bColorEnable:
-            self.bColorPos = val
+    #     if self.pColorEnable:
+    #         self.pColorPos = val
+    #     if self.bColorEnable:
+    #         self.bColorPos = val
 
-        self.colorCycleSpeed = 0
+    #     self.colorCycleSpeed = 0
 
-        self._notifyEyeColorChanged()
+    #     self._notifyEyeColorChanged()
 
-    def toggleEyeColorEnabled(self, isParty):
-        if isParty:
-            self.pColorEnable = not self.pColorEnable
-        else:
-            self.bColorEnable = not self.bColorEnable
+    # def toggleEyeColorEnabled(self, isParty):
+    #     if isParty:
+    #         self.pColorEnable = not self.pColorEnable
+    #     else:
+    #         self.bColorEnable = not self.bColorEnable
 
-        # While this isn't strictly true, it will cause the toggle state
-        # of the UI button to change, which we want
-        self._notifyEyeColorChanged()
+    #     # While this isn't strictly true, it will cause the toggle state
+    #     # of the UI button to change, which we want
+    #     self._notifyEyeColorChanged()
 
-    def toggleEyeColorMix(self):
-        self.colorMix = not self.colorMix
-        self._notifyEyeColorChanged()
+    # def toggleEyeColorMix(self):
+    #     self.colorMix = not self.colorMix
+    #     self._notifyEyeColorChanged()
 
-    def toggleEyeColorCycle(self, speed):
-        self.colorCycleSpeed = math.floor(speed)
-        self._notifyEyeColorChanged()
+    # def toggleEyeColorCycle(self, speed):
+    #     self.colorCycleSpeed = math.floor(speed)
+    #     self._notifyEyeColorChanged()
 
-    def _notifyEyeColorChanged(self):
-        for listener in self.listeners:
-            try:
-                listener.control_eyeColorChanged()
-            except AttributeError:
-                pass # whatever...
+    # def _notifyEyeColorChanged(self):
+    #     for listener in self.listeners:
+    #         try:
+    #             listener.control_eyeColorChanged()
+    #         except AttributeError:
+    #             pass # whatever...
 
     ############
-    def _notifyRefresh(self):
+    def _notify_refresh(self):
         for listener in self.listeners:
             try:
-                listener.control_refreshAll()
+                listener.control_refresh_all()
             except AttributeError:
                 pass # whatever...
 
@@ -598,53 +715,53 @@ class ControlsModel(object):
     ############
     # Main interface
 
-    def setColorIx(self, cIx, vIx):
+    def set_color_ix(self, c_ix, v_ix):
         """
         Set the color at index cIx to the value at index vIx. For vIx < 100
         this is a predefined color. For vIx > 100 it is a macro color that
         can be changed using the tech interface.
         """
-        if cIx < 0 or cIx > 1:
-            print "Don't understand color ix %d" % cIx
+        if c_ix < 0 or c_ix > 1:
+            print "Don't understand color ix %d" % c_ix
             return
 
-        self.chosenColorsIx[cIx] = vIx
+        self.chosen_colors_ix[c_ix] = v_ix
 
-        if vIx < 100:
-            self.chosenColors[cIx] = PREDEFINED_COLORS[vIx]
-            self.chosenColorsPos[cIx] = PREDEFINED_COLOR_POS[vIx]
+        if v_ix < 100:
+            self.chosen_colors[c_ix] = PREDEFINED_COLORS[v_ix]
+            self.chosen_colors_pos[c_ix] = PREDEFINED_COLOR_POS[v_ix]
         else:
-            self.chosenColors[cIx] = self.colorPresets[vIx-100]
-            self.chosenColorsPos[cIx] = self.colorPresetsToPos[vIx-100]
+            self.chosen_colors[c_ix] = self.color_presets[v_ix-100]
+            self.chosen_colors_pos[c_ix] = self.color_presets_to_pos[v_ix-100]
 
-        self._notifyChosenColorChanged(cIx)
+        self._notify_chosen_color_changed(cIx)
 
-    def _notifyChosenColorChanged(self, cIx):
+    def _notify_chosen_color_changed(self, cIx):
         for listener in self.listeners:
             try:
-                listener.control_chosenColorChanged(cIx)
+                listener.control_chosen_color_changed(cIx)
             except AttributeError:
                 pass # ignore
 
 
-    def speedReset(self):
-        self.speedMulti = 1.0
+    def speed_reset(self):
+        self.speed_multi = 1.0
 
-        self._notifySpeedChanged()
+        self._notify_speed_changed()
 
-    def speedChangeRel(self, amt):
+    def speed_change_rel(self, amt):
         # Scale this value some so it's a log scale or similar?
-        self.speedMulti = 1.0 + amt
-        if self.speedMulti <= 0.0:
-            self.speedMulti = 0.01
+        self.speed_multi = 1.0 + amt
+        if self.speed_multi <= 0.0:
+            self.speed_multi = 0.01
 
-        self._notifySpeedChanged()
+        self._notify_speed_changed()
 
-    def speedTap(self):
+    def speed_tap(self):
         now = time.time()
-        if len(self._tapTimes) == 0:
+        if len(self._tap_times) == 0:
             # It is the first tap so record it and move on
-            self._tapTimes.append(now)
+            self._tap_times.append(now)
             print "First tap"
             return
 
@@ -652,105 +769,295 @@ class ControlsModel(object):
 
         # How long has it been? There is a maximum amount of time between taps
         # that corresponds to some low bpm after which we start over
-        elapsed = now - self._tapTimes[len(self._tapTimes) - 1] 
+        elapsed = now - self._tap_times[len(self._tap_times) - 1] 
 
         if elapsed > 2.0:
             # OMG! So long ago! It's totally time to reset
-            self._tapTimes = [now]
+            self._tap_times = [now]
             print "Elapsed was %f, resettting" % elapsed
             return
 
         # Hmm, okay, not all that old, so let's add it and then process
         # all of them if we can
-        self._tapTimes.append(now)
+        self._tap_times.append(now)
 
-        while len(self._tapTimes) > 16:
-            self._tapTimes.pop(0)
+        while len(self._tap_times) > 16:
+            self._tap_times.pop(0)
 
         # There are now 1 to 8 elements in the list
-        if len(self._tapTimes) < 4:
+        if len(self._tap_times) < 4:
             # Not enough
-            print "Only have %d taps, not enough" % len(self._tapTimes)
+            print "Only have %d taps, not enough" % len(self._tap_times)
             return
 
         # I'm not sure if this is the "right" way to find intervals, but it makes sense to me.
         # Rather than just average from the begining time to the end time, we convert the times
         # into intervals and then average the intervals
-        intTotal = 0.0
-        numInts = 0
+        int_total = 0.0
+        num_ints = 0
         last = 0.0
-        for ix, v in enumerate(self._tapTimes):            
+        for ix, v in enumerate(self._tap_times):            
             if ix == 0:
                 last = v
                 continue
-            intTotal += v - last
+            int_total += v - last
             last = v
-            numInts += 1
+            num_ints += 1
 
-        avgInterval = intTotal / numInts
+        avg_interval = int_total / num_ints
 
         # Reference time is 120bpm, which is 0.5s between quarter notes (i.e. taps)
-        print "avgInterval=%f  intTotal=%f numInts=%d" % (avgInterval, intTotal, numInts)
-        self.speedMulti = 0.5 / avgInterval
+        print "avgInterval=%f  intTotal=%f numInts=%d" % (avg_interval, int_total, num_ints)
+        self.speed_multi = 0.5 / avg_interval
 
-        self._notifySpeedChanged()
-
-
+        self._notify_speed_changed()
 
 
 
-    def _notifySpeedChanged(self):
-        print "_notifySpeedChanged"
+
+
+    def _notify_speed_changed(self):
+        print "_notify_speed_changed"
         for listener in self.listeners:
             try:
-                listener.control_speedChanged()
+                listener.control_speed_changed()
             except AttributeError:
                 pass # ignore
 
 
 
-    def setIntensified(self, val):
+    def set_intensified(self, val):
         self.intensified = val
 
-        self._notifyIntensifiedChanged()
+        self._notify_intensified_changed()
 
 
-    def _notifyIntensifiedChanged(self):
-        print "_notifyIntensifiedChanged"
+    def _notify_intensified_changed(self):
+        print "_notify_intensified_changed"
         for listener in self.listeners:
             try:
-                listener.control_intensifiedChanged()
+                listener.control_intensified_changed()
             except AttributeError:
                 pass # ignore
 
-    def setColorized(self, val):
+    def set_colorized(self, val):
         self.colorized = val
 
-        self._notifyColorizedChanged()
+        self._notify_colorized_changed()
 
 
-    def _notifyColorizedChanged(self):
-        print "_notifyColorizedChanged"
+    def _notify_colorized_changed(self):
+        print "_notify_colorized_changed"
         for listener in self.listeners:
             try:
-                listener.control_colorizedChanged()
+                listener.control_colorized_changed()
             except AttributeError:
                 pass # ignore
 
-    def toggleModifier(self, mIx):
+    def toggle_modifier(self, mIx):
         mIx = color.clamp(mIx, 0, len(self.modifiers))
 
         self.modifiers[mIx] = not self.modifiers[mIx]
 
-        self._notifyModifiersChanged()
+        self._notify_modifiers_changed()
 
-    def _notifyModifiersChanged(self):
-        print "_notifyModifiersChanged"
+    def _notify_modifiers_changed(self):
+        print "_notify_modifiers_changed"
         for listener in self.listeners:
             try:
-                listener.control_modifiersChanged()
+                listener.control_modifiers_changed()
             except AttributeError:
                 pass # ignore
 
+
+    def set_eyes_mode(self, mode):
+        # We always allow resetting the mode because that might help
+        # when TouchOSC clients are out of sync. However, only allow
+        # known modes to get set.
+        if mode != EYES_MODE_DISCO and mode != EYES_MODE_HEADLIGHTS and mode != EYES_MODE_SHOW:
+            print "Unknown eyes mode %s" % mode
+            return
+
+        self.eyes_mode = mode
+        self._notify_eyes_mode_changed()
+
+        if mode == EYES_MODE_DISCO:
+            self.p_eye_pos = list(self.eye_positions["disco"][0])
+            self._notify_eye_changed(True)
+        elif mode == EYES_MODE_HEADLIGHTS:
+            self._update_headlights()
+        elif mode == EYES_MODE_SHOW:
+            self._update_show_target()
+
+    def _notify_eyes_mode_changed(self):
+        print "_notify_eyes_mode_changed"
+        for listener in self.listeners:
+            try:
+                listener.control_eyes_mode_changed()
+            except AttributeError:
+                pass # ignore
+
+
+    def set_disco_mix(self, v):
+        self.disco_mix =  v != 0.0
+        self._notify_disco_color_changed()
+
+    def set_disco_cycle_speed(self, v):        
+        self.disco_cycle_speed = v
+        self._notify_disco_color_changed()
+
+    def set_disco_color_pos(self, v):
+        self.disco_color_pos = v
+        self.disco_cycle_speed = 0.0
+        self._notify_disco_color_changed()
+
+    def _notify_disco_color_changed(self):
+        print "_notify_disco_color_changed"
+        for listener in self.listeners:
+            try:
+                listener.control_disco_color_changed()
+            except AttributeError:
+                pass # ignore        
+
+    def set_disco_brightness(self, v):
+        self.disco_brightness = v
+        self._notify_disco_brightness_changed()
+
+    def _notify_disco_brightness_changed(self):
+        print "_notify_disco_brightness_changed"
+        for listener in self.listeners:
+            try:
+                listener.control_disco_brightness_changed()
+            except AttributeError:
+                pass # ignore        
+
+
+    def set_disco_no_effect(self):
+        self.disco_effect = 0
+        self.disco_effect_speed = 0.0
+        self._notify_disco_effect_changed()
+
+
+    def set_disco_effect_speed(self, v):
+        self.disco_effect_speed = v
+        self._notify_disco_effect_changed()
+
+    def set_disco_effect(self, x, y):
+        self.disco_effect = x + ((y-1) * 8)
+        self._notify_disco_effect_changed()
+
+    def maybe_unset_disco_effect(self, x, y):
+        effect = x + ((y-1) * 8)
+        if effect == self.disco_effect:
+            self.disco_effect = 0
+            self._notify_disco_effect_changed()
+
+    def _notify_disco_effect_changed(self):
+        print "_notify_disco_effect_changed"
+        for listener in self.listeners:
+            try:
+                listener.control_disco_effect_changed()
+            except AttributeError:
+                pass # ignore        
+
+
+    def set_headlights_mode(self, mode):
+        if mode != HEADLIGHTS_MODE_NORMAL and mode != HEADLIGHTS_MODE_LEFT and mode != HEADLIGHTS_MODE_BOTH and mode != HEADLIGHTS_MODE_RIGHT:
+            print "Unknown headlights mode %s" % mode
+            return
+
+        self.headlights_mode = mode
+        self._notify_headlights_mode_changed()
+
+        self._update_headlights()
+
+
+    def _notify_headlights_mode_changed(self):
+        print "_notify_headlights_mode_changed"
+        for listener in self.listeners:
+            try:
+                listener.control_headlights_mode_changed()
+            except AttributeError:
+                pass # ignore      
+
+
+
+    def set_eyes_target(self, x, y):
+        if self.eyes_mode == EYES_MODE_HEADLIGHTS:
+            self.headlights_target[0] = x
+            self.headlights_target[1] = y
+
+            self._update_headlights()
+
+        else:
+            self.show_target[0] = x
+            self.show_target[1] = y
+
+            self._update_show_target()
+
+
+    def _update_headlights(self):
+        left = False
+        right = False
+        if self.headlights_mode == HEADLIGHTS_MODE_LEFT:
+            left = True
+        elif self.headlights_mode == HEADLIGHTS_MODE_BOTH:
+            left = True
+            right = True
+        elif self.headlights_mode == HEADLIGHTS_MODE_RIGHT:
+            right = True
+
+        if left or right:
+            self._set_eye_xy_flat_pos(self.headlights_target[0], self.headlights_target[1], left, right, False)
+
+        if not left:
+            self.p_eye_pos = list(self.eye_positions["headlights"][0])
+            self._notify_eye_changed(True)
+
+        if not right:
+            self.b_eye_pos = list(self.eye_positions["headlights"][1])
+            self._notify_eye_changed(False)
+
+    def _update_show_target(self):
+        if self.show_target_mode == SHOW_TARGET_MODE_NONE:
+            # We set _something_ here because some shows don't know to respect
+            # the mode and stop using the target if the mode is different
+            self.p_eye_pos = list(self.eye_positions["headlights"][0])
+            self.b_eye_pos = list(self.eye_positions["headlights"][1])
+            self._notify_eye_changed(True)
+            self._notify_eye_changed(False)
+        elif self.show_target_mode == SHOW_TARGET_MODE_UP:
+            self._set_eye_xy_flat_pos(self.show_target[0], self.show_target[1], True, True, True)
+        elif self.show_target_mode == SHOW_TARGET_MODE_DOWN:
+            self._set_eye_xy_flat_pos(self.show_target[0], self.show_target[1], True, True, False)
+        else:
+            # Is P & T mode, so set scaled version of max value
+            pan = self.show_target[0] * 90.0  # Don't bother with full range
+            tilt = self.show_target[1] * -135.0
+
+            self.p_eye_pos[PAN] = self.b_eye_pos[PAN] = pan
+            self.p_eye_pos[TILT] = self.b_eye_pos[TILT] = tilt
+
+            self._notify_eye_changed(True)
+            self._notify_eye_changed(False)
+
+    def set_show_target_mode(self, mode):
+
+        if mode != SHOW_TARGET_MODE_NONE and mode != SHOW_TARGET_MODE_UP and mode != SHOW_TARGET_MODE_DOWN and mode != SHOW_TARGET_MODE_PNT:
+            print "Unrecognized show target mode %s" % mode
+            return
+
+        self.show_target_mode = mode
+        self._notify_show_target_mode_changed()
+        self._update_show_target()
+
+
+    def _notify_show_target_mode_changed(self):
+        print "_notify_show_target_mode_changed"
+        for listener in self.listeners:
+            try:
+                listener.control_show_target_mode_changed()
+            except AttributeError:
+                pass # ignore      
 
 

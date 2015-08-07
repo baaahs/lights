@@ -12,8 +12,8 @@ class TestControls(object):
         self.sheep_sides = sheep_sides
         self.both = sheep_sides.both
 
-        self.p = sheep_sides.partyEye
-        self.b = sheep_sides.businessEye
+        self.p = sheep_sides.party_eye
+        self.b = sheep_sides.business_eye
         self.background = RGB(203,150,109)
 
         self.started_at = 0.0
@@ -41,8 +41,8 @@ class TestControls(object):
 
             # Calculate gradient from front with primary color to back with secondary
             # color
-            front = self.cm.chosenColors[0]
-            back = self.cm.chosenColors[1]
+            front = self.cm.chosen_colors[0]
+            back = self.cm.chosen_colors[1]
             l = float(len(sheep.VSTRIPES))
             gradient = []
             for ix, stripe in enumerate(sheep.VSTRIPES):
@@ -61,36 +61,36 @@ class TestControls(object):
             if self.cm.modifiers[len(self.cm.modifiers)-1]:
                 speed = 0.5
 
-            divF, divI = math.modf(elapsed_time / (speed / self.cm.speedMulti) )
+            divF, divI = math.modf(elapsed_time / (speed / self.cm.speed_multi) )
             frame = int(divI) % len(sheep.VSTRIPES)
 
             # paint it
             for ix, stripe in enumerate(sheep.VSTRIPES):
                 if self.cm.modifiers[0]:
-                    gOff = ix + frame
+                    g_off = ix + frame
                 else:
-                    gOff = ix - frame
+                    g_off = ix - frame
 
-                if gOff >= len(sheep.VSTRIPES):
-                    gOff -= len(sheep.VSTRIPES)
-                elif gOff < 0:
-                    gOff += len(sheep.VSTRIPES)
+                if g_off >= len(sheep.VSTRIPES):
+                    g_off -= len(sheep.VSTRIPES)
+                elif g_off < 0:
+                    g_off += len(sheep.VSTRIPES)
 
-                #print "elapsed_time=%f ix=%d frame=%d gOff=%d" % (elapsed_time, ix, frame,gOff)
-                c = gradient[gOff]
+                #print "elapsed_time=%f ix=%d frame=%d g_off=%d" % (elapsed_time, ix, frame,g_off)
+                c = gradient[g_off]
                 if self.cm.modifiers[0]:
-                    if gOff < len(sheep.VSTRIPES) - 1:
-                        cNext = gradient[gOff+1]
+                    if g_off < len(sheep.VSTRIPES) - 1:
+                        next = gradient[g_off+1]
                     else:
-                        cNext = gradient[0]
+                        next = gradient[0]
                 else:
-                    if gOff > 0:
-                        cNext = gradient[gOff-1]
+                    if g_off > 0:
+                        next = gradient[g_off-1]
                     else:
-                        cNext = gradient[len(sheep.VSTRIPES)-1]
+                        next = gradient[len(sheep.VSTRIPES)-1]
 
 
-                cp = c.interpolate_to(cNext, divF)
+                cp = c.interpolate_to(next, divF)
 
                 for panel in stripe:
                     self.both.set_cell(panel,cp )

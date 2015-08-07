@@ -16,6 +16,7 @@ import pybonjour
 import optparse
 import threading
 import traceback
+import controls_model as controls
 
 from collections import defaultdict
 
@@ -34,15 +35,15 @@ class TouchOSC(object):
     resolved = []
     timeout = 5
 
-    svcName = None
-    svcNamesToAddr = {}
+    svc_name = None
+    svc_names_to_addr = {}
 
     def __init__(self, cm, server):
         self.client = OSCMultiClient(server=server)
         self.cm = cm
-        self.cm.addListener(self)
+        self.cm.add_listener(self)
 
-    def control_colorChanged(self):
+    def control_color_changed(self):
         print "Color changed in TouchOSC"
         
         # Send 6 update messages for the color labels
@@ -60,89 +61,87 @@ class TouchOSC(object):
         self._send1("/color/sat", self.cm.color.s)
         self._send1("/color/val", self.cm.color.v)
 
-    def control_eyeChanged(self, isParty):
+    def control_eye_changed(self, is_party):
         try:
-            tilt = self.cm.pEyeTilt
-            pan = self.cm.pEyePan
-            xyEnable = self.cm.pEyeXYEnable * 1.0
-            addrBase = "/eyes/p"
+            pos = self.cm.p_eye_pos
+            xy_enable = float(self.cm.p_eye_xy_enable)
+            addr_base = "/eyes/p"
 
-            if not isParty:
-                tilt = self.cm.bEyeTilt
-                pan = self.cm.bEyePan
-                xyEnable = self.cm.bEyeXYEnable * 1.0
-                addrBase = "/eyes/b"
+            if not is_party:
+                pos = self.cm.b_eye_pos
+                xyEnable = float(self.cm.b_eye_xy_enable)
+                addr_base = "/eyes/b"
 
-            self._send1(addrBase + "Tilt", tilt)
-            self._send1(addrBase + "Pan", pan)
-            self._send1(addrBase + "XYEnable", xyEnable)
+            self._send1(addr_base + "Tilt", pos[controls.TILT])
+            self._send1(addr_base + "Pan", pos[controls.PAN])
+            self._send1(addr_base + "XYEnable", xy_enable)
 
-            if isParty:
-                self._send1("/eyes/dimmer/1", self.cm.pDimmer)
+            if is_party:
+                self._send1("/eyes/dimmer/1", self.cm.p_brightness)
             else:
-                self._send1("/eyes/dimmer/2", self.cm.bDimmer)
+                self._send1("/eyes/dimmer/2", self.cm.b_brightness)
 
-            self._send1("/eyes/skyPos", 1.0 * self.cm.eyeSkyPos)
+            self._send1("/eyes/skyPos", float(self.cm.eye_sky_pos))
         except Exception, e:
             print e
 
 
-    def control_eyeMovementLockChanged(self):
-        print "control_eyeMovementLockChanged ..."
-        if self.cm.eyeMovementLocked:
-            self._send1("/eyes/movementLock", 1.0)
-        else:
-            self._send1("/eyes/movementLock", 0.0)
+    # def control_eyeMovementLock_changed(self):
+    #     print "control_eyeMovementLock_changed ..."
+    #     if self.cm.eyeMovementLocked:
+    #         self._send1("/eyes/movementLock", 1.0)
+    #     else:
+    #         self._send1("/eyes/movementLock", 0.0)
 
-    def control_eyeColorChanged(self):
-        if self.cm.colorMix:
-            self._send1("/eyes/colorMix", 1.0)
-        else:
-            self._send1("/eyes/colorMix", 0.0)
+    # def control_eyeColor_changed(self):
+    #     if self.cm.colorMix:
+    #         self._send1("/eyes/colorMix", 1.0)
+    #     else:
+    #         self._send1("/eyes/colorMix", 0.0)
 
-        self._send1("/eyes/colorCycle", self.cm.colorCycleSpeed)
+    #     self._send1("/eyes/colorCycle", self.cm.colorCycleSpeed)
 
-        if self.cm.pColorEnable:
-            self._send1("/eyes/pColorEnable", 1.0)
-        else:
-            self._send1("/eyes/pColorEnable", 0.0)
+    #     if self.cm.pColorEnable:
+    #         self._send1("/eyes/pColorEnable", 1.0)
+    #     else:
+    #         self._send1("/eyes/pColorEnable", 0.0)
 
-        if self.cm.bColorEnable:
-            self._send1("/eyes/bColorEnable", 1.0)
-        else:
-            self._send1("/eyes/bColorEnable", 0.0)
+    #     if self.cm.bColorEnable:
+    #         self._send1("/eyes/bColorEnable", 1.0)
+    #     else:
+    #         self._send1("/eyes/bColorEnable", 0.0)
 
-    def control_chosenColorChanged(self, cIx):
+    def control_chosen_color_changed(self, cIx):
 
         addr = "/main/color/%d/" % cIx
         for i in range(1,8):
             a = "%s%d" % (addr, i)
-            if self.cm.chosenColorsIx[cIx] == i:
+            if self.cm.chosen_colors_ix[cIx] == i:
                 self._send1(a, 1.0)
             else:
                 self._send1(a, 0.0)
 
         for i in range(101,108):
             a = "%s%d" % (addr, i)
-            if self.cm.chosenColorsIx[cIx] == i:
+            if self.cm.chosen_colors_ix[cIx] == i:
                 self._send1(a, 1.0)
             else:
                 self._send1(a, 0.0)
 
-    def control_speedChanged(self):
-        pos = self.cm.speedMulti - 1.0
+    def control_speed_changed(self):
+        pos = self.cm.speed_multi - 1.0
         self._send1("/main/speed/changeRel", pos)
-        self._send1("/main/speed/lblMulti", "%.2fx" % self.cm.speedMulti)
-        self._send1("/main/speed/lblBPM", "%.1f bpm" % (120.0 * self.cm.speedMulti))
+        self._send1("/main/speed/lblMulti", "%.2fx" % self.cm.speed_multi)
+        self._send1("/main/speed/lblBPM", "%.1f bpm" % (120.0 * self.cm.speed_multi))
 
 
-    def control_intensifiedChanged(self):
+    def control_intensified_changed(self):
         self._send1("/main/intensified", self.cm.intensified)
 
-    def control_colorizedChanged(self):
+    def control_colorized_changed(self):
         self._send1("/main/colorized", self.cm.colorized)
 
-    def control_modifiersChanged(self):
+    def control_modifiers_changed(self):
         for ix,val in enumerate(self.cm.modifiers):
             addr = "/main/modifier/%d" % ix
             if val:
@@ -150,8 +149,162 @@ class TouchOSC(object):
             else:
                 self._send1(addr, 0.0)
 
-    def control_refreshAll(self):
-        self._sendAllState()
+    def control_eyes_mode_changed(self):
+        v = 0
+        if self.cm.eyes_mode == controls.EYES_MODE_DISCO:
+            v = 1
+
+        self._send1("/eyes/mode/disco", float(v))
+        self._send1("/eyes/disco/mix/visible", v)
+        self._send1("/eyes/disco/mixLbl/visible", v)
+        self._send1("/eyes/disco/cycleSpeed/visible", v)
+        self._send1("/eyes/disco/cycleSpeedLbl/visible", v)
+        self._send1("/eyes/disco/brightness/visible", v)
+
+        self._send1("/eyes/disco/colorWhite/visible", v)
+        self._send1("/eyes/disco/colorRed/visible", v)
+        self._send1("/eyes/disco/colorOrange/visible", v)
+        self._send1("/eyes/disco/colorAquamarine/visible", v)
+        self._send1("/eyes/disco/colorDeepGreen/visible", v)
+        self._send1("/eyes/disco/colorLightGreen/visible", v)
+        self._send1("/eyes/disco/colorLavender/visible", v)
+        self._send1("/eyes/disco/colorPink/visible", v)
+        self._send1("/eyes/disco/colorYellow/visible", v)
+        self._send1("/eyes/disco/colorMagenta/visible", v)
+        self._send1("/eyes/disco/colorCyan/visible", v)
+        self._send1("/eyes/disco/colorCTO2/visible", v)
+        self._send1("/eyes/disco/colorCTO1/visible", v)
+        self._send1("/eyes/disco/colorCTB/visible", v)
+        self._send1("/eyes/disco/colorBlue/visible", v)
+
+        self._send1("/eyes/disco/noEffect/visible", v)
+        self._send1("/eyes/disco/noEffectLbl/visible", v)
+        self._send1("/eyes/disco/effectSpeed/visible", v)
+        self._send1("/eyes/disco/effectSpeedLbl/visible", v)
+        self._send1("/eyes/disco/effect/visible", v)
+
+        v = 0
+        if self.cm.eyes_mode == controls.EYES_MODE_HEADLIGHTS:
+            v = 1
+
+        self._send1("/eyes/mode/headlights", float(v))
+        self._send1("/eyes/hmode/normal/visible", v)
+        self._send1("/eyes/hmode/normalLbl/visible", v)
+        self._send1("/eyes/hmode/left/visible", v)
+        self._send1("/eyes/hmode/leftLbl/visible", v)
+        self._send1("/eyes/hmode/both/visible", v)
+        self._send1("/eyes/hmode/bothLbl/visible", v)
+        self._send1("/eyes/hmode/right/visible", v)
+        self._send1("/eyes/hmode/rightLbl/visible", v)
+        self._send1("/eyes/hmode/spotLbl/visible", v)
+
+        v = 0
+        if self.cm.eyes_mode == controls.EYES_MODE_SHOW:
+            v = 1
+
+        self._send1("/eyes/mode/show", float(v))
+        self._send1("/eyes/target/up/visible", v)
+        self._send1("/eyes/target/upLbl/visible", v)
+        self._send1("/eyes/target/down/visible", v)
+        self._send1("/eyes/target/downLbl/visible", v)
+        self._send1("/eyes/target/pnt/visible", v)
+        self._send1("/eyes/target/pntLbl/visible", v)
+        self._send1("/eyes/target/none/visible", v)
+        self._send1("/eyes/target/noneLbl/visible", v)
+
+        # Must enable xy for 2 different modes
+        v = 0
+        if self.cm.eyes_mode != controls.EYES_MODE_DISCO:
+            v = 1
+
+        self._send1("/eyes/target/xy/visible", v)
+
+        # Don't need these anymore
+        self._send1("/onetime/refresh/visible", 0)
+        self._send1("/onetime/refreshLbl/visible", 0)
+
+    def control_disco_color_changed(self):
+        v = 0.0
+        if self.cm.disco_mix:
+            v = 1.0
+
+        self._send1("/eyes/disco/mix", v)
+        self._send1("/eyes/disco/cycleSpeed", self.cm.disco_cycle_speed)
+
+        # Don't (can't) update anything about the color selection
+
+
+    def control_disco_brightness_changed(self):
+        self._send1("/eyes/disco/brightness", self.cm.disco_brightness)
+
+    def control_disco_effect_changed(self):
+        if self.cm.disco_effect == 0:
+            # Because the effect control is mutually exclusive, we can toggle
+            # on a known spot, and then toggle it off to clear it
+            self._send1("/eyes/disco/effect/1/1", 1.0)
+            self._send1("/eyes/disco/effect/1/1", 0.0)
+
+            self._send1("/eyes/disco/noEffect", 1.0)
+
+        else:
+            self._send1("/eyes/disco/noEffect", 0.0)
+
+            if self.cm.disco_effect > 8:
+                y = 2
+                x = self.cm.disco_effect - 8
+            else:
+                y = 1
+                x = self.cm.disco_effect
+
+            self._send1("/eyes/disco/effect/%d/%d" % (x,y), 1.0)
+
+        self._send1("/eyes/disco/effectSpeed", self.cm.disco_effect_speed)
+
+    def control_headlights_mode_changed(self):
+        v = 0.0
+        if self.cm.headlights_mode == controls.HEADLIGHTS_MODE_NORMAL:
+            v = 1.0
+        self._send1("/eyes/hmode/normal", v);
+
+        v = 0.0
+        if self.cm.headlights_mode == controls.HEADLIGHTS_MODE_LEFT:
+            v = 1.0
+        self._send1("/eyes/hmode/left", v);
+
+        v = 0.0
+        if self.cm.headlights_mode == controls.HEADLIGHTS_MODE_BOTH:
+            v = 1.0
+        self._send1("/eyes/hmode/both", v);
+
+        v = 0.0
+        if self.cm.headlights_mode == controls.HEADLIGHTS_MODE_RIGHT:
+            v = 1.0
+        self._send1("/eyes/hmode/right", v);
+
+    def control_show_target_mode_changed(self):
+        v = 0.0
+        if self.cm.show_target_mode == controls.SHOW_TARGET_MODE_NONE:
+            v = 1.0
+        self._send1("/eyes/target/none", v);
+
+        v = 0.0
+        if self.cm.show_target_mode == controls.SHOW_TARGET_MODE_UP:
+            v = 1.0
+        self._send1("/eyes/target/up", v);
+
+        v = 0.0
+        if self.cm.show_target_mode == controls.SHOW_TARGET_MODE_DOWN:
+            v = 1.0
+        self._send1("/eyes/target/down", v);
+
+        v = 0.0
+        if self.cm.show_target_mode == controls.SHOW_TARGET_MODE_PNT:
+            v = 1.0
+        self._send1("/eyes/target/pnt", v);
+
+
+    def control_refresh_all(self):
+        self._send_all_state()
 
     def _send1(self, addr, txt):
         msg = OSCMessage(addr)
@@ -163,31 +316,38 @@ class TouchOSC(object):
             traceback.print_exc()
 
 
-    def _sendAllState(self):
-        self.control_colorChanged()
-        self.control_eyeMovementLockChanged()
-        self.control_eyeChanged(True)
-        self.control_eyeChanged(False)
-        self.control_chosenColorChanged(0)
-        self.control_chosenColorChanged(1)
-        self.control_intensifiedChanged()
-        self.control_colorizedChanged()
+    def _send_all_state(self):
+        self.control_color_changed()
+        # self.control_eyeMovementLock_changed()
+        # self.control_eye_changed(True)
+        # self.control_eye_changed(False)
+        self.control_chosen_color_changed(0)
+        self.control_chosen_color_changed(1)
+        self.control_intensified_changed()
+        self.control_colorized_changed()
+        self.control_eyes_mode_changed()
 
+        self.control_disco_color_changed()
+        self.control_disco_brightness_changed()
+        self.control_disco_effect_changed()
+
+        self.control_headlights_mode_changed()
+        self.control_show_target_mode_changed()
 
     def serve_forever(self):
         print "TouchOSC starting serve_forever"
         browse_sdRef = pybonjour.DNSServiceBrowse(regtype = "_osc._udp", callBack = self.browse_callback)
 
         try:
-            try:
+            # try:
                 while True:
                     print "TouchOSC selecting on browse_sd"
                     ready = select.select([browse_sdRef], [], [])
                     print "Select!"
                     if browse_sdRef in ready[0]:
                         pybonjour.DNSServiceProcessResult(browse_sdRef)
-            except KeyboardInterrupt:
-                pass
+            # except KeyboardInterrupt:
+            #     pass
         finally:
             browse_sdRef.close()
 
@@ -206,11 +366,11 @@ class TouchOSC(object):
                 addr = (hosttarget, port)
                 print "Adding a TouchOSC client %s:%s" % addr
 
-                self.svcNamesToAddr[self.svcName] = addr
+                self.svc_names_to_addr[self.svc_name] = addr
 
                 self.client.setOSCTarget( addr )
 
-                self._sendAllState()
+                self._send_all_state()
             else:
                 print "Ignoring this because it's not a TouchOSC client"
 
@@ -222,10 +382,10 @@ class TouchOSC(object):
 
         if not (flags & pybonjour.kDNSServiceFlagsAdd):
             print 'Service removed %s' % serviceName
-            if serviceName in self.svcNamesToAddr:
-                addr = self.svcNamesToAddr[serviceName]
+            if serviceName in self.svc_names_to_addr:
+                addr = self.svc_names_to_addr[serviceName]
                 self.client.delOSCTarget( addr )
-                del self.svcNamesToAddr[serviceName]
+                del self.svc_names_to_addr[serviceName]
 
             return
 
@@ -233,7 +393,7 @@ class TouchOSC(object):
         print 'serviceName=%s' % serviceName
         # This is an admittedly kind of hookey way to get the key to the resolve
         # function, but I'm not sure of a better one at the moment
-        self.svcName = serviceName
+        self.svc_name = serviceName
 
         resolve_sdRef = pybonjour.DNSServiceResolve(0,
                                                     interfaceIndex,
