@@ -206,10 +206,13 @@ class ControlsModel(object):
         # it's colors appropriately
         self.colorized = 0.0
 
-        # There are 7 modifiers that a show can interpret as it wishes.
-        # Conventions may be established around general concepts that these toggles
-        # represent, but until that happens it's a free for all.
+        # These are modifiers that a show can interpret as it wishes.
+        # The first step is a set of binary on/off ones. Only the first 5
+        # are exposed on the iPhone UI.
         self.modifiers = [False,False,False,False,False,False,False]
+        # The second set is incremented each time a user taps the corresponding
+        # button. They can be reset to 0 by an app using reset_steps()
+        self.step_modifiers = [0,0,0,0]
 
         self.listeners = set()
 
@@ -219,6 +222,9 @@ class ControlsModel(object):
         self.color = color.RGB(255,255,0)
 
         self.set_eyes_mode(EYES_MODE_SHOW)
+
+        # A message that is shown in the UI
+        self.message = ""
 
 
         self.master_names = []
@@ -325,6 +331,10 @@ class ControlsModel(object):
                 self.set_colorized(data[0])
             elif parts[2] == "modifier":
                 self.toggle_modifier(int(parts[3]))
+
+            elif parts[2] == "stepModifier":
+                if data[0] == 1.0:
+                    self.increment_step_modifier(int(parts[3]))
 
             elif parts[2] == "brightness":
                 self.set_brightness(data[0])
@@ -984,7 +994,7 @@ class ControlsModel(object):
                 listener.control_brightness_changed(self.brightness)
             except AttributeError:
                 pass # ignore
-                
+
     def toggle_modifier(self, mIx):
         mIx = color.clamp(mIx, 0, len(self.modifiers))
 
@@ -1000,6 +1010,27 @@ class ControlsModel(object):
             except AttributeError:
                 pass # ignore
 
+
+    def increment_step_modifier(self, mIx):
+        mIx = color.clamp(mIx, 0, len(self.step_modifiers))
+
+        self.step_modifiers[mIx] += 1
+
+        self._notify_step_modifiers_changed()
+
+    def reset_step_modifiers(self):
+        for ix in range(0, len(self.step_modifiers)):
+            self.step_modifiers[ix] = 0
+
+        self._notify_step_modifiers_changed()
+
+    def _notify_step_modifiers_changed(self):
+        print "_notify_step_modifiers_changed"
+        for listener in self.listeners:
+            try:
+                listener.control_step_modifiers_changed()
+            except AttributeError:
+                pass # ignore
 
     def set_eyes_mode(self, mode):
         # We always allow resetting the mode because that might help
@@ -1279,5 +1310,18 @@ class ControlsModel(object):
         for listener in self.listeners:
             try:
                 listener.control_max_time_changed()
+            except AttributeError:
+                pass # ignore      
+
+
+    def set_message(self, msg):
+        self.message = msg
+        self._notify_message_changed()
+
+    def _notify_message_changed(self):
+        print "_notify_message_changed"
+        for listener in self.listeners:
+            try:
+                listener.control_message_changed()
             except AttributeError:
                 pass # ignore      

@@ -265,6 +265,13 @@ class Color(object):
 
     @h.setter
     def h(self, val):
+        # Let h roll over for ease of calculation elsewhere, but
+        # then clamp it off course
+        if val > 1.0:
+            val -= 1.0
+        elif val < 1.0:
+            val += 1.0
+
         v = clamp(val, 0.0, 1.0)
         self.hsv_t[0] = round(v, 8)
 

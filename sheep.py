@@ -47,9 +47,12 @@ ALL = [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22
 #100, 101, 102, 103, 104, 105, 106, 107, 108, 109]
 
 # Rough grouping of panels by height on the bus, forming horizontal bands
-LOW    = [3, 8, 9, 14, 18, 23, 22, 31, 30, 34, 37, 43, 42]
-MEDIUM = [1, 2, 7, 13, 16, 17, 20, 21, 26, 27, 28, 29, 33, 35, 36, 40, 41]
-HIGH   = [4, 5, 6, 12, 11, 15, 19, 25, 24, 32, 39]
+LOW    = [3, 8, 9, 14, 18, 23, 22, 31, 30, 34, 37, 43, 42, 58, 57, 55]
+MEDIUM = [1, 2, 7, 13, 16, 17, 20, 21, 26, 27, 28, 29, 33, 35, 36, 40, 41, 56, 54, 53, 85, 84, 89, 83]
+HIGH   = [4, 5, 6, 12, 11, 15, 19, 25, 24, 32, 39, 44, 45, 52, 51, 50, 80]
+TOP    = [68, 70, 72, 66, 60, 65, 63, 64, 62, 61]
+
+HSTRIPES = [ LOW, MEDIUM, HIGH, TOP ]
 
 # Vertical stripes, ordered from front to rear
 # Note that this is a list of lists!
@@ -57,7 +60,7 @@ VSTRIPES = [[4, 84, 85, 89, 80, 83, 66, 68, 70, 72],
             [60, 61, 62, 63, 64, 65],
             [1,2,3],
             [4,5,6,7,8,9],
-            [11,12,13,14],
+            [11,12,13,14,44,45],
             [15,16,17,18,23],
             [19,20,21,22],
             [24,25,26,27,28,29,30,31],
@@ -72,20 +75,21 @@ FRONT_SPIRAL = [13,16,17,18,14,9,8,7]
 # From tom's "sheep tailoring" diagram (link?)
 # Split the sheep into four rough quadrants
 SHOULDER    = [4,5,1,6,2,7,3,8,9]
-RACK        = [11,12,13,16,15,14,18,17,21,20,19]
+RACK        = [11,12,13,16,15,14,18,17,21,20,19, 44, 45]
 LOIN        = [23,22,31,30,29,28,27,34,33,26,25,24]
-LEG         = [37,43,42,41,35,40,39,32]
+LEG         = [36,37,43,42,41,35,40,39,32]
 
 # Newer things for fun and profit
 TAIL = [50] # Tail
 BUTT = [51, 52, 53, 54, 55, 56, 57, 58]  # Butt. Symetrical except for 51
 
-EARS = [60] # Ears
-HEAD = [61, 62, 63, 64, 65] # Head
 FACE = [66, 68, 70, 72] # Face
-NOSE = [73, 74, 75, 77, 78, 79, 82] # Nose
+HEAD = [61, 62, 63, 64, 65] # Head
+EARS = [60] # Ears
 THROAT = [80, 83] # Throat
 BREAST = [84, 85, 89] # Breast
+
+#NOSE = [73, 74, 75, 77, 78, 79, 82] # Nose
 
 
 def load_geometry(mapfile):
@@ -205,6 +209,9 @@ class Sheep(object):
             return []
 
     def set_cell(self, cell, color):
+        if isinstance(cell, list):
+            return self.set_cells(cell, color)
+
         # a single set_cell call may result in two panels being set
         c = self._resolve(cell)
         if not c:

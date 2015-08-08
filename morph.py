@@ -122,3 +122,15 @@ def multistep_color_transition(color_list, steps=20, continuous=False):
     if continuous:
         chain = itertools.cycle(chain)
     return chain
+
+# Instead of a generator, just create a list with colors init rather than
+# recreating a bunch of objects all the time
+def transition_list(start_color, end_color, steps=20):
+    _list = []
+
+    t = color_transition(start_color, end_color, steps=steps)
+
+    for i in range(0, steps):
+        _list.append(t.next())
+
+    return _list

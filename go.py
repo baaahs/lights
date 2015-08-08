@@ -316,6 +316,7 @@ class ShowRunner(threading.Thread):
             pass
 
         self.cm.set_master_name(name)
+        self.cm.set_message("[%s]" % name)
 
 
     def next_eo_show(self, name):
@@ -739,8 +740,8 @@ if __name__=='__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Baaahs Light Control')
 
-    parser.add_argument('--max-time', type=float, default=float(60),
-                        help='Maximum number of seconds a show will run (default 60)')
+    parser.add_argument('--max-time', type=float, default=float(300),
+                        help='Maximum number of seconds a show will run (default 300)')
 
     parser.add_argument('--simulator',dest='simulator',action='store_true')
 

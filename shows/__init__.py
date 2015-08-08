@@ -34,11 +34,19 @@ def load_shows(path=None):
             else:
                 # we have go to rooting around for things that look like shows
                 for (name,t) in inspect.getmembers(mod):
-                    if inspect.isclass(t) and hasattr(t, 'next_frame'):
+                    if inspect.isclass(t):
+                        is_show = False
+                        if hasattr(t, "is_show"):
+                            is_show = t.is_show
+                        elif hasattr(t, 'next_frame'):
+                            is_show = True
+
                         # print "likely show:", name, type(t)
 
-                        #ctor = getattr(mod, name)
-                        _shows.append( (name, t) )
+                        if is_show:
+                            if hasattr(t, "name"):
+                                name = t.name
+                            _shows.append( (name, t) )
 
         except Exception, e:
             print "exception loading module from %s, skipping" % m

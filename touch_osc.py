@@ -356,6 +356,9 @@ class TouchOSC(object):
         self._send1("/shows/master/maxTime", scaled)
         self._send1("/shows/master/maxTimeLbl", "%dm %ds" % (int(mins), int(secs)))
 
+    def control_message_changed(self):
+        self._send1("/main/message", self.cm.message)
+
 
 
     def control_refresh_all(self):
@@ -380,6 +383,7 @@ class TouchOSC(object):
         self.control_chosen_color_changed(1)
         self.control_intensified_changed()
         self.control_colorized_changed()
+        self.control_modifiers_changed()
         self.control_brightness_changed(self.cm.brightness)
         self.control_eyes_mode_changed()
 
@@ -398,7 +402,7 @@ class TouchOSC(object):
         self.control_eo_name_changed()
 
         self.control_max_time_changed()
-
+        self.control_message_changed()
 
     def serve_forever(self):
         print "TouchOSC starting serve_forever"
