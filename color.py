@@ -123,6 +123,8 @@ def Hex(value):
     rgb_t = (int(value[i:i+lv/3], 16) for i in range(0, lv, lv/3))
     return RGB(*rgb_t)
 
+
+
 def Pos(pos):
     "Converts a sharpy color position to an (approximate) rgb value"    
     if pos < 9:
@@ -333,8 +335,17 @@ class Color(object):
         self._set_hsv(rgb_to_hsv(new))
 
 
+#################################################################################
+##
+##  Some global color defaults. Have to do these after everything is defined
+##  up above.
+##
+
+BLACK = RGB(0,0,0)
+WHITE = RGB(255,255,255)
 
 
+###########
 if __name__=='__main__':
     import doctest
     doctest.testmod()

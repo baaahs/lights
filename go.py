@@ -437,12 +437,12 @@ class ShowRunner(threading.Thread):
         self.overlay_framegen = self.overlay_show.next_frame()
 
         try:
-            self.eo_show.set_controls_model(self.cm)
+            self.overlay_show.set_controls_model(self.cm)
         except AttributeError:
             pass
 
         try:
-            self.eo_show.control_refreshAll()
+            self.overlay_show.control_refreshAll()
         except AttributeError:
             pass
 

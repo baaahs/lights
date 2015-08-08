@@ -1,10 +1,11 @@
 from collections import defaultdict, namedtuple
-from color import RGB
+from color import RGB, clamp
 
 import math
 
 import controls_model as controls
 import eye_effect
+
 
 ##
 ## Sheep geometry
@@ -380,10 +381,10 @@ class Eye(object):
         # in which case they will be used when the override is over.
         
         # Pan has a range of -270 to +270 
-        self.pan = 0
+        self._pan = 0.0
 
         # Tilt is -135 to +135
-        self.tilt = 0
+        self._tilt = 0.0
 
         self.last_x_pos = 0
         self.last_y_pos = 0
@@ -402,6 +403,22 @@ class Eye(object):
     def __repr__(self):
         return "Eye side=%s" % self.side
 
+    @property
+    def tilt(self):
+        return self._tilt
+
+    @tilt.setter
+    def tilt(self, val):
+        self._tilt = clamp(float(val), -270.0, 270.0)
+
+    @property
+    def pan(self):
+        return self._pan
+
+    @pan.setter
+    def pan(self, val):
+        self._pan = clamp(float(val), -135.0, 135.0)
+
     def set_brightness(self, val):
         self._brightness = val
 
@@ -411,8 +428,8 @@ class Eye(object):
         using the proper source based on override mode.
         """
 
-        pan = float(self.pan)
-        tilt = float(self.tilt)
+        pan = self._pan
+        tilt = self._tilt
         color_pos = self.color_pos
         dimmer = self.dimmer
 
@@ -494,18 +511,18 @@ class Eye(object):
 
         pan_rads = math.atan2(x,1)
         tilt_rads = math.atan2( y * math.sin(math.fabs(pan_rads)), x)
-        self.pan = math.degrees(pan_rads)
-        self.tilt = math.degrees(tilt_rads) - 90
-        if self.tilt < 0:
-            self.tilt += 360
-        if self.tilt > 180:
-            self.tilt = 360-self.tilt
+        self._pan = math.degrees(pan_rads)
+        self._tilt = math.degrees(tilt_rads) - 90
+        if self._tilt < 0:
+            self._tilt += 360.0
+        if self._tilt > 180:
+            self._tilt = 360-self._tilt
 
-        if self.tilt > 135:
-            self.tilt = 135
+        if self._tilt > 135:
+            self._tilt = 135
 
         if self.skyPos:
-            self.pan = 360-self.pan
+            self._pan = 360-self._pan
 
     def set_eye_dmx(self, channel, value):
         # if self.side == "p" and value != 0 and value != 255:
@@ -527,8 +544,8 @@ class MutableEye(Eye):
         if self.muted:
             return
 
-        self.parent.pan = self.pan
-        self.parent.tilt = self.tilt
+        self.parent.pan = self._pan
+        self.parent.tilt = self._tilt
         self.parent.color_pos = self.color_pos
         self.parent.dimmer = self.dimmer
 

@@ -104,7 +104,9 @@ class EyeEffect(object):
             if 'external_speed_modifies' in json:
                 self.external_speed_modifies = json["external_speed_modifies"]
 
-
+    def __repr__(self):
+        return str(self.as_json())
+        
     def as_json(self):
         out = {
             'shutter_type': self.shutter_type,

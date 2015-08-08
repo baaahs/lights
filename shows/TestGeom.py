@@ -6,6 +6,8 @@ import random
 import math
 
 class TestGeom(object):
+    ok_for_random = False
+    
     def __init__(self, sheep_sides):
         self.name = "TestGeom"
 

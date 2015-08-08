@@ -1,15 +1,14 @@
 import sheep
-import color
+from color import clamp
 import time
 
 import random
 import math
 
 import looping_show
-from randomcolor import random_color
-import morph
+import eye_effect
 
-class Areas(looping_show.LoopingShow):
+class FadingSpot(looping_show.LoopingShow):
     # The full list of attributes that are honored during show loading in
     # some way is:
     #
@@ -61,76 +60,64 @@ class Areas(looping_show.LoopingShow):
     # Because we extend LoopingShow we must explicitly override is_show to be True
     is_show = True
     
-    name = "Areas"
+    name = "Fading Spot"
+    show_type = "overlay"
+    controls_eyes = True
 
     def __init__(self, sheep_sides):
         looping_show.LoopingShow.__init__(self, sheep_sides)
-        self.foreground = random_color(luminosity="light")
-        self.background = self.foreground.copy()
-        self.background.h += 0.5
+        self.effect = eye_effect.EyeEffect()
 
-    def set_controls_model(self, cm):
-        super(Areas, self).set_controls_model(cm)
+        self.total_prog_per_loop = 1 / 6.0
 
-        self.cm.reset_step_modifiers()
+        # We set this high because we are going to cut it down quickly
+        self.hertz = 2.0
 
-    def clear(self):
-        c = self.background
-        if self.cm.modifiers[1]:
-            c = color.BLACK
+    # def set_controls_model(self, cm):
+    #     super(DiscoQueen, self).set_controls_model(cm)
 
-        self.ss.both.set_all_cells(c)
 
-    def control_step_modifiers_changed(self):
-        self.cm.set_message("Mode %d" % self.step_mode(5))
+    # def clear(self):
+    #     c = self.background
+    #     if self.cm.modifiers[5]:
+    #         c = self.black
+
+    #     self.ss.both.set_all_cells(c)
+
+
+    # def control_step_modifiers_changed(self):
+    #     self.effect.gobo = self.step_mode(16) + 1
+    #     # Since we are an eyes only show it's bad form for us to
+    #     # go overwriting the message, but for debugging for now...
+    #     self.cm.set_message("CE g=%d" % self.effect.gobo)
+
 
     def update_at_progress(self, progress, new_loop, loop_instance):
 
         if new_loop:
-            if self.cm.modifiers[0]:
-                self.foreground = random_color(luminosity="light")
-                self.background = self.foreground.copy()
-                self.background.h += 0.5
+            if loop_instance > 0:
+                self.hertz = self.hertz * (5.0/6.0)
+                
+            max_sweep = 100
+
+            if loop_instance % 2 == 0:
+                # From left to right
+                self.last = -1 * max_sweep
+                self.next = max_sweep
             else:
-                self.background = self.cm.chosen_colors[1]
-                self.foreground = self.cm.chosen_colors[0]
+                self.last = max_sweep
+                self.next = -1 * max_sweep
 
-            self.color_list = morph.transition_list(self.foreground, self.background, steps=16)
-            self.clear()
+        # Will only fade for a certain number of loops total
 
+        total_prog = (loop_instance + progress) * self.total_prog_per_loop
 
-        mode = self.step_mode(5)
+        self.pe.dimmer = 1.0 - total_prog
+        self.be.dimmer = 1.0 - total_prog
 
-        if mode == 4:
-            _list = sheep.ALL
-        elif mode == 3:
-            _list = [sheep.FACE, sheep.HEAD, sheep.EARS, sheep.THROAT, sheep.BREAST, sheep.SHOULDER, sheep.RACK, sheep.LOIN, sheep.LEG, sheep.BUTT, sheep.TAIL]
-        elif mode == 2:
-            _list = sheep.FRONT_SPIRAL
-        elif mode == 1:
-            _list = sheep.VSTRIPES
-        elif mode == 0:
-            _list = sheep.HSTRIPES
+        self.pe.pan = 90
+        self.be.pan = 90
 
-        # Because progress will never actually hit 1.0, this will always
-        # produce a valid list index
-        to_light = int(progress * len(_list))
-
-        for i in range(0, len(_list)):
-            c = self.background
-            if self.cm.modifiers[1]:
-                c = color.BLACK
-
-            if i <= to_light:
-                x = i
-                if len(_list) < len(self.color_list) / 2:
-                    x = i * 2
-                c_ix = x % len(self.color_list)
-
-                if self.cm.modifiers[2] and (loop_instance % 2 == 0):
-                    c_ix = len(self.color_list) - 1 - c_ix
-
-                c = self.color_list[c_ix]
-
-            el = _list[i]
-            self.ss.both.set_cell(el, c)
+        tilt = self.last + ((self.next - self.last) * progress)
+        self.pe.tilt = tilt
+        self.be.tilt = tilt

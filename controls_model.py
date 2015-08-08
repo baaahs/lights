@@ -999,6 +999,7 @@ class ControlsModel(object):
             self._update_headlights()
         elif mode == EYES_MODE_SHOW:
             self._update_show_target()
+        
 
     def _notify_eyes_mode_changed(self):
         print "_notify_eyes_mode_changed"

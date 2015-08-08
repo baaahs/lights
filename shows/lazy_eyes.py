@@ -1,15 +1,14 @@
 import sheep
-import color
+from color import clamp
 import time
 
 import random
 import math
 
 import looping_show
-from randomcolor import random_color
-import morph
+import eye_effect
 
-class Areas(looping_show.LoopingShow):
+class LasyEyes(looping_show.LoopingShow):
     # The full list of attributes that are honored during show loading in
     # some way is:
     #
@@ -61,76 +60,76 @@ class Areas(looping_show.LoopingShow):
     # Because we extend LoopingShow we must explicitly override is_show to be True
     is_show = True
     
-    name = "Areas"
+    name = "Lazy Eyes"
+    show_type = "eyes_only"
+    controls_eyes = True
 
     def __init__(self, sheep_sides):
         looping_show.LoopingShow.__init__(self, sheep_sides)
-        self.foreground = random_color(luminosity="light")
-        self.background = self.foreground.copy()
-        self.background.h += 0.5
+        self.effect = eye_effect.EyeEffect()
+
+        self.next = [[0.0, 0.0], [0.0, 0.0]]
 
     def set_controls_model(self, cm):
-        super(Areas, self).set_controls_model(cm)
+        super(LazyEyes, self).set_controls_model(cm)
 
         self.cm.reset_step_modifiers()
 
-    def clear(self):
-        c = self.background
-        if self.cm.modifiers[1]:
-            c = color.BLACK
+    # def clear(self):
+    #     c = self.background
+    #     if self.cm.modifiers[5]:
+    #         c = self.black
 
-        self.ss.both.set_all_cells(c)
+    #     self.ss.both.set_all_cells(c)
+
 
     def control_step_modifiers_changed(self):
-        self.cm.set_message("Mode %d" % self.step_mode(5))
+        self.effect.gobo = self.step_mode(16) + 1
+        # Since we are an eyes only show it's bad form for us to
+        # go overwriting the message, but for debugging for now...
+        self.cm.set_message("CE g=%d" % self.effect.gobo)
+
 
     def update_at_progress(self, progress, new_loop, loop_instance):
 
         if new_loop:
-            if self.cm.modifiers[0]:
-                self.foreground = random_color(luminosity="light")
-                self.background = self.foreground.copy()
-                self.background.h += 0.5
-            else:
-                self.background = self.cm.chosen_colors[1]
-                self.foreground = self.cm.chosen_colors[0]
+            # Choose a new random location for the eyes to travers to
 
-            self.color_list = morph.transition_list(self.foreground, self.background, steps=16)
-            self.clear()
+            next = [list(self.cm.p_eye_pos), list(self.cm.b_eye_pos)]
 
+            # Since intensified ranges -1 to +1, we need to convert it into 0 to 1.0
+            abs_intensity = (self.cm.intensified + 1.0) / 2.0
 
-        mode = self.step_mode(5)
+            max_tilt = abs_intensity * 40.0
+            max_pan = abs_intensity * 130.0
 
-        if mode == 4:
-            _list = sheep.ALL
-        elif mode == 3:
-            _list = [sheep.FACE, sheep.HEAD, sheep.EARS, sheep.THROAT, sheep.BREAST, sheep.SHOULDER, sheep.RACK, sheep.LOIN, sheep.LEG, sheep.BUTT, sheep.TAIL]
-        elif mode == 2:
-            _list = sheep.FRONT_SPIRAL
-        elif mode == 1:
-            _list = sheep.VSTRIPES
-        elif mode == 0:
-            _list = sheep.HSTRIPES
+            self.last = self.next
+            self.next = [
+                [ 
+                    next[0][0] + (random.uniform(-1.0, 1.0) * max_pan),
+                    next[0][1] + (random.uniform(-1.0, 1.0) * max_tilt)
+                ] , [
+                    next[1][0] + (random.uniform(-1.0, 1.0) * max_pan),
+                    next[1][1] + (random.uniform(-1.0, 1.0) * max_tilt)
+                ]
+            ]
 
-        # Because progress will never actually hit 1.0, this will always
-        # produce a valid list index
-        to_light = int(progress * len(_list))
+            # Make sure the new target is reasonable so that the next next frame isn't starting
+            # from a totally insane place
+            self.next[0][0] = clamp(self.next[0][0], -270.0, 270.0)
+            self.next[1][0] = clamp(self.next[1][0], -270.0, 270.0)
+            self.next[0][1] = clamp(self.next[0][1], -135.0, 135.0)
+            self.next[1][1] = clamp(self.next[1][1], -135.0, 135.0)
 
-        for i in range(0, len(_list)):
-            c = self.background
-            if self.cm.modifiers[1]:
-                c = color.BLACK
+            print "ai=%f last=%s  new=%s" % (abs_intensity, str(self.last), str(self.next))
 
-            if i <= to_light:
-                x = i
-                if len(_list) < len(self.color_list) / 2:
-                    x = i * 2
-                c_ix = x % len(self.color_list)
+        self.pe.pan = self.last[0][0] + ((self.last[0][0] - self.next[0][0]) * progress)
+        self.pe.tilt = self.last[0][1] + ((self.last[0][1] - self.next[0][1]) * progress)
+        self.pe.color_pos = self.cm.chosen_colors_pos[0]
 
-                if self.cm.modifiers[2] and (loop_instance % 2 == 0):
-                    c_ix = len(self.color_list) - 1 - c_ix
+        self.be.pan = self.last[1][0] + ((self.last[1][0] - self.next[1][0]) * progress)
+        self.be.tilt = self.last[1][1] + ((self.last[1][1] - self.next[1][1]) * progress)
+        self.be.color_pos = self.cm.chosen_colors_pos[1]
 
-                c = self.color_list[c_ix]
-
-            el = _list[i]
-            self.ss.both.set_cell(el, c)
+        self.pe.effect = self.effect
+        self.be.effect = self.effect
