@@ -23,6 +23,9 @@ BUSINESS_OFFSET = 416
 
 class SimulatorModel(object):
     def __init__(self, hostname, port=4444, debug=False):
+        if hostname is None:
+            hostname = ""
+
         self.server = (hostname, port)
         self.debug = debug
         self.sock = None

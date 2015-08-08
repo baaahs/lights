@@ -2,6 +2,9 @@ import sheep
 from color import HSV
 
 class Dan(object):
+
+    show_type = "overlay"
+
     def __init__(self, sheep_sides):
         self.name = 'Dan'
         self.cells = sheep_sides.both

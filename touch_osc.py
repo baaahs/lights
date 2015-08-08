@@ -405,15 +405,13 @@ class TouchOSC(object):
         self.control_message_changed()
 
     def serve_forever(self):
-        print "TouchOSC starting serve_forever"
+        # print "TouchOSC starting serve_forever"
         browse_sdRef = pybonjour.DNSServiceBrowse(regtype = "_osc._udp", callBack = self.browse_callback)
 
         try:
             try:
                 while True:
-                    print "TouchOSC selecting on browse_sd"
                     ready = select.select([browse_sdRef], [], [])
-                    print "Select!"
                     if browse_sdRef in ready[0]:
                         pybonjour.DNSServiceProcessResult(browse_sdRef)
             except KeyboardInterrupt:
@@ -425,10 +423,10 @@ class TouchOSC(object):
     def resolve_callback(self, sdRef, flags, interfaceIndex, errorCode, fullname,
                          hosttarget, port, txtRecord):
         if errorCode == pybonjour.kDNSServiceErr_NoError:
-            print 'Resolved service:'
-            print '  fullname   =', fullname
-            print '  hosttarget =', hosttarget
-            print '  port       =', port            
+            # print 'Resolved service:'
+            # print '  fullname   =', fullname
+            # print '  hosttarget =', hosttarget
+            # print '  port       =', port            
             self.resolved.append(True)
 
             if "TouchOSC" in fullname:
@@ -459,8 +457,8 @@ class TouchOSC(object):
 
             return
 
-        print 'Service added; resolving'
-        print 'serviceName=%s' % serviceName
+        # print 'Service added; resolving'
+        # print 'serviceName=%s' % serviceName
         # This is an admittedly kind of hookey way to get the key to the resolve
         # function, but I'm not sure of a better one at the moment
         self.svc_name = serviceName

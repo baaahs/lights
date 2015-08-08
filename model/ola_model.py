@@ -83,18 +83,18 @@ class OLAModel(object):
         data.extend(self.pixels)
         self.client.SendDmx(self.universe, data, callback)
 
-        o = PANEL_MAP["EYEp"]
-        print "P-EYE: ",
-        for ix in range(0, 16):
-            print "%d:%03d" % (o+ix, self.pixels[o + ix]),
-        print
+        # o = PANEL_MAP["EYEp"]
+        #print "P-EYE: ",
+        # for ix in range(0, 16):
+        #     print "%d:%03d" % (o+ix, self.pixels[o + ix]),
+        # print
 
-        o = PANEL_MAP["EYEb"]
-        print "B-EYE: ",
-        for ix in range(0, 16):
-            print "%d:%03d" % (o+ix, self.pixels[o + ix]),
-            # print "%03d" % self.pixels[0 + ix],
-        print
+        # o = PANEL_MAP["EYEb"]
+        #print "B-EYE: ",
+        # for ix in range(0, 16):
+        #     print "%d:%03d" % (o+ix, self.pixels[o + ix]),
+        #     # print "%03d" % self.pixels[0 + ix],
+        # print
 
 
 if __name__ == '__main__':

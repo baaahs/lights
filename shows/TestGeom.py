@@ -7,15 +7,15 @@ import math
 
 class TestGeom(object):
     ok_for_random = False
-    
+
     def __init__(self, sheep_sides):
         self.name = "TestGeom"
 
         self.sheep_sides = sheep_sides
         self.both = sheep_sides.both
 
-        self.p = sheep_sides.partyEye
-        self.b = sheep_sides.businessEye
+        self.p = sheep_sides.party_eye
+        self.b = sheep_sides.business_eye
         self.background = RGB(203,150,109)
 
         self.started_at = 0.0

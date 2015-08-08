@@ -11,6 +11,8 @@ import sheep
 import time
 from random import randint, choice
 from color import RGB, HSV
+
+import copy
             
 # Converts a 0-1536 color into rgb on a wheel by keeping one of the rgb channels off
 
@@ -117,42 +119,55 @@ class Snow(object):
 		self.noOSCcolor = randint(0,1536)	# Default color if no Touch OSC
 		self.OSCcolor = Wheel(self.noOSCcolor)
 		
-		self.speed = 0.05
+		self.speed = 0.1
+
+	def set_controls_model(self, cm):
+		self.cm = cm
 		
-	def set_param(self, name, val):
-		# name will be 'colorR', 'colorG', 'colorB'
-		rgb255 = int(val * 0xff)
-		if name == 'colorR':
-			self.OSCcolor.r = rgb255
-			self.last_osc = time.time()
-			self.OSC = True
-		elif name == 'colorG':
-			self.OSCcolor.g = rgb255
-			self.last_osc = time.time()
-			self.OSC = True
-		elif name == 'colorB':
-			self.OSCcolor.b = rgb255
-			self.last_osc = time.time()
-			self.OSC = True						
+	# def set_param(self, name, val):
+	# 	# name will be 'colorR', 'colorG', 'colorB'
+	# 	rgb255 = int(val * 0xff)
+	# 	if name == 'colorR':
+	# 		self.OSCcolor.r = rgb255
+	# 		self.last_osc = time.time()
+	# 		self.OSC = True
+	# 	elif name == 'colorG':
+	# 		self.OSCcolor.g = rgb255
+	# 		self.last_osc = time.time()
+	# 		self.OSC = True
+	# 	elif name == 'colorB':
+	# 		self.OSCcolor.b = rgb255
+	# 		self.last_osc = time.time()
+	# 		self.OSC = True						
 					
 	def next_frame(self):	
 		while (True):
 			
 			if len(self.paths) < self.max_paths:
 				stripe_num = randint(0, len(sheep.VSTRIPES) - 1)
-				new_path = Path(self.sheep, sheep.VSTRIPES[stripe_num])
+				stripe = copy.copy(sheep.VSTRIPES[stripe_num])
+				# Flow up on mod 1
+				if not self.cm.modifiers[1]:
+					stripe.reverse()
+				new_path = Path(self.sheep, stripe)
 				self.paths.append(new_path)
 			
 			# Set background cells
 
 			self.sheep.set_all_cells(self.background)						
 			
-			# Which color to use?
-			
-			if self.OSC:	# Which color to use?
-				adj_color = self.OSCcolor.copy()
-			else:
+			# Which color to use?			
+			if self.cm.modifiers[0]:
+				# Use our own random color
 				adj_color = Wheel(self.noOSCcolor)
+			else:
+				# Use chosen color
+				adj_color = self.cm.chosen_colors[0]
+
+			# if self.OSC:	# Which color to use?
+			# 	adj_color = self.OSCcolor.copy()
+			# else:
+			# 	adj_color = Wheel(self.noOSCcolor)
 					
 			# Draw paths
 				
@@ -165,10 +180,10 @@ class Snow(object):
 				
 			# Cycle the foreground color
 			
-			if time.time() - self.last_osc > 120:	# 2 minutes
-				self.OSC == False
+			# if time.time() - self.last_osc > 120:	# 2 minutes
+			# 	self.OSC == False
 				
-			if self.OSC == False:
+			if self.cm.modifiers[0]:
 				self.noOSCcolor += 1
 				if self.noOSCcolor > 1536:
 					self.noOSCcolor -= 1536

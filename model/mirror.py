@@ -32,7 +32,7 @@ class MirrorModel(object):
 
     def set_eye_dmx(self, isParty, channel, value):
         for m in self.models:
-            m.set_eye_dmx(self, isParty, channel, value)
+            m.set_eye_dmx(isParty, channel, value)
 
     def go(self):
         for m in self.models:

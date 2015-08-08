@@ -15,6 +15,11 @@ import controls_model
 import touch_osc
 import watchdog
 
+from model.simulator import SimulatorModel
+from model.ola_model import OLAModel
+from model.mirror import MirrorModel
+
+
 # fail gracefully if cherrypy isn't available
 _use_cherrypy = False
 try:
@@ -766,6 +771,7 @@ class SheepServer(object):
                             '/',
                             config=config)
 
+
 if __name__=='__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Baaahs Light Control')
@@ -774,6 +780,12 @@ if __name__=='__main__':
                         help='Maximum number of seconds a show will run (default 300)')
 
     parser.add_argument('--simulator',dest='simulator',action='store_true')
+    parser.add_argument('--host',dest='sim_host', type=str, help="Hostname or ip for simulator")
+    parser.add_argument('--port',dest='sim_port', type=int, default=4444, help="Port for simulator")
+
+    parser.add_argument('--universe',dest='universe', type=int, default=0, help="DMX universe")
+
+    parser.add_argument('--mirror',dest='mirror',action='store_true', help="Mirror to both sim and OLA")
 
     parser.add_argument('--debug',dest='debug',action='store_true')
 
@@ -788,21 +800,20 @@ if __name__=='__main__':
         print ', '.join([s[0] for s in shows.load_shows()])
         sys.exit(0)
 
-    if args.simulator:
+    if args.mirror:
+        print "Mirroring to both OLA universe %d and sim %s:%d" % (args.universe, args.sim_host, args.sim_port)
+        sim = SimulatorModel(args.sim_host, port=args.sim_port, debug=args.debug)
+        ola = OLAModel(512, universe=args.universe)
+        model = MirrorModel(sim, ola)
+    elif args.simulator:
         # sim_host = "localhost"
-        sim_host = ""
-        sim_port = 4444
-        print "Using SheepSimulator at %s:%d" % (sim_host, sim_port)
-        from model.simulator import SimulatorModel
-        model = SimulatorModel(sim_host, port=sim_port, debug=args.debug)
-        sheep_sides = sheep.make_sheep(model)
+        print "Using SheepSimulator at %s:%d" % (args.sim_host, args.sim_port)
+        model = SimulatorModel(args.sim_host, port=args.sim_port, debug=args.debug)
     else:
-        universe = 0
-        print "Using OLA model universe=%d" % universe
-        from model.ola_model import OLAModel
-        model = OLAModel(512, universe=universe)
-        sheep_sides = sheep.make_sheep(model)
+        print "Using OLA model universe=%d" % args.universe
+        model = OLAModel(512, universe=args.universe)
 
+    sheep_sides = sheep.make_sheep(model)
     app = SheepServer(sheep_sides, args)
     try:
         app.start() # start related service threads

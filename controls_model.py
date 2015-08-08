@@ -255,10 +255,10 @@ class ControlsModel(object):
         self.listeners.discard(listener)
 
     def incoming_osc(self, addr, tags, data, source):
-        print "incoming_osc %s: %s [%s] %s" % (source, addr, tags, str(data))
+        # print "incoming_osc %s: %s [%s] %s" % (source, addr, tags, str(data))
 
         parts = addr.split("/")
-        print parts
+        # print parts
 
         if parts[1] == "main":
             if parts[2] == "color":
