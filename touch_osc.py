@@ -367,7 +367,7 @@ class TouchOSC(object):
     def _send1(self, addr, txt):
         msg = OSCMessage(addr)
         msg.append(txt)
-        print "Send %s" % msg
+        #print "Send %s" % msg
         try:
             self.client.send(msg)
         except Exception, e:
@@ -409,15 +409,15 @@ class TouchOSC(object):
         browse_sdRef = pybonjour.DNSServiceBrowse(regtype = "_osc._udp", callBack = self.browse_callback)
 
         try:
-            # try:
+            try:
                 while True:
                     print "TouchOSC selecting on browse_sd"
                     ready = select.select([browse_sdRef], [], [])
                     print "Select!"
                     if browse_sdRef in ready[0]:
                         pybonjour.DNSServiceProcessResult(browse_sdRef)
-            # except KeyboardInterrupt:
-            #     pass
+            except KeyboardInterrupt:
+                pass
         finally:
             browse_sdRef.close()
 

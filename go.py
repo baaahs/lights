@@ -6,12 +6,14 @@ import Queue
 import threading
 import signal
 import random
+import os
 
 import sheep
 import shows
 import util
 import controls_model
 import touch_osc
+import watchdog
 
 # fail gracefully if cherrypy isn't available
 _use_cherrypy = False
@@ -53,9 +55,12 @@ def speed_interpolation(val):
 low_interp = util.make_interpolater(0.0, 0.5, 2.0, 1.0)
 hi_interp  = util.make_interpolater(0.5, 1.0, 1.0, 0.5)
 
+watchdog = watchdog.Watchdog()
+
 class ShowRunner(threading.Thread):
     def __init__(self, model, queue, cm, max_showtime=240):
         super(ShowRunner, self).__init__(name="ShowRunner")
+
         self.model = model
         self.mutable_model = sheep.make_mutable_sheep(model)
 
@@ -83,6 +88,7 @@ class ShowRunner(threading.Thread):
         self.master_shows = []
         self.overlay_shows = []
         self.eo_shows = []
+        self.random_eligible_shows = []
         for name in self.shows:
             _class = self.shows[name]
 
@@ -105,6 +111,14 @@ class ShowRunner(threading.Thread):
             # Add it to the master list
             self.master_shows.append(name)
 
+            ok_for_random = True
+            if hasattr(_class, "ok_for_random"):
+                ok_for_random = _class.ok_for_random
+
+            if ok_for_random:
+                self.random_eligible_shows.append(name)
+
+
         # Sort all these lists
         self.master_shows = sorted(self.master_shows)
         self.overlay_shows = sorted(self.overlay_shows)
@@ -114,6 +128,7 @@ class ShowRunner(threading.Thread):
         print "Master shows: %s" % str(self.master_shows)
         print "Eyes Only shows: %s" % str(self.eo_shows)
         print "Overlay shows: %s" % str(self.overlay_shows)
+        print "Random eligible shows: %s" % str(self.random_eligible_shows)
 
         self.randseq = self.random_show_name()
 
@@ -150,9 +165,11 @@ class ShowRunner(threading.Thread):
         Remembers the last 'norepeat' items to avoid replaying shows too soon
         Norepeat defaults to 1/3 the size of the sequence
         """
-        seq = self.master_shows
+        seq = self.random_eligible_shows
 
         norepeat=int(len(seq)/3)
+        if norepeat < 1:
+            norepeat = 1
 
         seen = []
         while True:
@@ -495,6 +512,9 @@ class ShowRunner(threading.Thread):
         show_started_at = time.time()
         while self.running:
             try:
+                # Indicate that we are still alive...
+                watchdog.ping()
+
                 self.check_queue()
                 start = time.time()
 
@@ -682,6 +702,7 @@ class SheepServer(object):
             traceback.print_exc()
 
     def stop(self):
+        watchdog.stop()
         if self.running: # should be safe to call multiple times
             try:
                 if self.bonjour_thread:
@@ -714,13 +735,12 @@ class SheepServer(object):
         import cherrypy
         from web import SheepyWeb
 
-        # XXX clean up who manages the canonical show list
-        show_names = dict(shows.load_shows()).keys()
-        print show_names
-
         cherrypy.engine.subscribe('stop', self.stop)
 
         port = 9990
+        _dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "web", "static"))
+        print _dir
+
         config = {
             'global': {
                 'server.socket_host' : '0.0.0.0',
@@ -728,11 +748,21 @@ class SheepServer(object):
                 # 'engine.timeout_monitor.on' : True,
                 # 'engine.timeout_monitor.frequency' : 240,
                 # 'response.timeout' : 60*15
+            },
+
+            '/index': {
+                'tools.staticfile.on': True,
+                'tools.staticfile.filename': os.path.join(_dir, "index.html")
+            },
+
+            '/static': {
+                'tools.staticdir.on': True,
+                'tools.staticdir.dir': _dir
             }
         }
 
         # this method blocks until KeyboardInterrupt
-        cherrypy.quickstart(SheepyWeb(self.queue, self.runner, show_names),
+        cherrypy.quickstart(SheepyWeb(self.queue, self.runner, self.controls_model),
                             '/',
                             config=config)
 

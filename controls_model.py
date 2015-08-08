@@ -3,6 +3,10 @@ import color
 import math
 import time
 
+import json
+
+import traceback
+
 import eye_effect
 
 EYE_COLOR_WHITE         = 0
@@ -239,63 +243,8 @@ class ControlsModel(object):
 
         self.brightness = 1.0
 
-        self.effects = [
-            eye_effect.EyeEffect(gobo=1, 
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
-            eye_effect.EyeEffect(gobo=2, 
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
-            eye_effect.EyeEffect(gobo=3, 
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
-            eye_effect.EyeEffect(gobo=4, 
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
-            eye_effect.EyeEffect(gobo=5, 
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
-            eye_effect.EyeEffect(gobo=6, 
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
-            eye_effect.EyeEffect(gobo=7, 
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
-            eye_effect.EyeEffect(gobo=8, 
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
-
-
-            eye_effect.EyeEffect(gobo=9, 
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
-            eye_effect.EyeEffect(gobo=10, 
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
-            eye_effect.EyeEffect(gobo=11, 
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
-            eye_effect.EyeEffect(gobo=12, 
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
-            eye_effect.EyeEffect(gobo=13, 
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
-            eye_effect.EyeEffect(gobo=14, 
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
-            eye_effect.EyeEffect(gobo=15, 
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
-            eye_effect.EyeEffect(gobo=16, 
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
-
-
-            eye_effect.EyeEffect(gobo=0,
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_ROTATION),
-            eye_effect.EyeEffect(shutter_type=eye_effect.SHUTTER_STROBE,
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_SHUTTER),
-            eye_effect.EyeEffect(shutter_type=eye_effect.SHUTTER_PULSE,
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_SHUTTER),
-            eye_effect.EyeEffect(shutter_type=eye_effect.SHUTTER_RANDOM,
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_SHUTTER),
-
-            eye_effect.EyeEffect(effect_mode=eye_effect.EFFECT_LADDER,
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_EFFECT_ROTATION),
-            eye_effect.EyeEffect(effect_mode=eye_effect.EFFECT_8_FACET,
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_EFFECT_ROTATION),
-            eye_effect.EyeEffect(effect_mode=eye_effect.EFFECT_3_FACET,
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_EFFECT_ROTATION),
-
-            eye_effect.EyeEffect(gobo=eye_effect.GOBOS["five_stars"],
-                external_speed_modifies=eye_effect.SPEED_MODIFIES_FOCUS),
-
-        ]
+        self.set_default_effects()
+        self.load_effects()
 
 
 
@@ -1325,3 +1274,102 @@ class ControlsModel(object):
                 listener.control_message_changed()
             except AttributeError:
                 pass # ignore      
+
+
+    def set_effect_preset(self, ix, effect):
+        if ix < 0 or ix > len(self.effects)-1:
+            print "Invalid index %d" % ix
+            return False
+
+        self.effects[ix] = effect
+
+        self.save_effects()
+
+        return True
+
+    def save_effects(self):
+        try:
+            out = []
+            for e in self.effects:
+                out.append(e.as_json())
+
+            with open("data/effects.json", "w") as f:
+                json.dump(out,f,indent=2)
+
+        except Exception:
+            traceback.print_exc()
+
+    def load_effects(self):
+        try:
+            with open("data/effects.json", "r") as f:
+                _json = json.load(f)
+
+            for ix in range(0, len(_json)):
+                e = eye_effect.EyeEffect(json=_json[ix])
+
+                if ix < len(self.effects):
+                    self.effects[ix] = e
+                else:
+                    self.effects.append(e)
+
+        except Exception:
+            traceback.print_exc()
+
+    def set_default_effects(self):
+        self.effects = [
+            eye_effect.EyeEffect(gobo=1, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=2, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=3, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=4, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=5, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=6, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=7, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=8, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+
+
+            eye_effect.EyeEffect(gobo=9, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=10, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=11, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=12, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=13, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=14, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=15, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+            eye_effect.EyeEffect(gobo=16, 
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_SHAKE),
+
+
+            eye_effect.EyeEffect(gobo=0,
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_GOBO_ROTATION),
+            eye_effect.EyeEffect(shutter_type=eye_effect.SHUTTER_STROBE,
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_SHUTTER),
+            eye_effect.EyeEffect(shutter_type=eye_effect.SHUTTER_PULSE,
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_SHUTTER),
+            eye_effect.EyeEffect(shutter_type=eye_effect.SHUTTER_RANDOM,
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_SHUTTER),
+
+            eye_effect.EyeEffect(effect_mode=eye_effect.EFFECT_LADDER,
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_EFFECT_ROTATION),
+            eye_effect.EyeEffect(effect_mode=eye_effect.EFFECT_8_FACET,
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_EFFECT_ROTATION),
+            eye_effect.EyeEffect(effect_mode=eye_effect.EFFECT_3_FACET,
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_EFFECT_ROTATION),
+
+            eye_effect.EyeEffect(gobo=eye_effect.GOBOS["five_stars"],
+                external_speed_modifies=eye_effect.SPEED_MODIFIES_FOCUS),
+
+        ]        

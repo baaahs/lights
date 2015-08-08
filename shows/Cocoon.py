@@ -119,6 +119,9 @@ class Cocoon(object):
 					c_con_cell = c_con_level * i / (width - 1)
 			
 				height = len(sheep.VSTRIPES[i])
+				if height < 2:
+					height = 2
+					
 				for j in range(height):	
 
 					# Calculate row contrast level

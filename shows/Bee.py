@@ -64,6 +64,9 @@ class Bee(object):
 
 					# Calculate contrast level
 					height = len(sheep.VSTRIPES[i])
+					if height < 2:
+						height = 2
+						
 					con_level = (self.contrast * 2) - 255	# -255 to 255 value
 					if con_level > 0:
 						con_cell = con_level * (height - j - 1) / (height - 1)

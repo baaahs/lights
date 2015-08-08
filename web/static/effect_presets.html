@@ -1,0 +1,262 @@
+<html>
+<head>
+    <title>BAAAHS Show Server</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" type="text/css" href="/static/semantic/semantic.min.css">
+    
+    <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+
+    <div class="ui main container">
+
+    <div class="ui basic segment center aligned">
+        <div class="ui grouped buttons">
+            <button class="ui icon effect button" data-ix="0"><i class="ui stop icon"></i></button>
+            <button class="ui icon effect button" data-ix="1"><i class="ui stop icon"></i></button>
+            <button class="ui icon effect button" data-ix="2"><i class="ui stop icon"></i></button>
+            <button class="ui icon effect button" data-ix="3"><i class="ui stop icon"></i></button>
+            <button class="ui icon effect button" data-ix="4"><i class="ui stop icon"></i></button>
+            <button class="ui icon effect button" data-ix="5"><i class="ui stop icon"></i></button>
+            <button class="ui icon effect button" data-ix="6"><i class="ui stop icon"></i></button>
+            <button class="ui icon effect button" data-ix="7"><i class="ui stop icon"></i></button>
+        </div>
+        <div>
+            <div class="ui grouped buttons">
+                <button class="ui icon effect button" data-ix="8"><i class="ui stop icon"></i></button>
+                <button class="ui icon effect button" data-ix="9"><i class="ui stop icon"></i></button>
+                <button class="ui icon effect button" data-ix="10"><i class="ui stop icon"></i></button>
+                <button class="ui icon effect button" data-ix="11"><i class="ui stop icon"></i></button>
+                <button class="ui icon effect button" data-ix="12"><i class="ui stop icon"></i></button>
+                <button class="ui icon effect button" data-ix="13"><i class="ui stop icon"></i></button>
+                <button class="ui icon effect button" data-ix="14"><i class="ui stop icon"></i></button>
+                <button class="ui icon effect button" data-ix="15"><i class="ui stop icon"></i></button>
+            </div>
+        </div>
+        <div>
+            <div class="ui grouped buttons">
+                <button class="ui icon effect button" data-ix="16"><i class="ui stop icon"></i></button>
+                <button class="ui icon effect button" data-ix="17"><i class="ui stop icon"></i></button>
+                <button class="ui icon effect button" data-ix="18"><i class="ui stop icon"></i></button>
+                <button class="ui icon effect button" data-ix="19"><i class="ui stop icon"></i></button>
+                <button class="ui icon effect button" data-ix="20"><i class="ui stop icon"></i></button>
+                <button class="ui icon effect button" data-ix="21"><i class="ui stop icon"></i></button>
+                <button class="ui icon effect button" data-ix="22"><i class="ui stop icon"></i></button>
+                <button class="ui icon effect button" data-ix="23"><i class="ui stop icon"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui segment">
+
+            <div class="ui form">
+                <div class="fields">
+
+                    <div class="grouped fields">
+                        <label>Shutter</label>
+                        <div class="field">
+                            <div class='ui radio checkbox'>
+                                <input type="radio" name="shutter_type" value="open">
+                                <label>Open</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class='ui radio checkbox'>
+                                <input type="radio" name="shutter_type" value="closed">
+                                <label>Closed</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class='ui radio checkbox'>
+                                <input type="radio" name="shutter_type" value="strobe">
+                                <label>Strobe</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class='ui radio checkbox'>
+                                <input type="radio" name="shutter_type" value="pulse">
+                                <label>Pulse</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class='ui radio checkbox'>
+                                <input type="radio" name="shutter_type" value="random">
+                                <label>Random</label>
+                            </div>
+                        </div>                    
+
+                        <div class="field">
+
+                            <label>Speed</label>
+                            <div class="ui input">
+                                <input type="number" name="shutter_speed">
+                            </div>
+                        </div>
+                    </div>                    
+
+                    <div class="grouped fields">
+                        <div class="field">
+                            <label>Gobos Rotation</label>
+                            <input type="number" name="gobo_rotation">
+                        </div>
+
+                        <div class="field">
+                            <label>Single Gobo</label>
+                            <div class="ui selection dropdown gobo">
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Shape</div>
+                                <div class="menu">
+                                    <div class="item" data-value="0">None</div>
+                                    <div class="item" data-value="1">Circle 0</div>
+                                    <div class="item" data-value="2">Circle 1</div>
+                                    <div class="item" data-value="3">Circle 2</div>
+                                    <div class="item" data-value="4">Circle 3</div>
+                                    <div class="item" data-value="5">Circle 4</div>
+                                    <div class="item" data-value="6">Curve</div>
+                                    <div class="item" data-value="7">Five Stars</div>
+                                    <div class="item" data-value="8">Star Curve</div>
+                                    <div class="item" data-value="9">Circle Swoosh</div>
+                                    <div class="item" data-value="10">Small Splat</div>
+                                    <div class="item" data-value="11">Hairy Circle</div>
+                                    <div class="item" data-value="12">Flower</div>
+                                    <div class="item" data-value="13">Sperm</div>
+                                    <div class="item" data-value="14">Ying Yang</div>
+                                    <div class="item" data-value="15">Lightning</div>
+                                    <div class="item" data-value="16">Big Splat</div>
+                                </div>
+                            </div>
+                        </div>      
+                        
+                        <div class="field">
+                            <label>Shake</label>
+                            <div class="ui input">
+                                <input type="number" name="gobo_shake">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grouped fields">
+                        <label>Effect</label>
+                        <div class="field">
+                            <div class='ui radio checkbox'>
+                                <input type="radio" name="effect_mode" value="none">
+                                <label>None</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class='ui radio checkbox'>
+                                <input type="radio" name="effect_mode" value="ladder">
+                                <label>Ladder</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class='ui radio checkbox'>
+                                <input type="radio" name="effect_mode" value="8">
+                                <label>8 Facet</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class='ui radio checkbox'>
+                                <input type="radio" name="effect_mode" value="3">
+                                <label>3 Facet</label>
+                            </div>
+                        </div>
+                        
+                        <div class="field">
+                            <label>Rotation</label>
+                            <div class="ui focus input">
+                                <input type="number" name="effect_rotation">
+                            </div>
+                        </div>
+                    </div>     
+
+                    <div class="field">
+                        <label>Focus</label>
+                        
+                            <div class="ui input">
+                                <input type="number" name="focus" style="width:6rem !important;">
+                            </div>
+                    </div>     
+
+                    <div class="grouped fields">
+                        <label>Frost</label>
+                        <div class="field">
+                            <div class='ui radio checkbox'>
+                                <input type="radio" name="frost_type" value="none">
+                                <label>None</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class='ui radio checkbox'>
+                                <input type="radio" name="frost_type" value="steady">
+                                <label>Steady</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class='ui radio checkbox'>
+                                <input type="radio" name="frost_type" value="opening">
+                                <label>Opening</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class='ui radio checkbox'>
+                                <input type="radio" name="frost_type" value="closing">
+                                <label>Closing</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class='ui radio checkbox'>
+                                <input type="radio" name="frost_type" value="max">
+                                <label>Max</label>
+                            </div>
+                        </div>
+                        
+                        <div class="field">
+                            <label>Amt / Speed</label>
+                            <div class="ui input">
+                                <input type="number" name="frost_speed">
+                            </div>
+                        </div>
+                    </div>     
+
+
+                    <div class="grouped fields">
+                        <div class="field">
+                            <label>External Speed Modifies</label>
+                            <div class="ui selection dropdown external">
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Fields</div>
+                                <div class="menu">
+                                    <div class="item" data-value="nothing">Nothing</div>
+                                    <div class="item" data-value="shutter">Shutter</div>
+                                    <div class="item" data-value="gobo_rotation">Gobo Rotation</div>
+                                    <div class="item" data-value="gobo_shake">Gobo Shake</div>
+                                    <div class="item" data-value="effect_shake">Effect Rotation</div>
+                                    <div class="item" data-value="focus">Focus</div>
+                                    <div class="item" data-value="frost_speed">Frost Amt/Speed</div>
+                                </div>
+                            </div>
+                        </div>      
+                    </div>                    
+                </div>
+
+
+                <div>
+                    <button class="ui primary save button" onclick="return false;">Save</button>
+                </div>
+
+            </div>
+
+    </div>
+    </div>
+
+
+
+    <script src="/static/jquery-2.1.4.min.js" type="text/javascript"></script>
+    <script src="/static/semantic/semantic.min.js"></script>
+    <script src="/static/baaahs.js" type="text/javascript"></script>
+    <script src="/static/effect_presets.js" type="text/javascript"></script>
+</body>
+</html>

@@ -13,7 +13,7 @@ from model.ola_model import PANEL_MAP
 
 class BlinkOne(looping_show.LoopingShow):
     is_show = True
-    name = "Blink 1"
+    name = "_Blink 1"
     ok_for_random = False
 
     def __init__(self, sheep_sides):

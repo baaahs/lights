@@ -61,7 +61,7 @@ class EyeEffect(object):
         gobo_rotation=0.0, gobo=0, gobo_shake_speed=0.0,
         effect_mode = EFFECT_NONE, effect_rotation=0.0,
         focus=None, frost=FROST_NONE, frost_speed=0.0,
-        external_speed_modifies=SPEED_MODIFIES_NOTHING):
+        external_speed_modifies=SPEED_MODIFIES_NOTHING, json=None):
 
         self.shutter_type = shutter_type
         self.shutter_speed = shutter_speed
@@ -79,6 +79,50 @@ class EyeEffect(object):
         self.frost_speed = frost_speed
 
         self.external_speed_modifies = external_speed_modifies
+
+        if json is not None:
+            if 'shutter_type' in json:
+                self.shutter_type = json["shutter_type"]
+            if 'shutter_speed' in json:
+                self.shutter_speed = json["shutter_speed"]
+            if 'gobo_rotation' in json:
+                self.gobo_rotation = json["gobo_rotation"]
+            if 'gobo' in json:
+                self.gobo = json["gobo"]
+            if 'gobo_shake_speed' in json:
+                self.gobo_shake_speed = json["gobo_shake_speed"]
+            if 'effect_mode' in json:
+                self.effect_mode = json["effect_mode"]
+            if 'effect_rotation' in json:
+                self.effect_rotation = json["effect_rotation"]
+            if 'focus' in json:
+                self.focus = json["focus"]
+            if 'frost' in json:
+                self.frost = json["frost"]
+            if 'frost_speed' in json:
+                self.frost_speed = json["frost_speed"]
+            if 'external_speed_modifies' in json:
+                self.external_speed_modifies = json["external_speed_modifies"]
+
+
+    def as_json(self):
+        out = {
+            'shutter_type': self.shutter_type,
+            'shutter_speed': self.shutter_speed,
+            'gobo_rotation': self.gobo_rotation,
+            'gobo': self.gobo,
+            'gobo_shake_speed': self.gobo_shake_speed,
+            'effect_mode': self.effect_mode,
+            'effect_rotation': self.effect_rotation,
+            'focus': self.focus,
+            'frost': self.frost,
+            'frost_speed': self.frost_speed,
+            'external_speed_modifies': self.external_speed_modifies
+        }
+
+        return out
+
+
 
     def go(self, dmxer, speed=0.0):
         try:
