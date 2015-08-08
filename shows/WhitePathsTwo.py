@@ -74,6 +74,7 @@ class Path(object):
 	def choose_head(self, curr_cell, prev_cell):
 		i = 10	# Number of tries to find a new head
 		while (i > 0):
+			i -= 1
 			neighbors = sheep.edge_neighbors(curr_cell)
 			if len(neighbors) == 0:
 				return prev_cell
