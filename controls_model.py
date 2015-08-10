@@ -7,7 +7,9 @@ import json
 
 import traceback
 
+import eyes
 import eye_effect
+import config
 
 EYE_COLOR_WHITE         = 0
 EYE_COLOR_RED           = 9
@@ -117,9 +119,9 @@ class ControlsModel(object):
         self.p_brightness = 1.0
         self.b_brightness = 1.0
 
-        self.eye_positions = {}
-        self.eye_positions["disco"] = [[-75, 115], [0,0]]  # Really only the left is used
-        self.eye_positions["headlights"] = [[0,5], [0,5]]  # Probably want this slightly down
+        # self.eye_positions = {}
+        # self.eye_positions["disco"] = [[-75, 115], [0,0]]  # Really only the left is used
+        # self.eye_positions["headlights"] = [[0,5], [0,5]]  # Probably want this slightly down
 
         self.eye_movement_locked = False
 
@@ -651,55 +653,60 @@ class ControlsModel(object):
         # Basic formula is pan = atan(x), tilt = atan( (y * sin(pan)) / x )
         #
 
-        if y < -0.5:
-            y = -0.5
+        # if y < -0.5:
+        #     y = -0.5
 
         # self.lastXPos = x
         # self.lastYPos = y
 
+        #y = .125
+
         # Units for X and Y real are "height of the eye" = 1. Scaling out so
         # that we can tweak it more here than in touch and can define a reasonable
         # addressable area
-        xr = 3 * x
-        yr = 5 * (y + 0.5)
+        xr = config.get("xy_scale")["x"] * x
+        yr = config.get("xy_scale")["y"] * (y + 0.5)
 
         if do_party:
-            pan_rads = math.atan2(xr,1)
-            tilt_rads = math.atan2( yr * math.sin(math.fabs(pan_rads)), xr)
-            self.p_eye_pos[PAN] = math.degrees(pan_rads)
-            self.p_eye_pos[TILT] = math.degrees(tilt_rads) - 90
-            if self.p_eye_pos[TILT]  < 0:
-                self.p_eye_pos[TILT]  += 360
-            if self.p_eye_pos[TILT]  > 180:
-                self.p_eye_pos[TILT]  = 360-self.p_eye_pos[TILT] 
+            self.p_eye_pos = eyes.xy_to_pnt([xr, yr], True, in_sky)
 
-            print "P x=%f y=%f pan=%f tilt=%f" % (xr,yr, self.p_eye_pos[PAN] , self.p_eye_pos[TILT] )
-            if self.p_eye_pos[TILT]  > 135:
-                self.p_eye_pos[TILT]  = 135
+            # pan_rads = math.atan2(xr,1)
+            # tilt_rads = math.atan2( yr * math.sin(math.fabs(pan_rads)), xr)
+            # self.p_eye_pos[PAN] = math.degrees(pan_rads)
+            # self.p_eye_pos[TILT] = math.degrees(tilt_rads) - 90
+            # if self.p_eye_pos[TILT]  < 0:
+            #     self.p_eye_pos[TILT]  += 360
+            # if self.p_eye_pos[TILT]  > 180:
+            #     self.p_eye_pos[TILT]  = 360-self.p_eye_pos[TILT] 
 
-            if in_sky:
-                self.p_eye_pos[PAN]  = 360-self.p_eye_pos[PAN] 
+            # print "P x=%f y=%f pan=%f tilt=%f" % (xr,yr, self.p_eye_pos[PAN] , self.p_eye_pos[TILT] )
+            # if self.p_eye_pos[TILT]  > 135:
+            #     self.p_eye_pos[TILT]  = 135
+
+            # if in_sky:
+            #     self.p_eye_pos[PAN]  = 360-self.p_eye_pos[PAN] 
 
             self._notify_eye_changed(True)
 
         if do_business:
-            xr -= 0.25 # This is (roughly) the distance between the lights in light_to_ground units
-            pan_rads = math.atan2(xr,1)
-            tilt_rads = math.atan2( yr * math.sin(math.fabs(pan_rads)), xr)
-            self.b_eye_pos[PAN] = math.degrees(pan_rads)
-            self.b_eye_pos[TILT] = math.degrees(tilt_rads) - 90
-            if self.b_eye_pos[TILT] < 0:
-                self.b_eye_pos[TILT] += 360
-            if self.b_eye_pos[TILT] > 180:
-                self.b_eye_pos[TILT] = 360-self.b_eye_pos[TILT]
+            # xr -= 0.25 # This is (roughly) the distance between the lights in light_to_ground units
+            # pan_rads = math.atan2(xr,1)
+            # tilt_rads = math.atan2( yr * math.sin(math.fabs(pan_rads)), xr)
+            # self.b_eye_pos[PAN] = math.degrees(pan_rads)
+            # self.b_eye_pos[TILT] = math.degrees(tilt_rads) - 90
+            # if self.b_eye_pos[TILT] < 0:
+            #     self.b_eye_pos[TILT] += 360
+            # if self.b_eye_pos[TILT] > 180:
+            #     self.b_eye_pos[TILT] = 360-self.b_eye_pos[TILT]
 
-            print "B x=%f y=%f pan=%f tilt=%f" % (xr,yr, self.b_eye_pos[PAN], self.b_eye_pos[TILT])
-            if self.b_eye_pos[TILT] > 135:
-                self.b_eye_pos[TILT] = 135
+            # print "B x=%f y=%f pan=%f tilt=%f" % (xr,yr, self.b_eye_pos[PAN], self.b_eye_pos[TILT])
+            # if self.b_eye_pos[TILT] > 135:
+            #     self.b_eye_pos[TILT] = 135
 
-            if in_sky:
-                self.b_eye_pos[PAN] = 360-self.b_eye_pos[PAN]
+            # if in_sky:
+            #     self.b_eye_pos[PAN] = 360-self.b_eye_pos[PAN]
 
+            self.b_eye_pos = eyes.xy_to_pnt([xr, yr], False, in_sky)
             self._notify_eye_changed(False)
 
 
@@ -993,7 +1000,7 @@ class ControlsModel(object):
         self._notify_eyes_mode_changed()
 
         if mode == EYES_MODE_DISCO:
-            self.p_eye_pos = list(self.eye_positions["disco"][0])
+            self.p_eye_pos = list(config.get("eye_positions")["disco"][0])
             self._notify_eye_changed(True)
         elif mode == EYES_MODE_HEADLIGHTS:
             self._update_headlights()
@@ -1133,19 +1140,19 @@ class ControlsModel(object):
             self._set_eye_xy_flat_pos(self.headlights_target[0], self.headlights_target[1], left, right, False)
 
         if not left:
-            self.p_eye_pos = list(self.eye_positions["headlights"][0])
+            self.p_eye_pos = list(config.get("eye_positions")["headlights"][0])
             self._notify_eye_changed(True)
 
         if not right:
-            self.b_eye_pos = list(self.eye_positions["headlights"][1])
+            self.b_eye_pos = list(config.get("eye_positions")["headlights"][1])
             self._notify_eye_changed(False)
 
     def _update_show_target(self):
         if self.show_target_mode == SHOW_TARGET_MODE_NONE:
             # We set _something_ here because some shows don't know to respect
             # the mode and stop using the target if the mode is different
-            self.p_eye_pos = list(self.eye_positions["headlights"][0])
-            self.b_eye_pos = list(self.eye_positions["headlights"][1])
+            self.p_eye_pos = list(config.get("eye_positions")["headlights"][0])
+            self.b_eye_pos = list(config.get("eye_positions")["headlights"][1])
             self._notify_eye_changed(True)
             self._notify_eye_changed(False)
         elif self.show_target_mode == SHOW_TARGET_MODE_UP:

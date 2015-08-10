@@ -19,6 +19,7 @@ from model.simulator import SimulatorModel
 from model.ola_model import OLAModel
 from model.mirror import MirrorModel
 
+import config
 
 # fail gracefully if cherrypy isn't available
 _use_cherrypy = False
@@ -773,6 +774,10 @@ class SheepServer(object):
 
 
 if __name__=='__main__':
+
+    config.load()
+
+
     import argparse
     parser = argparse.ArgumentParser(description='Baaahs Light Control')
 

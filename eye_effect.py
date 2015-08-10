@@ -1,7 +1,7 @@
 import math
 import traceback
 
-import sheep
+import eyes
 
 SHUTTER_OPEN    = "open"
 SHUTTER_CLOSED  = "closed"
@@ -49,11 +49,11 @@ FROST_CLOSING = "closing"
 FROST_MAX = "max"
 
 def clear_all(dmxer):
-    dmxer.set_eye_dmx(sheep.EYE_DMX_STROBE, 255)
-    dmxer.set_eye_dmx(sheep.EYE_DMX_GOBO, 0)
-    dmxer.set_eye_dmx(sheep.EYE_DMX_EFFECT, 0)
+    dmxer.set_eye_dmx(eyes.EYE_DMX_STROBE, 255)
+    dmxer.set_eye_dmx(eyes.EYE_DMX_GOBO, 0)
+    dmxer.set_eye_dmx(eyes.EYE_DMX_EFFECT, 0)
     # Don't modify focus
-    dmxer.set_eye_dmx(sheep.EYE_DMX_FROST, 0)
+    dmxer.set_eye_dmx(eyes.EYE_DMX_FROST, 0)
 
 
 class EyeEffect(object):
@@ -159,7 +159,7 @@ class EyeEffect(object):
                 v = 128 + int(math.floor(shutter_speed * 31.0))
             elif self.shutter_type == SHUTTER_RANDOM:
                 v = 192 + int(math.floor(shutter_speed * 31.0))
-            dmxer.set_eye_dmx(sheep.EYE_DMX_STROBE, v)
+            dmxer.set_eye_dmx(eyes.EYE_DMX_STROBE, v)
 
 
             # GOBO
@@ -176,45 +176,45 @@ class EyeEffect(object):
                     else:
                         v = self.gobo * 7
 
-            dmxer.set_eye_dmx(sheep.EYE_DMX_GOBO, v)
+            dmxer.set_eye_dmx(eyes.EYE_DMX_GOBO, v)
 
 
             # Effect
             if self.effect_mode == EFFECT_LADDER:
-                dmxer.set_eye_dmx(sheep.EYE_DMX_EFFECT, 65)
+                dmxer.set_eye_dmx(eyes.EYE_DMX_EFFECT, 65)
 
                 v = 190
                 if effect_rotation < 0:
                     v = 189 + int(math.floor(effect_rotation * 61.0))
                 elif effect_rotation > 0:
                     v = 194 + int(math.floor(effect_rotation * 61.0))
-                dmxer.set_eye_dmx(sheep.EYE_DMX_LADDER_ROTATE, v)
+                dmxer.set_eye_dmx(eyes.EYE_DMX_LADDER_ROTATE, v)
 
             elif self.effect_mode == EFFECT_8_FACET:
-                dmxer.set_eye_dmx(sheep.EYE_DMX_EFFECT, 129)
+                dmxer.set_eye_dmx(eyes.EYE_DMX_EFFECT, 129)
 
                 v = 190
                 if effect_rotation < 0:
                     v = 189 + int(math.floor(effect_rotation * 61.0))
                 elif effect_rotation > 0:
                     v = 194 + int(math.floor(effect_rotation * 61.0))
-                dmxer.set_eye_dmx(sheep.EYE_DMX_8_ROTATE, v)
+                dmxer.set_eye_dmx(eyes.EYE_DMX_8_ROTATE, v)
 
             elif self.effect_mode == EFFECT_3_FACET:
-                dmxer.set_eye_dmx(sheep.EYE_DMX_EFFECT, 192)
+                dmxer.set_eye_dmx(eyes.EYE_DMX_EFFECT, 192)
 
                 v = 190
                 if effect_rotation < 0:
                     v = 189 + int(math.floor(effect_rotation * 61.0))
                 elif effect_rotation > 0:
                     v = 194 + int(math.floor(effect_rotation * 61.0))
-                dmxer.set_eye_dmx(sheep.EYE_DMX_3_ROTATE, v)
+                dmxer.set_eye_dmx(eyes.EYE_DMX_3_ROTATE, v)
 
 
             # Focus (can be None)
             if focus is not None:
                 v = int(math.floor(focus * 255.0))
-                dmxer.set_eye_dmx(sheep.EYE_DMX_FOCUS, v)
+                dmxer.set_eye_dmx(eyes.EYE_DMX_FOCUS, v)
 
             # Frost
             v = 0 # Default for FROST_NONE
@@ -226,7 +226,7 @@ class EyeEffect(object):
                 v = 223 - int(math.floor(frost_speed * 31.0))
             elif self.frost == FROST_CLOSING:
                 v = 254 - int(math.floor(frost_speed * 30.0))
-            dmxer.set_eye_dmx(sheep.EYE_DMX_FROST, v)
+            dmxer.set_eye_dmx(eyes.EYE_DMX_FROST, v)
 
 
         except Exception:

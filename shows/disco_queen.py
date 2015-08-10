@@ -1,6 +1,7 @@
 import sheep
 from color import clamp
 import time
+import config
 
 import random
 import math
@@ -163,8 +164,8 @@ class DiscoQueen(looping_show.LoopingShow):
         self.be.effect = self.effect
 
         # For pe we keep it on the disco ball
-        self.pe.pan = self.cm.eye_positions["disco"][0][0]
-        self.pe.tilt = self.cm.eye_positions["disco"][0][1]
+        self.pe.pan = config.get("eye_positions")["disco"][0][0]
+        self.pe.tilt = config.get("eye_positions")["disco"][0][1]
 
         f, beat = math.modf(progress / 0.25)
 

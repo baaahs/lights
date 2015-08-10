@@ -8,7 +8,7 @@ import math
 import looping_show
 import eye_effect
 
-class LasyEyes(looping_show.LoopingShow):
+class LazyEyes(looping_show.LoopingShow):
     # The full list of attributes that are honored during show loading in
     # some way is:
     #
@@ -121,7 +121,7 @@ class LasyEyes(looping_show.LoopingShow):
             self.next[0][1] = clamp(self.next[0][1], -135.0, 135.0)
             self.next[1][1] = clamp(self.next[1][1], -135.0, 135.0)
 
-            print "ai=%f last=%s  new=%s" % (abs_intensity, str(self.last), str(self.next))
+            #print "ai=%f last=%s  new=%s" % (abs_intensity, str(self.last), str(self.next))
 
         self.pe.pan = self.last[0][0] + ((self.last[0][0] - self.next[0][0]) * progress)
         self.pe.tilt = self.last[0][1] + ((self.last[0][1] - self.next[0][1]) * progress)

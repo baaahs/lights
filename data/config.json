@@ -1,0 +1,23 @@
+{
+    "xy_scale": {
+        "x": 5.0,
+        "y": 5.0
+    },
+
+    "eye_positions": {
+        "disco": [
+            [-75, 115],
+            [0, 0]
+        ],
+        "headlights": [
+            [0, 10],
+            [0, 10]
+        ]
+    },
+
+    "parallax_distance": 0.125,
+    "eye_rotation": {
+        "p": 30.0,
+        "b": -30.0
+    }
+}
