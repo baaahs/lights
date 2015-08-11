@@ -642,8 +642,8 @@ class Sheep {
     sheepModel.rotateY(PI*0.5);
     sheepModel.translate(SHEEP_SCALE * 30, SHEEP_SCALE * 10, SHEEP_SCALE * 550); // Shit, still in model coord space. Lame!
     
-    leftEye = new Eye(app, "Left eye", 400, new PVector(SHEEP_SCALE * -135, SHEEP_SCALE * -215, SHEEP_SCALE * 27));
-    rightEye = new Eye(app, "Right eye", 416, new PVector(SHEEP_SCALE * -135, SHEEP_SCALE * -215, SHEEP_SCALE * -27));
+    leftEye = new Eye(app, "Left eye", 400, new PVector(SHEEP_SCALE * -135, SHEEP_SCALE * -215, SHEEP_SCALE * 27), 0);
+    rightEye = new Eye(app, "Right eye", 416, new PVector(SHEEP_SCALE * -135, SHEEP_SCALE * -215, SHEEP_SCALE * -27), 0);
     
   }
 
@@ -934,7 +934,7 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
     
     StopWatch watch;
     final float ANIMATION_TIME = 10.0f;
-    final float BEAM_LENGTH = SHEEP_SCALE * 1000;
+    final float BEAM_LENGTH = SHEEP_SCALE * 5000;
     final float BEAM_MAX_SPOT = SHEEP_SCALE * 50;
     boolean nextIsPan;
     
@@ -957,7 +957,7 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
     
     String me;
     
-    Eye(PApplet app, String me, int dmx, PVector position) {
+    Eye(PApplet app, String me, int dmx, PVector position, float offsetDegrees) {
       this.me = me;
       this.dmxOffset = dmx;
       
@@ -965,9 +965,12 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
       
       cone = new Cone(app, 40, new PVector(0, 1, 0), new PVector(0, BEAM_LENGTH, 0));
       cone.setSize(BEAM_MAX_SPOT, BEAM_MAX_SPOT, BEAM_LENGTH);
+      
       cone.moveTo(position);
       cone.fill(0x80ffff00);
       cone.drawMode(Shape3D.SOLID);
+      
+      cone.rotateToY(radians(offsetDegrees));
       
       // Some beginning values for DMX
       channelValues[DMX_PAN] = 128;
@@ -994,8 +997,10 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
     // For Super sharpy PAN fast = 3.301s, normal = 4.038s
     //                  TILT fast = 2.060, normal = 2.274s
     // Call it 3 s for max pan, and 1.8s for max tilt. Really should measure I guess... 
-    final int MAX_PAN_PER_SECOND = (int)((float)0x0000ffff / 3.0f);
-    final int MAX_TILT_PER_SECOND = (int)((float)0x0000ffff / 1.8f);
+//    final int MAX_PAN_PER_SECOND = (int)((float)0x0000ffff / 3.0f);
+//    final int MAX_TILT_PER_SECOND = (int)((float)0x0000ffff / 1.8f);
+    final int MAX_PAN_PER_SECOND = 0x00ffffff;
+    final int MAX_TILT_PER_SECOND = 0x00ffffff; 
     
     final float PAN_CONVERSION = (3 * PI) / (float)(0x0000ffff);
     final float TILT_CONVERSION = (1.5 * PI) / (float)(0x0000ffff);
