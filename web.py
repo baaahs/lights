@@ -83,6 +83,9 @@ Seconds:<input type=text name=run_time value=60><input type=submit></form>
         raise cherrypy.HTTPRedirect("/")
 
 
+    @cherrypy.expose
+    def admin(self):
+        raise cherrypy.HTTPRedirect("/static/admin.html")
 
     
     @cherrypy.expose
@@ -162,3 +165,84 @@ Seconds:<input type=text name=run_time value=60><input type=submit></form>
             out = {"ok": False}
 
         return out
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def manual_eyes(self):
+        data = cherrypy.request.json
+
+        if not data.get("enabled"):
+            # Done with manual mode
+            self.runner.set_force_mute(False)
+            return {"ok": True}
+
+        # Make sure force mute is enabled
+        self.runner.set_force_mute(True)
+
+        print "Got data %s" % str(data)
+
+        effect = None
+        if data.get("effect"):
+            effect = eye_effect.EyeEffect(json=data.get("effect"))
+        x = data.get("x_pos")
+        y = data.get("y_pos")
+        z = data.get("z_pos")
+
+        is_xyz = data.get("pos_is_xyz") or False
+
+        dimmer = data.get("dimmer")
+        color_pos = data.get("color_pos")
+
+        if data.get("set_party"):
+            eye = self.runner.model.party_eye
+            if effect is not None:
+                eye.effect = effect
+
+            if is_xyz:
+                p = [x, y, z]
+                print "Setting pos of %s" % str(p)
+                eye.set_xyz_pos(p, False)
+            else:
+                print "Setting party pan=%f, tilt=%f" % (x, y)      
+                eye.pan = x
+                eye.tilt = y
+
+            if isinstance(color_pos, int):
+                eye.color_pos = color_pos
+            else:
+                print "NOT setting color_pos"
+
+            if isinstance(dimmer, float):
+                eye.dimmer = dimmer
+            else:
+                print "NOT setting dimmer"
+
+        if data.get("set_business"):
+            eye = self.runner.model.business_eye
+            if effect is not None:
+                eye.effect = effect
+
+            if is_xyz:
+                p = [x, y, z]
+                print "Setting pos of %s" % str(p)
+                eye.set_xyz_pos(p, False)
+            else:
+                print "Setting party pan=%f, tilt=%f" % (x, y)      
+                eye.pan = x
+                eye.tilt = y
+
+            if isinstance(color_pos, int):
+                eye.color_pos = color_pos
+            else:
+                print "NOT setting color_pos"
+
+            if isinstance(dimmer, float):
+                eye.dimmer = dimmer
+            else:
+                print "NOT setting dimmer"
+
+            eye.go();
+
+        return {"ok": True}
+

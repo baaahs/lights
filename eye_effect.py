@@ -180,7 +180,10 @@ class EyeEffect(object):
 
 
             # Effect
-            if self.effect_mode == EFFECT_LADDER:
+            if self.effect_mode == EFFECT_NONE:
+                dmxer.set_eye_dmx(eyes.EYE_DMX_EFFECT, 0)
+
+            elif self.effect_mode == EFFECT_LADDER:
                 dmxer.set_eye_dmx(eyes.EYE_DMX_EFFECT, 65)
 
                 v = 190

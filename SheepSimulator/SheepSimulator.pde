@@ -169,7 +169,12 @@ void draw() {
 // Various mouse events to modify the camera in a reasonably natural feeling way
 void mouseWheel(MouseEvent event) {
   float e = event.getCount();
-  camera.zoom(e/10);
+
+  if (keyCode == SHIFT) {
+    camera.zoom(e/10);
+  } else {    
+    camera.dolly(e*4);
+  }
 }
 
 float dragArcScaling = 60;
@@ -180,9 +185,10 @@ void mouseDragged() {
   float y = (mouseY - pmouseY);
   //println("x="+x+" y="+y);
   
-  if (mouseButton == CENTER) {
-    camera.boom(y);
-    camera.truck(x);
+ 
+  if (mouseButton == CENTER || keyCode == SHIFT) {
+    camera.boom(y*4);
+    camera.truck(x*4);
   } else if (mouseButton == RIGHT) {
     camera.pan(x / dragCircleScaling);
     camera.tilt(y / dragArcScaling);
@@ -642,8 +648,8 @@ class Sheep {
     sheepModel.rotateY(PI*0.5);
     sheepModel.translate(SHEEP_SCALE * 30, SHEEP_SCALE * 10, SHEEP_SCALE * 550); // Shit, still in model coord space. Lame!
     
-    leftEye = new Eye(app, "Left eye", 400, new PVector(SHEEP_SCALE * -135, SHEEP_SCALE * -215, SHEEP_SCALE * 27), 0);
-    rightEye = new Eye(app, "Right eye", 416, new PVector(SHEEP_SCALE * -135, SHEEP_SCALE * -215, SHEEP_SCALE * -27), 0);
+    leftEye = new Eye(app, "Left eye", 400, new PVector(SHEEP_SCALE * -135, SHEEP_SCALE * -215, SHEEP_SCALE * 27), 35);
+    rightEye = new Eye(app, "Right eye", 416, new PVector(SHEEP_SCALE * -135, SHEEP_SCALE * -215, SHEEP_SCALE * -27), -22);
     
   }
 
@@ -956,21 +962,32 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
     final int DMX_RESET_AND_LAMP = 16;
     
     String me;
+    PVector position;
+    float offsetDegrees;
+    Anchor anchor;
     
     Eye(PApplet app, String me, int dmx, PVector position, float offsetDegrees) {
       this.me = me;
       this.dmxOffset = dmx;
+      this.position = position;
+      this.offsetDegrees = offsetDegrees;
       
       watch = new StopWatch();
       
+      anchor = new Anchor(app);
+      
       cone = new Cone(app, 40, new PVector(0, 1, 0), new PVector(0, BEAM_LENGTH, 0));
       cone.setSize(BEAM_MAX_SPOT, BEAM_MAX_SPOT, BEAM_LENGTH);
-      
-      cone.moveTo(position);
       cone.fill(0x80ffff00);
       cone.drawMode(Shape3D.SOLID);
       
-      cone.rotateToY(radians(offsetDegrees));
+      anchor.addShape(cone);
+      
+      anchor.moveTo(position);
+//      cone.moveTo(position);
+      
+      anchor.rotateToY(radians(offsetDegrees));
+//      cone.rotateToY(radians(offsetDegrees));
       
       // Some beginning values for DMX
       channelValues[DMX_PAN] = 128;
@@ -989,7 +1006,8 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
         updateDMX();
       }
       
-      cone.draw();
+      anchor.draw();
+//      cone.draw();
 
     }
     
@@ -997,10 +1015,10 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
     // For Super sharpy PAN fast = 3.301s, normal = 4.038s
     //                  TILT fast = 2.060, normal = 2.274s
     // Call it 3 s for max pan, and 1.8s for max tilt. Really should measure I guess... 
-//    final int MAX_PAN_PER_SECOND = (int)((float)0x0000ffff / 3.0f);
-//    final int MAX_TILT_PER_SECOND = (int)((float)0x0000ffff / 1.8f);
-    final int MAX_PAN_PER_SECOND = 0x00ffffff;
-    final int MAX_TILT_PER_SECOND = 0x00ffffff; 
+    final int MAX_PAN_PER_SECOND = (int)((float)0x0000ffff / 4.0f);
+    final int MAX_TILT_PER_SECOND = (int)((float)0x0000ffff / 3.0f);
+//    final int MAX_PAN_PER_SECOND = 0x00ffffff;
+//    final int MAX_TILT_PER_SECOND = 0x00ffffff; 
     
     final float PAN_CONVERSION = (3 * PI) / (float)(0x0000ffff);
     final float TILT_CONVERSION = (1.5 * PI) / (float)(0x0000ffff);
@@ -1193,4 +1211,5 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
     }
   }
 }
+
 

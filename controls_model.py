@@ -11,21 +11,7 @@ import eyes
 import eye_effect
 import config
 
-EYE_COLOR_WHITE         = 0
-EYE_COLOR_RED           = 9
-EYE_COLOR_ORANGE        = 17
-EYE_COLOR_AQUAMARINE    = 25
-EYE_COLOR_DEEP_GREEN    = 33
-EYE_COLOR_LIGHT_GREEN   = 41
-EYE_COLOR_LAVENDER      = 49
-EYE_COLOR_PINK          = 57
-EYE_COLOR_YELLOW        = 66
-EYE_COLOR_MAGENTA       = 74
-EYE_COLOR_CYAN          = 83
-EYE_COLOR_CTO2          = 92
-EYE_COLOR_CTO1          = 101
-EYE_COLOR_CTB           = 110
-EYE_COLOR_BLUE          = 119
+
 
 PREDEFINED_COLORS = [
     color.Hex("#000000"),   # Black, but not really used
@@ -39,14 +25,14 @@ PREDEFINED_COLORS = [
 ]
 
 PREDEFINED_COLOR_POS = [
-    EYE_COLOR_WHITE,
-    EYE_COLOR_RED,
-    EYE_COLOR_ORANGE,
-    EYE_COLOR_YELLOW,
-    EYE_COLOR_DEEP_GREEN,
-    EYE_COLOR_BLUE,
-    EYE_COLOR_MAGENTA,
-    EYE_COLOR_WHITE
+    eyes.EYE_COLOR_WHITE,
+    eyes.EYE_COLOR_RED,
+    eyes.EYE_COLOR_ORANGE,
+    eyes.EYE_COLOR_YELLOW,
+    eyes.EYE_COLOR_DEEP_GREEN,
+    eyes.EYE_COLOR_BLUE,
+    eyes.EYE_COLOR_MAGENTA,
+    eyes.EYE_COLOR_WHITE
 ]
 
 EYES_MODE_DISCO = "disco"
@@ -149,7 +135,7 @@ class ControlsModel(object):
         ########
         self.disco_mix = False
         self.disco_cycle_speed = 0.0
-        self.disco_color_pos = EYE_COLOR_WHITE
+        self.disco_color_pos = eyes.EYE_COLOR_WHITE
         self.disco_brightness = 1.0
         self.disco_effect = 0
         self.disco_effect_speed = 0.0
@@ -169,7 +155,7 @@ class ControlsModel(object):
         # The RGB values of the chosen colors
         self.chosen_colors = [ color.RGB(255, 255, 0), color.RGB(0,255,255) ]
         # Color wheel positions
-        self.chosen_colors_pos = [ EYE_COLOR_WHITE, EYE_COLOR_WHITE ]
+        self.chosen_colors_pos = [ eyes.EYE_COLOR_WHITE, eyes.EYE_COLOR_WHITE ]
 
         # Chosen indexes. Could be -1
         self.chosen_colors_ix = [7, 7]
@@ -465,35 +451,35 @@ class ControlsModel(object):
                 elif data[0] == 1.0:
 
                     if parts[3] == "colorWhite":
-                        self.set_disco_color_pos(EYE_COLOR_WHITE)
+                        self.set_disco_color_pos(eyes.EYE_COLOR_WHITE)
                     elif parts[3] == "colorRed":
-                        self.set_disco_color_pos(EYE_COLOR_RED)
+                        self.set_disco_color_pos(eyes.EYE_COLOR_RED)
                     elif parts[3] == "colorOrange":
-                        self.set_disco_color_pos(EYE_COLOR_ORANGE)
+                        self.set_disco_color_pos(eyes.EYE_COLOR_ORANGE)
                     elif parts[3] == "colorAquamarine":
-                        self.set_disco_color_pos(EYE_COLOR_AQUAMARINE)
+                        self.set_disco_color_pos(eyes.EYE_COLOR_AQUAMARINE)
                     elif parts[3] == "colorDeepGreen":
-                        self.set_disco_color_pos(EYE_COLOR_DEEP_GREEN)
+                        self.set_disco_color_pos(eyes.EYE_COLOR_DEEP_GREEN)
                     elif parts[3] == "colorLightGreen":
-                        self.set_disco_color_pos(EYE_COLOR_LIGHT_GREEN)
+                        self.set_disco_color_pos(eyes.EYE_COLOR_LIGHT_GREEN)
                     elif parts[3] == "colorLavender":
-                        self.set_disco_color_pos(EYE_COLOR_LAVENDER)
+                        self.set_disco_color_pos(eyes.EYE_COLOR_LAVENDER)
                     elif parts[3] == "colorPink":
-                        self.set_disco_color_pos(EYE_COLOR_PINK)
+                        self.set_disco_color_pos(eyes.EYE_COLOR_PINK)
                     elif parts[3] == "colorYellow":
-                        self.set_disco_color_pos(EYE_COLOR_YELLOW)
+                        self.set_disco_color_pos(eyes.EYE_COLOR_YELLOW)
                     elif parts[3] == "colorMagenta":
-                        self.set_disco_color_pos(EYE_COLOR_MAGENTA)
+                        self.set_disco_color_pos(eyes.EYE_COLOR_MAGENTA)
                     elif parts[3] == "colorCyan":
-                        self.set_disco_color_pos(EYE_COLOR_CYAN)
+                        self.set_disco_color_pos(eyes.EYE_COLOR_CYAN)
                     elif parts[3] == "colorCTO2":
-                        self.set_disco_color_pos(EYE_COLOR_CTO2)
+                        self.set_disco_color_pos(eyes.EYE_COLOR_CTO2)
                     elif parts[3] == "colorCTO1":
-                        self.set_disco_color_pos(EYE_COLOR_CTO1)
+                        self.set_disco_color_pos(eyes.EYE_COLOR_CTO1)
                     elif parts[3] == "colorCTB":
-                        self.set_disco_color_pos(EYE_COLOR_CTB)
+                        self.set_disco_color_pos(eyes.EYE_COLOR_CTB)
                     elif parts[3] == "colorBlue":
-                        self.set_disco_color_pos(EYE_COLOR_BLUE)                
+                        self.set_disco_color_pos(eyes.EYE_COLOR_BLUE)                
 
             elif parts[2] == "hmode":
                 self.set_headlights_mode(parts[3])

@@ -165,6 +165,9 @@ class ShowRunner(threading.Thread):
         self._push_overlay_names()
         self.cm.set_max_time(self.max_show_time)
 
+        self.force_muted = False
+
+
     def random_show_name(self):
         """
         Return an infinite sequence of randomized show names
@@ -294,6 +297,11 @@ class ShowRunner(threading.Thread):
         if name:
             if name in self.shows:
                 s = self.shows[name]
+
+                if hasattr(s, "show_type") and s.show_type == "eyes_only":
+                    self.next_eo_show(name)
+                    return
+                    
             else:
                 print "unknown show:", name
 
@@ -424,6 +432,16 @@ class ShowRunner(threading.Thread):
         name = self.eo_shows[ix]
         self.next_eo_show(name)
 
+
+    def move_overlay_cursor(self, delta):
+        self.overlay_cursor += delta
+        if self.overlay_cursor > len(self.overlay_shows) - 1:
+            self.overlay_cursor = len(self.overlay_shows) - 1
+        if self.overlay_cursor < 0:
+            self.overlay_cursor = 0
+
+        self._push_overlay_names()
+
     def start_overlay(self, index):
         ix = self.overlay_cursor + index
         if ix > len(self.overlay_shows) - 1:
@@ -464,7 +482,8 @@ class ShowRunner(threading.Thread):
         print "Stopping overlay show %s" % name
 
         # Unmute the mutable model
-        self._set_model_muted(False)
+        if not self.force_muted:
+            self._set_model_muted(False)
 
         # This should sufficiently make them go away
         self.overlay_show = None
@@ -485,6 +504,19 @@ class ShowRunner(threading.Thread):
 
     def _push_overlay_names(self):
         self.cm.set_overlay_names(self.overlay_shows[self.overlay_cursor:])
+
+    #######
+    # For the web
+
+    def set_force_mute(self, muted):
+        self.force_muted = muted
+
+        if not muted and self.overlay_show:
+            # An overlay is running, don't unmute things underneath it
+            return
+
+        self._set_model_muted(muted)
+
 
     #######
 
@@ -552,7 +584,7 @@ class ShowRunner(threading.Thread):
 
                 # Always output things, because they could have
                 # changed by UI controls for instance
-                if self.overlay_show is not None:
+                if self.overlay_show is not None or self.force_muted:
                     self.model.party_eye.go()
                     self.model.business_eye.go()
                     self.model.both.go()

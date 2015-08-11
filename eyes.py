@@ -6,6 +6,22 @@ import controls_model as controls
 from color import clamp
 import config
 
+EYE_COLOR_WHITE         = 0
+EYE_COLOR_RED           = 9
+EYE_COLOR_ORANGE        = 17
+EYE_COLOR_AQUAMARINE    = 25
+EYE_COLOR_DEEP_GREEN    = 33
+EYE_COLOR_LIGHT_GREEN   = 41
+EYE_COLOR_LAVENDER      = 49
+EYE_COLOR_PINK          = 57
+EYE_COLOR_YELLOW        = 66
+EYE_COLOR_MAGENTA       = 74
+EYE_COLOR_CYAN          = 83
+EYE_COLOR_CTO2          = 92
+EYE_COLOR_CTO1          = 101
+EYE_COLOR_CTB           = 110
+EYE_COLOR_BLUE          = 119
+
 EYE_DMX_PAN         = 1
 EYE_DMX_PAN_FINE    = 2
 EYE_DMX_TILT        = 3
@@ -64,7 +80,9 @@ class Eye(object):
 
     @tilt.setter
     def tilt(self, val):
-        self._tilt = clamp(float(val), -270.0, 270.0)
+        if val is None:
+            return
+        self._tilt = clamp(float(val), -135.0, 135.0)
 
     @property
     def pan(self):
@@ -72,7 +90,9 @@ class Eye(object):
 
     @pan.setter
     def pan(self, val):
-        self._pan = clamp(float(val), -135.0, 135.0)
+        if val is None:
+            return
+        self._pan = clamp(float(val), -270.0, 270.0)
 
     def set_brightness(self, val):
         self._brightness = val
@@ -148,7 +168,7 @@ class Eye(object):
             effect.go(self, speed=ext_speed)
 
 
-    def set_xy_pos(self, x, y, sky):
+    def set_xy_pos(self, xy_pos, sky):
         """
         Set the XY position of the light on the ground. The left eyet
         is at 0,0. Negative X is to the left and negative Y is towards
@@ -157,27 +177,34 @@ class Eye(object):
         a point directly under the left eye)
         """
 
-        self.last_x_pos = x
-        self.last_y_pos = y
+        pos = xy_to_pnt(xy_pos, self.side == "p", sky)
+        self.pan = pos[0]
+        self.tilt = pos[1]
 
-        if self.side == "b":
-            # Adjust for parallax
-            x -= 0.25
+        # if self.side == "b":
+        #     # Adjust for parallax
+        #     x -= 0.25
 
-        pan_rads = math.atan2(x,1)
-        tilt_rads = math.atan2( y * math.sin(math.fabs(pan_rads)), x)
-        self._pan = math.degrees(pan_rads)
-        self._tilt = math.degrees(tilt_rads) - 90
-        if self._tilt < 0:
-            self._tilt += 360.0
-        if self._tilt > 180:
-            self._tilt = 360-self._tilt
+        # pan_rads = math.atan2(x,1)
+        # tilt_rads = math.atan2( y * math.sin(math.fabs(pan_rads)), x)
+        # self._pan = math.degrees(pan_rads)
+        # self._tilt = math.degrees(tilt_rads) - 90
+        # if self._tilt < 0:
+        #     self._tilt += 360.0
+        # if self._tilt > 180:
+        #     self._tilt = 360-self._tilt
 
-        if self._tilt > 135:
-            self._tilt = 135
+        # if self._tilt > 135:
+        #     self._tilt = 135
 
-        if self.skyPos:
-            self._pan = 360-self._pan
+        # if self.skyPos:
+        #     self._pan = 360-self._pan
+
+    def set_xyz_pos(self, xyz_pos, cap_pan=True):
+            pos = xyz_to_pnt(xyz_pos, self.side == "p", cap_pan)
+            self.pan = pos[0]
+            self.tilt = pos[1]
+
 
     def set_eye_dmx(self, channel, value):
         # if self.side == "p" and value != 0 and value != 255:
@@ -207,7 +234,6 @@ class MutableEye(Eye):
         self.parent.go()
 
 
-
 def xy_to_pnt(xy_pos, is_party, is_sky):
     """
     Takes an XY position on a standard plane and converts that to a pan and tilt
@@ -216,19 +242,49 @@ def xy_to_pnt(xy_pos, is_party, is_sky):
 
     The reference plane can be on the ground or in the sky.
     """
+    xyz_pos = [xy_pos[0], xy_pos[1], 1.0]
+    if is_sky:
+        xyz_pos[2] = -1.0
 
-    x = float(xy_pos[0])
-    y = float(xy_pos[1])
+    return xyz_to_pnt(xyz_pos, is_party)
 
-    # x=0.5
+def xyz_to_pnt(xyz_pos, is_party, cap_pan=True):
+    """
+    The more better uber function which takes a fully 3 dimensional position
+    in cartesian coordinates and returns a pan and tilt aim set for one eye
+    or the other which will hit that position, compensated for parallax
+    between the eyes as well as the offset angle for each of them.
+
+    The origin of the xyz system is at a point level with, and equidistant
+    between, the center of rotation of the two eyes. An assumption is made
+    that the eyes are reasonably level with each other and that the line
+    between them is reasonably square with the centerline of the bus. If
+    that doesn't hold, we will have to upgrade to full position and direction
+    vector specifications for each eye, which isn't the end of the world, it's
+    just going to be more work...
+
+    Units for the coordinate system are "height of the eyes". So a position
+    of 1 on the Z axis is the ground, a position of 0 is dead ahead, and
+    a position of -1 is above the bus by the same distance as to the ground.
+    """
+
+    x0 = float(xyz_pos[0])
+    y0 = float(xyz_pos[1])
+    z0 = float(xyz_pos[2])
+
+    # x0 = 0.125
+
+    side = "b"
+    if is_party:
+        side = "p"
 
     # First we position the point, given in global coords, to a coordinate system
     # rooted on the eye itself.
     if is_party:
-        x += config.get("parallax_distance")
+        x0 += config.get("parallax_distance")
         rot = math.radians(config.get("eye_rotation")["p"])
     else:
-        x -= config.get("parallax_distance")
+        x0 -= config.get("parallax_distance")
         rot = math.radians(config.get("eye_rotation")["b"])
 
     # Now we rotate that eye coordinate system
@@ -236,10 +292,15 @@ def xy_to_pnt(xy_pos, is_party, is_sky):
     s = math.sin(rot)
 
     # print "c=%f  s=%f" % (c,s)
-    print "xy before  = %f, %f" % (x,y)
-    x = x * c + y * s
-    y = y * c - x * s 
-    print "xy rotated = %f, %f" % (x,y)
+    print "xyz0 before  = %f, %f, %f" % (x0,y0, z0)
+    x = (x0 * c) + (y0 * s)
+    y = (y0 * c) - (x0 * s)
+
+    # c = math.cos(-rot)
+    # s = math.sin(-rot)
+    # x3 = (x * c) + (y * s)
+    # y3 = (y * c) - (x * s)
+    # print "xy rotated = %f, %f   unrotated= %f, %f " % (x,y, x3,y3)
 
     # x and y are now in a coordinate system rooted on the eye in the proper
     # direction. Thus all we have to do is convert to spherical coordinates (which
@@ -251,7 +312,7 @@ def xy_to_pnt(xy_pos, is_party, is_sky):
 
     r = math.sqrt(x*x + 1.0 + y*y)
 
-    pan_rads = math.atan2(1, x)
+    pan_rads = math.atan2(z0, x)
     tilt_rads = math.acos(y / r)
 
     # pan_rads = math.atan2(x,1)
@@ -261,19 +322,53 @@ def xy_to_pnt(xy_pos, is_party, is_sky):
 
     pan = 90 - math.degrees(pan_rads)
     tilt = math.degrees(tilt_rads)
-    print "raw pan=%f tilt=%f" % (pan, tilt)
-    if tilt < 0:
-        tilt += 360.0
-    if tilt > 180:
-        tilt = 360-tilt
+    #print "%s pan=%f tilt=%f" % (side, pan, tilt)
+
+    # Keep pan away from lock by only using the lower half
+    # and just reversing tilt. This should be a tad safer, but
+    # more important should mean a faster transition to the same end point
+    if cap_pan:
+        if pan < -90:
+            print "%s swap < -90" % side
+            pan += 180
+            tilt = -tilt
+        elif pan > 90:
+            print "%s swap > 90" % side
+            pan -= 180
+            tilt = -tilt
+
+    if tilt > 135 or tilt < -135:
+        print "%s TILT MAX" % side
+    # if tilt < 0:
+    #     tilt += 360.0
+    # if tilt > 180:
+    #     tilt = 360-tilt
 
     # Because we know this is for eyes, we cap our tilt value
-    if tilt > 135:
-        tilt = 135.0
+    # tilt = color.clamp(tilt,-135.0)
+    # if tilt > 135:
+    #     tilt = 135.0
 
-    # You want it in the sky you say?, well then we just swing the pan around
-    if is_sky:
-        pan = 360-pan
+    # # You want it in the sky you say?, well then we just swing the pan around
+    # if is_sky:
+    #     pan = 360-pan
 
-    print "final pan=%f tilt=%f" % (pan, tilt)
+
+
+    # # As a check, let's map from these polar coordinates back to cartesian
+    # # coordinates, which we will then unrotate and stuff
+    # x2 = r * math.cos(pan_rads) * math.sin(tilt_rads)
+    # z2 = r * math.sin(pan_rads) * math.sin(tilt_rads)
+    # y2 = r * math.cos(tilt_rads)
+
+    # c = math.cos(-rot)
+    # s = math.sin(-rot)
+    # x3 = x2 * c + y2 * s
+    # y3 = y2 * c - x2 * s
+
+    # print "2=(%f,%f,%f)  3=(%f,%f)" % (x2,y2,z2, x3,y3)
+
+
+
+    print "%s final pan=%f tilt=%f" % (side, pan, tilt)
     return [pan, tilt]

@@ -56,3 +56,16 @@ def get_hostname(default=None):
         return name.split('.')[0]
     except Exception, e:
         return default
+
+
+def wrapped_list(list, which):
+    """
+    Selects an element from a list, wrapping in either direction.
+    """
+    if which < 0:
+        ix = len(list) + (which % len(list))
+    else:
+        ix = which % len(list)
+
+    return list[ix]
+
