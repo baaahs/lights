@@ -8,6 +8,7 @@ class Watchdog(object):
     def __init__(self):
         self.last_ping = time.time()
         self.time_to_stop = False
+        self.must_die = False
 
         self.thread = Thread(target=self)
         self.thread.start()
@@ -29,6 +30,10 @@ class Watchdog(object):
 
                 os._exit(1)
 
+            if self.must_die:
+                print "\n\n Must die set. Exiting"
+                os._exit(2)
+
 
 
     def ping(self):
@@ -36,3 +41,11 @@ class Watchdog(object):
 
     def stop(self):
         self.time_to_stop = True
+
+    def manual_reset(self):
+        print "--------------------------------------------------------"
+        print "  MANUAL SERVER RESET"
+        print "--------------------------------------------------------"
+
+        self.must_die = True
+

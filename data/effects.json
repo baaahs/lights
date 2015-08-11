@@ -158,14 +158,14 @@
   {
     "external_speed_modifies": "gobo_shake", 
     "shutter_type": "open", 
-    "effect_rotation": 0.0, 
+    "effect_rotation": 0, 
     "frost": "none", 
     "focus": null, 
-    "shutter_speed": 0.0, 
-    "frost_speed": 0.0, 
+    "shutter_speed": 0, 
+    "frost_speed": 0, 
     "effect_mode": "none", 
-    "gobo_shake_speed": 0.0, 
-    "gobo_rotation": 0.0, 
+    "gobo_shake_speed": 0, 
+    "gobo_rotation": 0, 
     "gobo": 13
   }, 
   {

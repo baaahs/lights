@@ -3,11 +3,12 @@ import time
 import eye_effect
 
 class SheepyWeb(object):
-    def __init__(self, queue, runner, cm):
+    def __init__(self, queue, runner, cm, watchdog):
         self.queue = queue
         self.runner = runner
 
         self.cm = cm
+        self.watchdog = watchdog
 
         self.show_library = show_library = {}
 
@@ -246,3 +247,17 @@ Seconds:<input type=text name=run_time value=60><input type=submit></form>
 
         return {"ok": True}
 
+
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def server_reset(self):
+        data = cherrypy.request.json
+
+        if not data.get("please"):
+            return {"ok": False, "msg": "You didn't say please"}
+
+        self.watchdog.manual_reset()
+
+        return {"ok": True}

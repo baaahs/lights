@@ -800,7 +800,7 @@ class SheepServer(object):
         }
 
         # this method blocks until KeyboardInterrupt
-        cherrypy.quickstart(SheepyWeb(self.queue, self.runner, self.controls_model),
+        cherrypy.quickstart(SheepyWeb(self.queue, self.runner, self.controls_model, watchdog),
                             '/',
                             config=config)
 

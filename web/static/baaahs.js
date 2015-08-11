@@ -24,5 +24,8 @@ B = new function() {
         alert(msg);
     }
 
+    B.showMessage = function(msg) {
+        alert(msg);
+    }
 
 }();
