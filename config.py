@@ -7,6 +7,9 @@ _CFG = {}
 def get(v):
     return _CFG[v]
 
+def has(v):
+    return v in _CFG
+
 def load():
     global _CFG
     # We let this throw exceptions because we want the server to stop

@@ -19,5 +19,7 @@
     "eye_rotation": {
         "p": 35.0,
         "b": -22.0
-    }
+    },
+
+    "mode": "simulator"
 }

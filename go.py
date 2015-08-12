@@ -16,7 +16,6 @@ import touch_osc
 import watchdog
 
 from model.simulator import SimulatorModel
-from model.ola_model import OLAModel
 from model.mirror import MirrorModel
 
 import config
@@ -809,6 +808,17 @@ if __name__=='__main__':
 
     config.load()
 
+    sim_host = ""
+    if config.has("sim_host"):
+        sim_host = config.get("sim_host")
+
+    sim_port = 4444
+    if config.has("sim_port"):
+        sim_port = config.get("sim_port")
+
+    cfg_mode = None
+    if config.has("mode"):
+        cfg_mode = config.get("mode")
 
     import argparse
     parser = argparse.ArgumentParser(description='Baaahs Light Control')
@@ -817,8 +827,8 @@ if __name__=='__main__':
                         help='Maximum number of seconds a show will run (default 300)')
 
     parser.add_argument('--simulator',dest='simulator',action='store_true')
-    parser.add_argument('--host',dest='sim_host', type=str, help="Hostname or ip for simulator")
-    parser.add_argument('--port',dest='sim_port', type=int, default=4444, help="Port for simulator")
+    parser.add_argument('--host',dest='sim_host', type=str, default=sim_host, help="Hostname or ip for simulator")
+    parser.add_argument('--port',dest='sim_port', type=int, default=sim_port, help="Port for simulator")
 
     parser.add_argument('--universe',dest='universe', type=int, default=0, help="DMX universe")
 
@@ -837,16 +847,20 @@ if __name__=='__main__':
         print ', '.join([s[0] for s in shows.load_shows()])
         sys.exit(0)
 
-    if args.mirror:
+
+
+    if args.mirror or cfg_mode == "mirror":
+        from model.ola_model import OLAModel
         print "Mirroring to both OLA universe %d and sim %s:%d" % (args.universe, args.sim_host, args.sim_port)
         sim = SimulatorModel(args.sim_host, port=args.sim_port, debug=args.debug)
         ola = OLAModel(512, universe=args.universe)
         model = MirrorModel(sim, ola)
-    elif args.simulator:
+    elif args.simulator or cfg_mode == "simulator":
         # sim_host = "localhost"
         print "Using SheepSimulator at %s:%d" % (args.sim_host, args.sim_port)
         model = SimulatorModel(args.sim_host, port=args.sim_port, debug=args.debug)
     else:
+        from model.ola_model import OLAModel
         print "Using OLA model universe=%d" % args.universe
         model = OLAModel(512, universe=args.universe)
 
