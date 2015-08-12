@@ -69,13 +69,14 @@ class SimulatorModel(object):
     def go(self):
         "Send all of the buffered commands"
         for (cell, color) in self.dirty.items():
+            num = cell[:-1]
+            side = cell[-1]
+
             if color.rgb == (0,0,0):
                 r,g,b = SIM_DEFAULT
             else:
                 r,g,b = color.rgb
 
-            num = cell[:-1]
-            side = cell[-1]
             msg = "%s %s %s,%s,%s" % (side, num, r,g,b)
             if self.debug:
                 print msg

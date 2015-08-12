@@ -258,7 +258,9 @@ class Sheep(object):
     def clear(self):
         ""
         self.set_all_cells(RGB(0,0,0))
-        self.go()
+        # AAck! Never call go like this. Let the main loop
+        # handle the timing!!! :(
+        # self.go()
 
     def go(self):
         self.model.go()
