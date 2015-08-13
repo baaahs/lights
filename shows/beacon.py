@@ -75,12 +75,13 @@ class Beacon(looping_show.LoopingShow):
         self.strobe = eye_effect.EyeEffect(shutter_type=eye_effect.SHUTTER_STROBE, shutter_speed = 1.0)
 
 
-
     def update_at_progress(self, progress, new_loop, loop_instance):
 
         if new_loop:
             pass
 
+        self.pe.clear()
+        self.be.clear()
 
         # Position the eyes straight up
         self.pe.pan = 0
@@ -101,11 +102,4 @@ class Beacon(looping_show.LoopingShow):
             self.be.effect = self.strobe
 
             # For debugging since the simulator doesn't show strobes
-            #self.pe.dimmer = self.strobe.shutter_speed
-        else:
-            # Take the strobe off
-            self.pe.effect = None
-            self.be.effect = None
-
-            # For debugging since the simulator doesn't show strobes
-            #self.pe.dimmer = 1.0
+            self.pe.dimmer = self.strobe.shutter_speed

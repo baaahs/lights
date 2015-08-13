@@ -97,6 +97,13 @@ class Eye(object):
     def set_brightness(self, val):
         self._brightness = val
 
+    def clear(self):
+        self._pan = 0.0
+        self._title = 0.0
+        self.color_pos = 0
+        self.dimmer = 1.0
+        self.effect = None
+
     def go(self):
         """
         Copy our data into the model, translating to DMX and
