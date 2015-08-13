@@ -48,6 +48,7 @@ SHOW_TARGET_MODE_NONE = "none"
 SHOW_TARGET_MODE_PNT = "pnt"
 SHOW_TARGET_MODE_UP = "up"
 SHOW_TARGET_MODE_DOWN = "down"
+SHOW_TARGET_MODE_FRONT = "front"
 
 PAN = 0
 TILT = 1
@@ -152,6 +153,8 @@ class ControlsModel(object):
         self.show_target_mode = SHOW_TARGET_MODE_NONE
         ###
 
+        self.focus = 0.5
+
         # The RGB values of the chosen colors
         self.chosen_colors = [ color.RGB(255, 255, 0), color.RGB(0,255,255) ]
         # Color wheel positions
@@ -250,7 +253,10 @@ class ControlsModel(object):
 
         if parts[1] == "main":
             if parts[2] == "color":
-                self.set_color_ix(int(parts[3]), int(parts[4]))
+                if parts[4] == "rgb":
+                    self.set_color_rgb(int(parts[3]), data)
+                else:
+                    self.set_color_ix(int(parts[3]), int(parts[4]))
 
             elif parts[2] == "speed":
                 if parts[3] == "reset":
@@ -422,7 +428,7 @@ class ControlsModel(object):
             #     if data[0] == 1.0:
             #         self.setEyeColor(EYE_COLOR_BLUE)
 
-            if parts[2] == "mode":
+            if parts[2] == "mode":                
                 if data[0] == 1.0:
                     self.set_eyes_mode(parts[3])
                 elif data[0] == 0.0:
@@ -487,7 +493,8 @@ class ControlsModel(object):
             elif parts[2] == "target":
                 if parts[3] == "xy":
                     self.set_eyes_target(data[0], data[1])
-
+                elif parts[3] == "focus":
+                    self.set_eyes_focus(data[0])
                 else:
                     self.set_show_target_mode(parts[3])
 
@@ -804,6 +811,37 @@ class ControlsModel(object):
 
         self._notify_chosen_color_changed(c_ix)
 
+    def set_color_rgb(self, c_ix, data):
+        """
+        Sets the color at index c_ix to the value given by rgb data in 
+        either string, int, or float data formats. Strings and ints
+        are interpreted as 0-255, floats are interpreted as 0.0-1.0
+        """
+        if c_ix < 0 or c_ix > 1:
+            print "Don't understand color ix %d" % c_ix
+            return
+
+        if len(data) < 3:
+            print "Not enough data values to set rgb color: %s" % (str(data))
+            return
+
+        if isinstance(data[0], float):
+            # Scale the floats to 255
+            r = int(data[0] * 255)
+            g = int(data[1] * 255)
+            b = int(data[2] * 255)
+        else:
+            r = int(data[0])
+            g = int(data[1])
+            b = int(data[2])
+
+        self.chosen_colors_ix[c_ix] = -1
+        self.chosen_colors[c_ix] = color.RGB(r,g,b)
+        self.chosen_colors_pos[c_ix] = self.chosen_colors[c_ix].pos
+
+        self._notify_chosen_color_changed(c_ix)
+   
+
     def _notify_chosen_color_changed(self, c_ix):
         print "_notify_chosen_color_changed"
         for listener in self.listeners:
@@ -1110,6 +1148,42 @@ class ControlsModel(object):
 
             self._update_show_target()
 
+    def set_eyes_focus(self, focus):
+        self.focus = focus
+
+        _notify_focus_changed(self)
+
+
+    def _notify_focus_changed(self):
+        print "_notify_focus_changed"
+        for listener in self.listeners:
+            try:
+                listener.control_focus_changed()
+            except AttributeError:
+                pass # ignore              
+
+    def _set_eye_xy_front_pos(self, x, y):
+        # Units for X and Y real are "height of the eye" = 1. Scaling out so
+        # that we can tweak it more here than in touch and can define a reasonable
+        # addressable area
+        xr = config.get("xy_scale")["x"] * x
+        yr = config.get("xy_scale")["y"] * (y + 0.5)
+
+        # y gets weird because +y is down
+        yr = 1.0 - yr
+
+        xyz_pos = [xr, 10.0, yr]
+
+        print "in=(%f,%f) xyz = %s" % (x,y, str(xyz_pos))
+
+        self.p_eye_pos = eyes.xyz_to_pnt(xyz_pos, True)
+        self._notify_eye_changed(True)
+
+        self.b_eye_pos = eyes.xyz_to_pnt(xyz_pos, False)
+        self._notify_eye_changed(False)
+
+
+
 
     def _update_headlights(self):
         left = False
@@ -1141,10 +1215,16 @@ class ControlsModel(object):
             self.b_eye_pos = list(config.get("eye_positions")["headlights"][1])
             self._notify_eye_changed(True)
             self._notify_eye_changed(False)
+
         elif self.show_target_mode == SHOW_TARGET_MODE_UP:
             self._set_eye_xy_flat_pos(self.show_target[0], self.show_target[1], True, True, True)
+
         elif self.show_target_mode == SHOW_TARGET_MODE_DOWN:
             self._set_eye_xy_flat_pos(self.show_target[0], self.show_target[1], True, True, False)
+
+        elif self.show_target_mode == SHOW_TARGET_MODE_FRONT:
+            self._set_eye_xy_front_pos(self.show_target[0], self.show_target[1])
+
         else:
             # Is P & T mode, so set scaled version of max value
             pan = self.show_target[0] * 90.0  # Don't bother with full range
@@ -1158,7 +1238,7 @@ class ControlsModel(object):
 
     def set_show_target_mode(self, mode):
 
-        if mode != SHOW_TARGET_MODE_NONE and mode != SHOW_TARGET_MODE_UP and mode != SHOW_TARGET_MODE_DOWN and mode != SHOW_TARGET_MODE_PNT:
+        if mode != SHOW_TARGET_MODE_NONE and mode != SHOW_TARGET_MODE_UP and mode != SHOW_TARGET_MODE_DOWN and mode != SHOW_TARGET_MODE_PNT and mode != SHOW_TARGET_MODE_FRONT:
             print "Unrecognized show target mode %s" % mode
             return
 

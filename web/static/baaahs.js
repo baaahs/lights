@@ -16,6 +16,7 @@ B = new function() {
         settings.url = url;
         settings.contentType = "application/json"
 
+        console.log("Sending data ", settings.data);
         return $.ajax(settings);
     }
 

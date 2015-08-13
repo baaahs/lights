@@ -94,6 +94,44 @@
 
     var statusTimeout = null;
 
+    function formatDuration(d) {
+        if (!d) return "0s";
+
+        d = parseInt(d);
+
+        var tSecs = parseInt(d / 1000);
+        var tMins = parseInt(tSecs / 60);
+
+        var hours = parseInt(tMins / 60);
+        var mins = tMins % 60;
+        var secs = tSecs % 60;
+
+        var out = [];
+        if (hours > 0) {
+            out.push(""+hours);
+            out.push("h ");
+        }
+        if (mins > 0) {
+            out.push(""+mins);
+            out.push("m ");
+        }
+        out.push(secs);
+        out.push("s");
+
+        return out.join("");
+    }
+
+    function updateResetState(isParty, d) {
+        $(".ui.eye.button."+(isParty ? "left": "right")).removeClass("active");
+
+        if (d.mode) {
+            $(".ui.eye.button." + (isParty ? "left": "right") + "." + d.mode).addClass("active");
+            $("#"+(isParty ? "left": "right")+"State").text(d.mode.toUpperCase());
+        }
+
+        $("#"+(isParty ? "left": "right")+"ResetTime").text(formatDuration(d.duration));
+    }
+
     function updateStatus() {
         if (statusTimeout) {
             clearTimeout(statusTimeout);
@@ -102,9 +140,11 @@
 
         B.api("/status", {
             success: function(data) {
-                console.log("Got status data");
+                console.log("Got status data ", data);
                 if (data.show) {
                     $("#currentShowName").text(data.show.name);
+
+                    $("#currentShowRunTime").text(formatDuration(data.show.run_time))
                 }
 
                 if (data.eo_show) {
@@ -113,13 +153,20 @@
                 } else {
                     $("#eoShowItem").hide();
                 }
+
+                $("#maxShowRuntime").text(formatDuration(data.max_time));
+
+                if (data.reset_state) {
+                    updateResetState(true, data.reset_state.party);
+                    updateResetState(false, data.reset_state.business);
+                }
             }
             , error: function(xhr, status, err) {
                 console.log("Status err ", err);
             }
             , complete: function() {
                 if (!statusTimeout) {
-                    statusTimeout = setTimeout(updateStatus, 1000);
+                    statusTimeout = setTimeout(updateStatus, 5000);
                 }
             }
         });
@@ -133,10 +180,51 @@
         });
     }
 
+    function setEyeState() {
+        var el = $(this);
+
+        var mode = "none";
+        if (el.hasClass("on")) {
+            mode = "on";
+        } else if (el.hasClass("off")) {
+            mode = "off"
+        } else if (el.hasClass("reset")) {
+            mode = "reset"
+        }
+
+        var isParty = el.hasClass("left");
+
+        var data = {
+            is_party: isParty,
+            mode: mode
+        }
+
+        el.addClass("loading");
+        B.api("/set_reset_state", {
+            data: data
+            , success:function(d) {
+                if (d.ok) {
+                    // Do nothing
+                } else {
+                    B.showError("Something went wrong. That didn't work :(");
+                }
+                updateStatus();
+            }
+            , error: function(xhr, status, err) {
+                B.showError("ERROR: "+err);
+            }
+            , complete: function() {
+                el.removeClass("loading");
+            }
+        })
+    }
+
     $(document).ready(function() {
         console.log("document ready");
 
         $("i.eo.show.remove.icon").bind("click", stopEOShow);
+
+        $(".eye.button").bind("click", setEyeState);
 
         // Load the show names
         loadShows();

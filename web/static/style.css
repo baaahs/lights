@@ -14,3 +14,11 @@ i.eo.show.remove.icon {
 .ui.focus.input input {
     width: 3rem;
 }
+
+.eye.state {
+    color: #d92b2f;
+    font-size: 1.2em;
+    margin-left: 1rem;
+    margin-right: 1rem;
+
+}

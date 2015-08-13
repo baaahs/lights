@@ -201,6 +201,52 @@
     }
 
 
+
+    function storePosition() {
+        var el = $(this);
+        if (el.hasClass("disco")) {
+            which = "disco";
+        } else {
+            which = "headlights";
+        }
+
+        var data = {
+            position: which
+        }
+
+        try {
+            data["pos_is_xyz"] = $("#pos_is_xyz").checkbox("is checked");
+            data["x_pos"] = parseFloat($("#x_pos").val());
+            data["y_pos"] = parseFloat($("#y_pos").val());
+            data["z_pos"] = parseFloat($("#z_pos").val());
+
+            if ( $("#btnParty").hasClass("active") || $("#btnBoth").hasClass("active")) {
+                data["set_party"] = true;
+            }
+
+            if ( $("#btnBusiness").hasClass("active") || $("#btnBoth").hasClass("active")) {
+                data["set_business"] = true;
+            }
+
+            el.addClass("loading");
+            B.api("/store_position", {
+                data: data
+                , success: function() {
+                    console.log("Success!")
+                }
+                , error: function(j,s,err) {
+                    B.showError("Failed to store: "+err);
+                }
+                , complete: function() {
+                    el.removeClass("loading");
+                }
+            });
+        } catch (e) {
+            B.showError("Can't store :" + e)
+        }    
+    }
+
+
     $(document).ready(function() {
         loadEffectPresets();
 
@@ -213,8 +259,11 @@
         $(".ui.grab.button").on("click", grab);
         $(".ui.release.button").on("click", release);
 
-        $(".ui.save.button").on("click", save);
-        $(".ui.load.button").on("click", load);
+        $(".ui.store.disco.button").on("click", storePosition);
+        $(".ui.store.headlights.button").on("click", storePosition);
+
+        $(".ui.save.preset.button").on("click", save);
+        $(".ui.load.preset.button").on("click", load);
 
         $(".ui.icon.effect.button").on("click", btnSelectPreset)
     })

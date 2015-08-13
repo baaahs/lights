@@ -1,6 +1,8 @@
 import cherrypy
 import time
+import eyes
 import eye_effect
+import config
 
 class SheepyWeb(object):
     def __init__(self, queue, runner, cm, watchdog):
@@ -127,13 +129,25 @@ Seconds:<input type=text name=run_time value=60><input type=submit></form>
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def status(self):
+        now = time.time()
+
         out = {
             'show': {
                 'name': self.runner.show.name,
-                'run_time': self.runner.show_runtime                
+                'run_time': int(self.runner.show_runtime * 1000)
             },
             'message': self.cm.message,
-            'max_time': self.runner.max_show_time
+            'max_time': int(self.runner.max_show_time * 1000),
+            'reset_state': {
+                'party': {
+                    'mode': self.runner.model.party_eye.reset_mode,
+                    'duration': int((now - self.runner.model.party_eye.reset_changed_at)* 1000)
+                },
+                'business': {
+                    'mode': self.runner.model.business_eye.reset_mode,
+                    'duration': int((now - self.runner.model.business_eye.reset_changed_at)* 1000)
+                }
+            }
         }
         if self.runner.eo_show is not None:
             out['eo_show'] = {
@@ -261,3 +275,65 @@ Seconds:<input type=text name=run_time value=60><input type=submit></form>
         self.watchdog.manual_reset()
 
         return {"ok": True}
+
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def store_position(self):
+        data = cherrypy.request.json
+
+        x = data.get("x_pos")
+        y = data.get("y_pos")
+        z = data.get("z_pos")
+
+        is_xyz = data.get("pos_is_xyz") or False
+
+        which = data.get("position")
+        eye_positions = config.get("eye_positions")
+
+        if is_xyz:
+            xyz_pos = [x,y,z]
+            pnt_p = eyes.xyz_to_pnt(xyz_pos, True)
+            pnt_b = eyes.xyz_to_pnt(xyz_pos, False)
+        else:
+            pnt_p = [x,y]
+            pnt_b = [x,y]
+
+        if which == "disco":
+            # Don't need to look at left / right. Disco is only left
+            p = eye_positions["disco"]
+            p[0] =pnt_p
+
+        elif which == "headlights":
+            p = eye_positions["headlights"]
+            p[0] = pnt_p
+            p[1] = pnt_b
+
+        try:
+            config.save()
+        except Exception:
+            return {"ok": False, "msg": "Couldn't save the positon"}
+
+        return {"ok": True}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def set_reset_state(self):
+        data = cherrypy.request.json
+
+        is_party = data.get("is_party")
+        mode = data.get("mode")
+
+        if is_party:
+            eye = self.runner.model.party_eye
+        else:
+            eye = self.runner.model.business_eye
+
+        eye.reset_mode = mode
+
+        if eye.reset_mode == mode:
+            return {"ok": True}
+
+        return {"ok": False}

@@ -206,6 +206,8 @@ class TouchOSC(object):
             v = 1
 
         self._send1("/eyes/mode/show", float(v))
+        self._send1("/eyes/target/front/visible", v)
+        self._send1("/eyes/target/frontLbl/visible", v)
         self._send1("/eyes/target/up/visible", v)
         self._send1("/eyes/target/upLbl/visible", v)
         self._send1("/eyes/target/down/visible", v)
@@ -221,6 +223,9 @@ class TouchOSC(object):
             v = 1
 
         self._send1("/eyes/target/xy/visible", v)
+        self._send1("/eyes/target/originLbl/visible", v)
+        self._send1("/eyes/target/focus/visible", v)
+        self._send1("/eyes/target/focusLbl/visible", v)
 
         # Don't need these anymore
         self._send1("/onetime/refresh/visible", 0)
@@ -284,6 +289,12 @@ class TouchOSC(object):
             v = 1.0
         self._send1("/eyes/hmode/right", v);
 
+
+    def control_focus_changed(self):
+        self._send1("/eyes/target/focs", self.cm.focus)
+
+
+
     def control_show_target_mode_changed(self):
         v = 0.0
         if self.cm.show_target_mode == controls.SHOW_TARGET_MODE_NONE:
@@ -304,6 +315,11 @@ class TouchOSC(object):
         if self.cm.show_target_mode == controls.SHOW_TARGET_MODE_PNT:
             v = 1.0
         self._send1("/eyes/target/pnt", v);
+
+        v = 0.0
+        if self.cm.show_target_mode == controls.SHOW_TARGET_MODE_FRONT:
+            v = 1.0
+        self._send1("/eyes/target/front", v);
 
     def control_master_names_changed(self):
         addr_base = "/shows/master/choice/%d/lbl"
@@ -371,7 +387,8 @@ class TouchOSC(object):
         try:
             self.client.send(msg)
         except Exception, e:
-            traceback.print_exc()
+            print "Exception while sending OSC message [%s]: %s" % (msg, e)
+            #traceback.print_exc()
 
 
     def _send_all_state(self):

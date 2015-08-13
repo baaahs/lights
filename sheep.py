@@ -123,11 +123,12 @@ def load_geometry(mapfile):
             a,b = raw.split()
             return (to_ints(a.split(',')), to_ints(b.split(',')))
 
-    dat = defaultdict(list)
+    dat = {} # defaultdict(list)
     for line in lines:
         # print line
         (num, rest) = line.split(' ', 1)
         dat[int(num)] = p(rest.strip())
+
     return dat
 
 _neighbor_map = load_geometry('data/geom.txt')
@@ -135,14 +136,24 @@ _neighbor_map = load_geometry('data/geom.txt')
 def edge_neighbors(panel):
     "Return the list of panel ids that share an edge with a given panel"
     try:
-        return _neighbor_map[panel][0]
+        panel = int(panel)
+        out = _neighbor_map[panel][0]
+        if out is None:
+            return []
+
+        return out
     except Exception, e:
         return []
 
 def vertex_neighbors(panel):
     "Return the list of panel ids that share a vertex (but not an edge) with a given panel"
     try:
-        return _neighbor_map[panel][1]
+        panel = int(panel)
+        out = _neighbor_map[panel][1]
+        if out is None:
+            return []
+
+        return out
     except Exception, e:
         return []
 

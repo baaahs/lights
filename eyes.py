@@ -1,7 +1,7 @@
 import math
+import time
+
 import eye_effect
-
-
 import controls_model as controls
 from color import clamp
 import config
@@ -39,6 +39,13 @@ EYE_DMX_FROST           = 14
 EYE_DMX_PNT_SPEED       = 15
 EYE_DMX_LAMP            = 16
 
+EYE_RESET_NONE  = "none"
+EYE_RESET_ON    = "on"
+EYE_RESET_OFF   = "off"
+EYE_RESET_RESET = "reset"
+
+HEADLIGHT_FROST = eye_effect.EyeEffect(frost=eye_effect.FROST_STEADY, frost_speed=0.8)
+
 class Eye(object):
 
     def __init__(self, model, side):
@@ -71,6 +78,10 @@ class Eye(object):
 
         self._brightness = 1.0
 
+        self._reset_mode = EYE_RESET_NONE
+        self._reset_changed_at = time.time()
+
+
     def __repr__(self):
         return "Eye side=%s" % self.side
 
@@ -93,6 +104,26 @@ class Eye(object):
         if val is None:
             return
         self._pan = clamp(float(val), -270.0, 270.0)
+
+    @property
+    def reset_mode(self):
+        return self._reset_mode
+
+    @reset_mode.setter
+    def reset_mode(self, val):
+        if val == self._reset_mode:
+            return
+
+        if val != EYE_RESET_NONE and val != EYE_RESET_ON and val != EYE_RESET_OFF and val != EYE_RESET_RESET:
+            print "Unknown eye reset mode %s" % val
+            return
+
+        self._reset_mode = val
+        self._reset_changed_at = time.time()
+
+    @property
+    def reset_changed_at(self):
+        return self._reset_changed_at
 
     def set_brightness(self, val):
         self._brightness = val
@@ -121,20 +152,29 @@ class Eye(object):
         ext_speed = 0.0
 
         if self.cm:
+            # The effect _might_ override focus, but usually it won't
+            v = int(math.floor(self.cm.focus * 255.0))            
+            self.model.set_eye_dmx(s, EYE_DMX_FOCUS, v)
+
+
             if self.cm.eyes_mode == controls.EYES_MODE_HEADLIGHTS:
                 color_pos = 0
-                effect = None
                 dimmer = 1.0
+                effect = HEADLIGHT_FROST
+
                 if s:
                     pan = float(self.cm.p_eye_pos[controls.PAN])
                     tilt = float(self.cm.p_eye_pos[controls.TILT])
-                #     color_pos = self.cm.pColorPos
-                #     dimmer = self.cm.pDimmer
+                    if self.cm.headlights_mode == controls.HEADLIGHTS_MODE_LEFT or self.cm.headlights_mode == controls.HEADLIGHTS_MODE_BOTH:
+                        effect = None
                 else:
                     pan = float(self.cm.b_eye_pos[controls.PAN])
                     tilt = float(self.cm.b_eye_pos[controls.TILT])
-                    # color_pos = self.cm.bColorPos
-                    # dimmer = self.cm.bDimmer
+
+                    if self.cm.headlights_mode == controls.HEADLIGHTS_MODE_RIGHT or self.cm.headlights_mode == controls.HEADLIGHTS_MODE_BOTH:
+                        effect = None
+
+
             elif self.cm.eyes_mode == controls.EYES_MODE_DISCO and s:
                 pan = float(self.cm.p_eye_pos[controls.PAN])
                 tilt = float(self.cm.p_eye_pos[controls.TILT])
@@ -173,6 +213,16 @@ class Eye(object):
             eye_effect.clear_all(self)
         else:
             effect.go(self, speed=ext_speed)
+
+        # The reset mode
+        if self._reset_mode == EYE_RESET_NONE:
+            self.model.set_eye_dmx(s, EYE_DMX_LAMP, 0)
+        elif self._reset_mode == EYE_RESET_ON:
+            self.model.set_eye_dmx(s, EYE_DMX_LAMP, 40)
+        elif self._reset_mode == EYE_RESET_OFF:
+            self.model.set_eye_dmx(s, EYE_DMX_LAMP, 60)
+        elif self._reset_mode == EYE_RESET_RESET:
+            self.model.set_eye_dmx(s, EYE_DMX_LAMP, 80)
 
 
     def set_xy_pos(self, xy_pos, sky):
@@ -238,6 +288,8 @@ class MutableEye(Eye):
         self.parent.color_pos = self.color_pos
         self.parent.dimmer = self.dimmer
 
+        self.parent.effect = self.effect
+
         self.parent.go()
 
 
@@ -299,7 +351,7 @@ def xyz_to_pnt(xyz_pos, is_party, cap_pan=True):
     s = math.sin(rot)
 
     # print "c=%f  s=%f" % (c,s)
-    print "xyz0 before  = %f, %f, %f" % (x0,y0, z0)
+    #print "xyz0 before  = %f, %f, %f" % (x0,y0, z0)
     x = (x0 * c) + (y0 * s)
     y = (y0 * c) - (x0 * s)
 
@@ -317,7 +369,7 @@ def xyz_to_pnt(xyz_pos, is_party, cap_pan=True):
     # http://mathworld.wolfram.com/SphericalCoordinates.html
     # Note that what we've been calling xy is xz in the reference of the eye
 
-    r = math.sqrt(x*x + 1.0 + y*y)
+    r = math.sqrt(x*x + z0*z0 + y*y)
 
     pan_rads = math.atan2(z0, x)
     tilt_rads = math.acos(y / r)
@@ -336,16 +388,17 @@ def xyz_to_pnt(xyz_pos, is_party, cap_pan=True):
     # more important should mean a faster transition to the same end point
     if cap_pan:
         if pan < -90:
-            print "%s swap < -90" % side
+            #print "%s swap < -90" % side
             pan += 180
             tilt = -tilt
         elif pan > 90:
-            print "%s swap > 90" % side
+            #print "%s swap > 90" % side
             pan -= 180
             tilt = -tilt
 
-    if tilt > 135 or tilt < -135:
-        print "%s TILT MAX" % side
+    #if tilt > 135 or tilt < -135:
+        #print "%s TILT MAX" % side
+
     # if tilt < 0:
     #     tilt += 360.0
     # if tilt > 180:
@@ -377,5 +430,5 @@ def xyz_to_pnt(xyz_pos, is_party, cap_pan=True):
 
 
 
-    print "%s final pan=%f tilt=%f" % (side, pan, tilt)
+    #print "%s final pan=%f tilt=%f" % (side, pan, tilt)
     return [pan, tilt]

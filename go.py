@@ -555,6 +555,8 @@ class ShowRunner(threading.Thread):
                 self.check_queue()
                 start = time.time()
 
+                self.show_runtime = start - show_started_at
+
                 if start >= next_frame_at:
                     #print "%f next frame" % start
                     # ZOMG, gotta get a new show from
@@ -593,7 +595,7 @@ class ShowRunner(threading.Thread):
                     self.mutable_model.both.go()
 
                 # Maybe this show is done?
-                if start - show_started_at > self.max_show_time:
+                if self.show_runtime > self.max_show_time:
                     print "max show time elapsed, changing shows"
                     self.next_show()
                     next_frame_at = show_started_at = time.time()

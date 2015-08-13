@@ -109,6 +109,11 @@ class TraceRectangle(looping_show.LoopingShow):
             # Just linear
             pos = tween.listLinear(self.last_corner, self.next_corner, progress)
 
+        # It's important for an eyes_only show in particular to clear any
+        # effects else the eyes might be turning on and off and other weird shit
+        self.pe.clear()
+        self.be.clear()
+
         if self.cm.modifiers[1]:
             # Use an xz reference plane instead of xy 
             # Ground is at z of 1, so we cap things at that

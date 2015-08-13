@@ -106,7 +106,9 @@ class Mosaic(object):
 		return cell_list
 	
 	def get_near_vertices(self, cell, cell_list):
-		for c in sheep.vertex_neighbors(cell):
+		vlist = sheep.vertex_neighbors(cell)
+
+		for c in vlist:
 			if c not in cell_list and not self.share_edge(c, cell_list):
 				cell_list.append(c)
 		return (cell_list)

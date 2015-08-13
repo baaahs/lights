@@ -2,14 +2,14 @@
   {
     "external_speed_modifies": "gobo_shake", 
     "shutter_type": "open", 
-    "effect_rotation": 0.0, 
+    "effect_rotation": 0, 
     "frost": "none", 
     "focus": null, 
-    "shutter_speed": 0.0, 
-    "frost_speed": 0.0, 
+    "shutter_speed": 0, 
+    "frost_speed": 0, 
     "effect_mode": "none", 
-    "gobo_shake_speed": 0.0, 
-    "gobo_rotation": 0.0, 
+    "gobo_shake_speed": 0, 
+    "gobo_rotation": 0, 
     "gobo": 1
   }, 
   {
@@ -260,7 +260,7 @@
     "gobo": 0
   }, 
   {
-    "external_speed_modifies": "focus", 
+    "external_speed_modifies": "effect_shake", 
     "shutter_type": "open", 
     "effect_rotation": 0, 
     "frost": "none", 
@@ -302,10 +302,10 @@
     "external_speed_modifies": "focus", 
     "shutter_type": "open", 
     "effect_rotation": 0, 
-    "frost": "none", 
+    "frost": "opening", 
     "focus": null, 
     "shutter_speed": 0, 
-    "frost_speed": 0, 
+    "frost_speed": 0.8, 
     "effect_mode": "none", 
     "gobo_shake_speed": 5, 
     "gobo_rotation": 0, 

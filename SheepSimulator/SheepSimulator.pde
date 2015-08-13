@@ -648,8 +648,12 @@ class Sheep {
     sheepModel.rotateY(PI*0.5);
     sheepModel.translate(SHEEP_SCALE * 30, SHEEP_SCALE * 10, SHEEP_SCALE * 550); // Shit, still in model coord space. Lame!
     
-    leftEye = new Eye(app, "Left eye", 400, new PVector(SHEEP_SCALE * -135, SHEEP_SCALE * -215, SHEEP_SCALE * 27), 35);
-    rightEye = new Eye(app, "Right eye", 416, new PVector(SHEEP_SCALE * -135, SHEEP_SCALE * -215, SHEEP_SCALE * -27), -22);
+    leftEye = new Eye(app, "Left eye", 400, 
+      new PVector(SHEEP_SCALE * -135, SHEEP_SCALE * -215, SHEEP_SCALE * 27),
+      22,  0, 160);
+    rightEye = new Eye(app, "Right eye", 416, 
+      new PVector(SHEEP_SCALE * -135, SHEEP_SCALE * -215, SHEEP_SCALE * -27), 
+      -22, 150, 160);
     
   }
 
@@ -691,7 +695,7 @@ class Sheep {
         }
       }
     } else {
-       System.out.println("Panel number was not found in map.  Bypassing command."); 
+       System.out.println("Panel "+panel+" side="+side+" number was not found in map.  Bypassing command."); 
     }
   } // end setPanelColor
   
@@ -965,13 +969,66 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
     PVector position;
     float offsetDegrees;
     Anchor anchor;
+
+    GLabel lblColor;
+    GLabel lblStrobe;
+    GLabel lblGobo;
+    GLabel lblEffect;
+    GLabel lblLadder;
+    GLabel lbl8Facet;
+    GLabel lbl3Facet;
+    GLabel lblFocus;
+    GLabel lblFrost;
+    GLabel lblPNTSpeed;
+    GLabel lblReset;
     
-    Eye(PApplet app, String me, int dmx, PVector position, float offsetDegrees) {
+    Eye(PApplet app, String me, int dmx, PVector position, float offsetDegrees, int labelX, int labelY) {
       this.me = me;
       this.dmxOffset = dmx;
       this.position = position;
       this.offsetDegrees = offsetDegrees;
       
+      ///////
+      // The labels for things we don't otherwise simulate visually
+      final int LBL_HEIGHT=15;
+      final int LBL_WIDTH = 150;
+      final int ROW_HEIGHT = 20;
+      int y = labelY;
+      
+      lblColor = new GLabel(app, labelX, y, LBL_WIDTH, LBL_HEIGHT, "color");
+      y += ROW_HEIGHT;
+      
+      lblStrobe = new GLabel(app, labelX, y, LBL_WIDTH, 2*LBL_HEIGHT, "strobe");
+      y += 2*ROW_HEIGHT;
+ 
+      lblGobo = new GLabel(app, labelX, y, LBL_WIDTH, 2*LBL_HEIGHT, "gobo");
+      y += 2*ROW_HEIGHT;
+
+      lblEffect = new GLabel(app, labelX, y, LBL_WIDTH, LBL_HEIGHT, "effect");
+      y += ROW_HEIGHT;
+
+      lblLadder = new GLabel(app, labelX, y, LBL_WIDTH, LBL_HEIGHT, "ladder");
+      y += ROW_HEIGHT;
+
+      lbl8Facet = new GLabel(app, labelX, y, LBL_WIDTH, LBL_HEIGHT, "8 facet");
+      y += ROW_HEIGHT;
+
+      lbl3Facet = new GLabel(app, labelX, y, LBL_WIDTH, LBL_HEIGHT, "3 facet");
+      y += ROW_HEIGHT;
+
+      lblFocus = new GLabel(app, labelX, y, LBL_WIDTH, LBL_HEIGHT, "focus");
+      y += ROW_HEIGHT;
+
+      lblFrost = new GLabel(app, labelX, y, LBL_WIDTH, 2*LBL_HEIGHT, "frost");
+      y += 2*ROW_HEIGHT;
+
+      lblPNTSpeed = new GLabel(app, labelX, y, LBL_WIDTH, LBL_HEIGHT, "pnt speed");
+      y += ROW_HEIGHT;
+
+      lblReset = new GLabel(app, labelX, y, LBL_WIDTH, LBL_HEIGHT, "reset");
+      y += ROW_HEIGHT;
+      
+      //////
       watch = new StopWatch();
       
       anchor = new Anchor(app);
@@ -1033,6 +1090,8 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
       updateTilt();
       
       updateColorWheel();
+      
+      updateLabels();
     }
     
     /**
@@ -1179,10 +1238,332 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
 //            ((g <<  8) & 0x0000ff00) |
 //            ((b      ) & 0x000000ff) |
 //            0xc0000000;
+
+      // strobe closed, make like 0, otherwise let it be what it is.
+      if (channelValues[DMX_STROBE] <= 31) {
+        brightness = 0;
+      }
+
+
       clr = ((brightness << 24 ) & 0xff000000) | (clr & 0x00ffffff);
       cone.fill(clr, Cone.ALL);
       
       currentValues[DMX_COLOR_WHEEL] = c;
+    }
+
+    private void pad10(StringBuffer sb, int val) {
+      if (val < 10) {
+        sb.append(" ");
+      }
+      
+      sb.append(val);
+    }
+    
+    private void pad100(StringBuffer sb, int val) {
+      if (val < 100) {
+        sb.append(" ");
+      }
+      pad10(sb, val);
+    }
+    
+    private void goboShake(StringBuffer sb, int val) {
+      sb.append("SHK ");
+      sb.append(val);
+      sb.append(" of 5 S2F");
+    }
+
+    private void prism(StringBuffer sb, int v, String name) {      
+      pad100(sb, v);
+      if (v<=63) {
+        sb.append(" ");
+        sb.append(name);
+        sb.append(" no func");
+      } else if (v>=64 && v<=127) {       
+        sb.append(" ");
+        sb.append(name);
+        sb.append(" slow rotate");
+        v -= 64;
+        pad10(sb, v);
+        sb.append(" of 63 ??");
+      } else if (v>=128 && v<=189) {       
+        sb.append(" ");
+        sb.append(name);
+        sb.append(" FW ");
+        v -= 128;
+        pad10(sb, v);
+        sb.append(" of 61 F2S");
+      } else if (v>=190 && v<=193) {       
+        sb.append(" ");
+        sb.append(name);
+        sb.append(" no rot");
+      } else if (v>=194) {       
+        sb.append(" ");
+        sb.append(name);
+        sb.append(" RV ");
+        v -= 194;
+        pad10(sb, v);
+        sb.append(" of 61 S2F");
+      }
+    }      
+    
+    /**
+     * Update all the text labels for the light features we don't handle
+     */
+    private void updateLabels() {
+      StringBuffer sb = new StringBuffer();
+      
+      /// Color (particularly for rotation)
+      int v = channelValues[DMX_COLOR_WHEEL];
+      pad100(sb, v);
+      if (v>=128 && v<=189) {
+        sb.append(" FW ");
+        v -= 128;
+        pad10(sb, v);
+        sb.append(" of 61 F2S");
+      } else if (v>=190 && v<=192) {
+        sb.append(" No Func");
+      } else if (v>=194) {
+        sb.append(" RV ");
+        v -= 194;
+        pad10(sb, v);
+        sb.append(" of 61 S2F");
+      }
+      lblColor.setText(sb.toString());
+
+      // Strobe
+      sb.setLength(0);
+      v = channelValues[DMX_STROBE];
+      pad100(sb, v);
+      if (v<=31) {
+        sb.append(" closed");
+      } else if ((v>=32 && v<=63) || (v>=96 && v<=127) || (v>=160 && v<=191) || (v>=224)) {
+        sb.append(" open");
+      } else if (v>=64 && v<=95) {       
+        sb.append(" Strobe ");
+        v -= 64;
+        pad10(sb, v);
+        sb.append(" of 31 S2F");
+      } else if (v>=128 && v<=159) {       
+        sb.append(" Pulse ");
+        v -= 128;
+        pad10(sb, v);
+        sb.append(" of 31 S2F?");
+      } else if (v>=192 && v<=223) {       
+        sb.append(" Random ");
+        v -= 192;
+        pad10(sb, v);
+        sb.append(" of 31 S2F");
+      }
+      lblStrobe.setText(sb.toString());
+      
+      // Gobo
+      sb.setLength(0);
+      v = channelValues[DMX_GOBO];
+      pad100(sb, v);
+      if (v<=6) {
+        sb.append(" no gobo");
+      } else if (v>=7 && v<=13) {       
+        sb.append(" Circle 0 ");
+      } else if (v>=14 && v<=20) {       
+        sb.append(" Circle 1 ");
+      } else if (v>=21 && v<=27) {       
+        sb.append(" Circle 2 ");
+      } else if (v>=28 && v<=34) {       
+        sb.append(" Circle 3 ");
+      } else if (v>=35 && v<=41) {       
+        sb.append(" Circle 4 ");
+      } else if (v>=42 && v<=48) {       
+        sb.append(" Curve ");
+      } else if (v>=49 && v<=55) {       
+        sb.append(" 5 Stars ");
+      } else if (v>=56 && v<=62) {       
+        sb.append(" Star Curve ");
+      } else if (v>=63 && v<=69) {       
+        sb.append(" Circle Swoosh ");
+      } else if (v>=70 && v<=76) {       
+        sb.append(" Small Splat ");
+      } else if (v>=77 && v<=83) {       
+        sb.append(" Hairy Circle ");
+      } else if (v>=84 && v<=90) {       
+        sb.append(" Flower ");
+      } else if (v>=91 && v<=97) {       
+        sb.append(" Sperm ");
+      } else if (v>=98 && v<=104) {       
+        sb.append(" Ying Yang ");
+      } else if (v>=105 && v<=111) {       
+        sb.append(" Lightning ");
+      } else if (v>=112 && v<=119) {       
+        sb.append(" Big Splat ");
+      } else if (v>=120 && v<=125) {       
+        sb.append(" Circle 0 ");
+        v -= 120;
+        goboShake(sb, v);
+      } else if (v>=126 && v<=131) {       
+        sb.append(" Circle 1 ");
+        v -= 126;
+        goboShake(sb, v);
+      } else if (v>=132 && v<=137) {       
+        sb.append(" Circle 2 ");
+        v -= 132;
+        goboShake(sb, v);
+      } else if (v>=138 && v<=143) {       
+        sb.append(" Circle 3 ");
+        v -= 138;
+        goboShake(sb, v);
+      } else if (v>=144 && v<=149) {       
+        sb.append(" Circle 4 ");
+        v -= 144;
+        goboShake(sb, v);
+      } else if (v>=150 && v<=155) {       
+        sb.append(" Curve ");
+        v -= 150;
+        goboShake(sb, v);
+      } else if (v>=156 && v<=161) {       
+        sb.append(" 5 Stars ");
+        v -= 156;
+        goboShake(sb, v);
+      } else if (v>=162 && v<=167) {       
+        sb.append(" Star Curve ");
+        v -= 162;
+        goboShake(sb, v);
+      } else if (v>=168 && v<=173) {       
+        sb.append(" Circle Swoosh ");
+        v -= 168;
+        goboShake(sb, v);
+      } else if (v>=174 && v<=179) {       
+        sb.append(" Small Splat ");
+        v -= 174;
+        goboShake(sb, v);
+      } else if (v>=180 && v<=185) {       
+        sb.append(" Hairy Circle ");
+        v -= 180;
+        goboShake(sb, v);
+      } else if (v>=186 && v<=191) {       
+        sb.append(" Flower ");
+        v -= 186;
+        goboShake(sb, v);
+      } else if (v>=192 && v<=197) {       
+        sb.append(" Sperm ");
+        v -= 192;
+        goboShake(sb, v);
+      } else if (v>=198 && v<=203) {       
+        sb.append(" Ying Yang ");
+        v -= 198;
+        goboShake(sb, v);
+      } else if (v>=204 && v<=209) {       
+        sb.append(" Lightning ");
+        v -= 204;
+        goboShake(sb, v);
+      } else if (v>=210 && v<=217) {       
+        sb.append(" Big Splat ");
+        v -= 210;
+        goboShake(sb, v);
+        
+      } else if (v>=218) {
+        sb.append(" Rot ");
+        v -= 218;
+        pad10(sb, v);
+        sb.append(" of 37 S2F");
+      }
+      lblGobo.setText(sb.toString());
+      
+      
+      // Effect
+      sb.setLength(0);
+      v = channelValues[DMX_EFFECT];
+      pad100(sb, v);
+      if (v<=64) {
+        sb.append(" no effect");
+      } else if (v>=65 && v<=128) {       
+        sb.append(" Ladder");
+      } else if (v>=129 && v<=191) {       
+        sb.append(" 8 Facet");
+      } else if (v>=192) {       
+        sb.append(" 3 Facet");
+      }
+      lblEffect.setText(sb.toString());
+
+
+      // Ladder
+      sb.setLength(0);
+      v = channelValues[DMX_LADDER_PRISM];
+      prism(sb, v, "LP");
+      lblLadder.setText(sb.toString());
+            
+
+      // 8 Facet
+      sb.setLength(0);
+      v = channelValues[DMX_8_FACET_PRISM];
+      prism(sb, v, "8F");
+      lbl8Facet.setText(sb.toString());
+
+
+      // Ladder
+      sb.setLength(0);
+      v = channelValues[DMX_3_FACET_PRISM];
+      prism(sb, v, "3F");
+      lbl3Facet.setText(sb.toString());
+      
+      
+      // Focus
+      sb.setLength(0);
+      v = channelValues[DMX_FOCUS];
+      pad100(sb,v);
+      sb.append(" of 255 focus");
+      lblFocus.setText(sb.toString());
+      
+     
+      // Frost
+      sb.setLength(0);
+      v = channelValues[DMX_FROST];
+      pad100(sb, v);
+      if (v<=191) {
+        sb.append(" of 191 Steady Frost");
+      } else if (v>=192 && v<=223) {
+        sb.append(" Pulse Open ");
+        v -= 192;
+        pad10(sb,v);
+        sb.append(" of 31 F2S");
+      } else if (v>=224 && v<=254) {
+        sb.append(" Pulse Close ");
+        v -= 224;
+        pad10(sb,v);
+        sb.append(" of 30 F2S");
+      } else if (v==255) {       
+        sb.append("Max Frost");
+      }
+      lblFrost.setText(sb.toString());
+      
+      
+      // PNT Speed
+      sb.setLength(0);
+      v = channelValues[DMX_PAN_TILT_SPEED];
+      pad100(sb,v);
+      if (v<=225) {
+        sb.append(" of 225 Max to min");
+      } else {
+        sb.append(" no func");
+      }
+      lblPNTSpeed.setText(sb.toString());
+      
+      // Reset
+      sb.setLength(0);
+      v = channelValues[DMX_RESET_AND_LAMP];
+      pad100(sb,v);
+      if (v<=39) {
+        sb.append(" no reset func");
+      } else if (v>=40 && v<=59) {
+        sb.append(" lamp on");
+      } else if (v>=60 && v<=79) {
+        sb.append(" lamp off");
+      } else if (v>=80 && v<=84) {
+        sb.append(" reset");
+      } else {
+        sb.append(" no func");
+      }
+      lblReset.setText(sb.toString());
+
+      
     }
     
     public void handleDMX(int channel, int value) {

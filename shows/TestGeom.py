@@ -7,9 +7,10 @@ import math
 
 class TestGeom(object):
     ok_for_random = False
+    name = "_TestGeom"
 
     def __init__(self, sheep_sides):
-        self.name = "TestGeom"
+        
 
         self.sheep_sides = sheep_sides
         self.both = sheep_sides.both
@@ -48,6 +49,7 @@ class TestGeom(object):
             self.both.set_cell(focus, RGB(255,0,0))
 
             edges = sheep.edge_neighbors(focus)
+            print "edges = %s" % str(edges)
             if edges != None:
                 for p in edges:
                     self.both.set_cell(p, RGB(0,255,0))

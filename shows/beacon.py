@@ -91,8 +91,8 @@ class Beacon(looping_show.LoopingShow):
         self.be.tilt = -90
 
         # Make 'em pink
-        self.pe.color_pos = eyes.EYE_COLOR_PINK
-        self.be.color_pos = eyes.EYE_COLOR_PINK
+        self.pe.color_pos = eyes.EYE_COLOR_LAVENDER
+        self.be.color_pos = eyes.EYE_COLOR_LAVENDER
 
 
         if loop_instance % 2 == 0:
@@ -100,6 +100,3 @@ class Beacon(looping_show.LoopingShow):
             self.strobe.shutter_speed = 1.0 - progress
             self.pe.effect = self.strobe
             self.be.effect = self.strobe
-
-            # For debugging since the simulator doesn't show strobes
-            self.pe.dimmer = self.strobe.shutter_speed

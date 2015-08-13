@@ -35,10 +35,14 @@ GCheckbox cbAnalysisCamera;
 Camera camera;
 Camera analysisCamera;
 
+PGraphics pg;
+
 // setup() is called once by the environment to initialize things
 void setup() {
   size(WINDOW_WIDTH, WINDOW_HEIGHT, P3D);
-  
+
+  pg = createGraphics(100, 100, P3D);
+
   // Some UI stuff. Need to get G4P up and running before PeasyCam
   G4P.setGlobalColorScheme(G4P.YELLOW_SCHEME);
   btnPrevious = new GButton(this, 5, 5, 70, 15, "Previous");
@@ -83,12 +87,12 @@ void setup() {
 }
 
 
+
 // Returns the number of non-black pixels seen by the current analysis camera view.
 // It assumes the background is black and all panels that are desired are lit to non-black
 int countPixels(String name) {
   
 //  println("Counting pixels....");
-  PGraphics pg = createGraphics(100, 100, P3D);
   
   pg.beginDraw();
   pg.background(0);
@@ -193,10 +197,10 @@ ArrayList<PixelCount> analyzePanel(int num, boolean isParty) {
   for(int tiltIx=0; tiltIx<TILT_STEPS; tiltIx++) {
     for(int panIx=0; panIx<PAN_STEPS; panIx++) {
       analysisCamera.aim(-100, 0, 0);
-      analysisCamera.tilt(HALF_PI);
+      analysisCamera.tilt(-HALF_PI);
       
-      float pan = panIx * -ANAL_FOV;
-      float tilt = tiltIx * -ANAL_FOV;
+      float pan = panIx * ANAL_FOV;
+      float tilt = tiltIx * ANAL_FOV;
       analysisCamera.pan(pan);
       analysisCamera.tilt(tilt);      
     
@@ -275,8 +279,8 @@ void analyzeAll() {
     }
     
     for(int tiltIx=0; tiltIx<TILT_STEPS; tiltIx++) {
-      float pan = panIx * -ANAL_FOV;
-      float tilt = tiltIx * -ANAL_FOV;
+      float pan = panIx * ANAL_FOV;
+      float tilt = tiltIx * ANAL_FOV;
 
       SectorId id = new SectorId(pan, tilt);
       

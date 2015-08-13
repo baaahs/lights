@@ -28,7 +28,12 @@ class Incinerate(object):
     def next_frame(self):
         while True:
 
-            # Control the pos ourselves. We could use the the cm as base values????
+            self.p.clear();
+            self.b.clear();
+
+            self.p.color_pos = self.cm.chosen_colors_pos[0]
+            self.b.color_pos = self.cm.chosen_colors_pos[0]
+
             self.p.pan = self.cm.p_eye_pos[controls.PAN]
             self.p.tilt = self.cm.p_eye_pos[controls.TILT]
             self.b.pan = self.cm.b_eye_pos[controls.PAN]

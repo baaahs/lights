@@ -11,10 +11,16 @@
 <body>
     <div class="ui fixed inverted menu">
         <div class="ui container">
-            <div class="item" id="currentShowName">Show Name</div>
+            <div class="item">
+                <span  id="currentShowName">Show Name</span>&nbsp;
+                <i id="currentShowRunTime"></i>
+            </div>
             <div class="item" id="eoShowItem">
                 <span id="currentEOShowName">EO Show Name</span>
                 <i class="eo show remove circle icon" onclick="void(0);"></i>
+            </div>
+            <div class="item">
+                Max Runtime:&nbsp;<span id="maxShowRuntime"></span>
             </div>
         </div>
     </div>
@@ -25,7 +31,37 @@
             <div id="showList" class="ui segments">
             </div>
         </div>
+
+        <div class="ui segment">
+            <h2 class="ui header">Eye Reset Functions</h2>
+
+            <h3 class="ui header">Be careful here! These take a few seconds to activate.</h3>
+
+            <div class="ui form">
+                <div class="inline fields">
+                    <div class="ui field">
+                        <label>Left <span class="eye state" id="leftState"></span> <i>(changed <span id="leftResetTime"></span> ago)</i></label>
+                        <div class="ui grouped buttons">
+                            <button class="ui left eye none button">None</button>
+                            <button class="ui left eye on green button">On</button>
+                            <button class="ui left eye off blue button">Off</button>
+                            <button class="ui left eye reset red button">Reset</button>
+                        </div>
+                    </div>
+                    <div class="ui field">
+                        <label>Right <span class="eye state" id="rightState"></span> (changed <span id="rightResetTime"></span> ago)</label>
+                        <div class="ui grouped buttons">
+                            <button class="ui right eye none button">None</button>
+                            <button class="ui right eye on green button">On</button>
+                            <button class="ui right eye off blue button">Off</button>
+                            <button class="ui right eye reset red button">Reset</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
     </div>
+
+
 
     <script src="/static/jquery-2.1.4.min.js" type="text/javascript"></script>
     <script src="/static/semantic/semantic.min.js"></script>
