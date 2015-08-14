@@ -237,3 +237,10 @@ class EyeEffect(object):
 
         except Exception:
             traceback.print_exc()
+
+
+############
+#
+#  Some common defaults
+
+PRESET_CLOSED = EyeEffect(shutter_type=SHUTTER_CLOSED)

@@ -4,22 +4,25 @@ import time
 
 import random
 import math
+import copy
 
-stripes = {
-    0: [40, 42],
-    1: [39, 41, 43, 38],
-    2: [32, 35, 36, 37],
-    3: [24, 33, 34],
-    4: [25, 26, 27],
-    5: [28, 29, 30, 31],
-    6: [19, 20, 21,22,23],
-    7: [15,16,17,18],
-    8: [11, 12, 13, 14],
-    9: [4, 5, 6, 7, 8, 9, 10],
-    10:[1,2,3],
-    11: []
-}
 
+
+# stripes = {
+#     0:
+#     0: [40, 42],
+#     1: [39, 41, 43, 38],
+#     2: [32, 35, 36, 37],
+#     3: [24, 33, 34],
+#     4: [25, 26, 27],
+#     5: [28, 29, 30, 31],
+#     6: [19, 20, 21,22,23],
+#     7: [15,16,17,18],
+#     8: [11, 12, 13, 14],
+#     9: [4, 5, 6, 7, 8, 9, 10],
+#     10:[1,2,3],
+#     11: []
+# }
 
 class Orgasm(object):
     controls_eyes = True
@@ -33,16 +36,19 @@ class Orgasm(object):
         self.p = sheep_sides.party_eye
         self.b = sheep_sides.business_eye
 
+        self.stripes = copy.copy(sheep.VSTRIPES)
+        self.stripes.reverse()
+
         self.stroke_start = time.time()
         self.stroke_length = 1 
 
         self.stroke_speed = 0.9 # Time to accomplish a single iteration regardless of length
 
         self.raise_attempt = 0
-        self.raise_total_attempts = 5
+        self.raise_total_attempts = 3
         self.raise_distance = -180
-        self.raise_duration = 0.5 # Min duration is something like 0.8 or so to traverse 180 degrees
-        self.raise_complete_duration = 3.0
+        self.raise_duration = 1 # Min duration is something like 0.8 or so to traverse 180 degrees
+        self.raise_complete_duration = 5.0
 
         self.mode = "start"
 
@@ -81,7 +87,9 @@ class Orgasm(object):
         if ix > 10:
             return
 
-        for cell in stripes[ix]:
+        ix = int(ix)
+
+        for cell in self.stripes[ix]:
             self.sheep_sides.both.set_cell(cell, color)
 
     def next_frame(self):
@@ -108,6 +116,7 @@ class Orgasm(object):
             if self.mode == "start":
                 self.raise_attempt = 1
                 self.mode = "stroke_start"
+                self.stroke_length = 1 
                 # Don't yield on this state transition
 
             elif self.mode == "stroke_start":
@@ -186,8 +195,8 @@ class Orgasm(object):
 
                     #print "percent = %f  time_portion = %f  tilt = %f" % (percent, time_portion, self.p.tilt)
 
-                    self.p.dimmer = 1.0 * percent * time_portion
-                    self.b.dimmer = 1.0 * percent * time_portion
+                    self.p.dimmer = 1.5 * percent * time_portion
+                    self.b.dimmer = 1.5 * percent * time_portion
 
                 yield 0.001
 

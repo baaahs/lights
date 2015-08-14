@@ -106,6 +106,19 @@ class Eye(object):
         self._pan = clamp(float(val), -270.0, 270.0)
 
     @property
+    def pos(self):
+        return [self._pan, self,_tilt]
+
+    @pos.setter
+    def pos(self, val):
+        if len(val) < 2:
+            return
+
+        self.pan = val[0]
+        self.tilt = val[1]
+
+
+    @property
     def reset_mode(self):
         return self._reset_mode
 
@@ -293,7 +306,7 @@ class MutableEye(Eye):
         self.parent.go()
 
 
-def xy_to_pnt(xy_pos, is_party, is_sky):
+def xy_to_pnt(xy_pos, is_party, is_sky=False):
     """
     Takes an XY position on a standard plane and converts that to a pan and tilt
     position. This has to be done seperately for each eye, but the results will

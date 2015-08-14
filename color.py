@@ -66,6 +66,7 @@ import colorsys
 from copy import deepcopy
 
 import math
+import tween
 
 __all__=['RGB', 'HSV', 'Hex', 'Color']
 
@@ -333,6 +334,24 @@ class Color(object):
         new = (r, g, val)
         assert is_rgb_tuple(new)
         self._set_hsv(rgb_to_hsv(new))
+
+
+    def morph_towards(self, other, progress, forwards=True):
+
+        if forwards:
+            # Move in the positive direction
+            if self.h < other.h:
+                # Lovely, just move along
+                new_h = tween.linear(self.h, other.h, progress)
+            else:
+                new_h = tween.linear(self.h - 1.0, other.h, progress)
+                if new_h < 0.0:
+                    new_h += 1.0
+
+        # else:
+            #
+
+        return Color( (new_h, tween.linear(self.s, other.s, progress), tween.linear(self.v, other.v, progress) ) )
 
 
 #################################################################################

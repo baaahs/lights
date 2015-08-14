@@ -8,6 +8,7 @@ import math
 
 import looping_show
 import eye_effect
+import eyes
 
 class DiscoQueen(looping_show.LoopingShow):
     # The full list of attributes that are honored during show loading in
@@ -71,6 +72,8 @@ class DiscoQueen(looping_show.LoopingShow):
 
         self.next = [[0.0, 0.0], [0.0, 0.0]]
         self.last_effect_at = 0
+
+        self.beaconStrobe = eye_effect.EyeEffect(shutter_type=eye_effect.SHUTTER_STROBE, shutter_speed = 1.0)
 
     def set_controls_model(self, cm):
         super(DiscoQueen, self).set_controls_model(cm)
@@ -157,11 +160,32 @@ class DiscoQueen(looping_show.LoopingShow):
                 print "Next effect at %d (now=%d)" % (next_effect_at, loop_instance)
 
 
-        self.be.pan = self.last[1][0] + ((self.last[1][0] - self.next[1][0]) * progress)
-        self.be.tilt = self.last[1][1] + ((self.last[1][1] - self.next[1][1]) * progress)
-        self.be.color_pos = self.cm.chosen_colors_pos[0]
+        if not self.cm.modifiers[4]:
+            # Beacon mode
+            self.be.clear()
 
-        self.be.effect = self.effect
+            # Position the eyes straight up
+            self.be.pan = 0
+            self.be.tilt = -90
+
+            # Make 'em pink
+            self.be.color_pos = eyes.EYE_COLOR_LAVENDER
+
+            if loop_instance % 2 == 0:
+                # Every so often, we make them strope
+                self.beaconStrobe.shutter_speed = 1.0 - progress
+                self.be.effect = self.beaconStrobe
+
+        else:
+            # Lazy eyes mode
+
+            self.be.pan = self.last[1][0] + ((self.last[1][0] - self.next[1][0]) * progress)
+            self.be.tilt = self.last[1][1] + ((self.last[1][1] - self.next[1][1]) * progress)
+            self.be.color_pos = self.cm.chosen_colors_pos[0]
+
+            self.be.effect = self.effect
+
+
 
         # For pe we keep it on the disco ball
         self.pe.pan = config.get("eye_positions")["disco"][0][0]

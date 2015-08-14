@@ -1,16 +1,16 @@
 [
   {
-    "external_speed_modifies": "gobo_shake", 
+    "external_speed_modifies": "gobo_rotation", 
     "shutter_type": "open", 
     "effect_rotation": 0, 
     "frost": "none", 
-    "focus": null, 
+    "focus": 0.4, 
     "shutter_speed": 0, 
     "frost_speed": 0, 
     "effect_mode": "none", 
     "gobo_shake_speed": 0, 
     "gobo_rotation": 0, 
-    "gobo": 1
+    "gobo": 7
   }, 
   {
     "external_speed_modifies": "gobo_shake", 

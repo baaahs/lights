@@ -1151,7 +1151,7 @@ class ControlsModel(object):
     def set_eyes_focus(self, focus):
         self.focus = focus
 
-        _notify_focus_changed(self)
+        self._notify_focus_changed(self)
 
 
     def _notify_focus_changed(self):

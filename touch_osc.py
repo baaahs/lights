@@ -291,7 +291,7 @@ class TouchOSC(object):
 
 
     def control_focus_changed(self):
-        self._send1("/eyes/target/focs", self.cm.focus)
+        self._send1("/eyes/target/focus", self.cm.focus)
 
 
 
@@ -410,6 +410,7 @@ class TouchOSC(object):
 
         self.control_headlights_mode_changed()
         self.control_show_target_mode_changed()
+        self.control_focus_changed()
 
         self.control_master_names_changed()
         self.control_eo_names_changed()

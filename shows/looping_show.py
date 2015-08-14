@@ -31,6 +31,8 @@ class LoopingShow(object):
 
         self._hertz = 0.5
 
+        self._pdns = None
+
     def clear(self):
         pass
 
@@ -62,6 +64,19 @@ class LoopingShow(object):
         introducing mild state changes on each loop iteration.
         """
         pass
+
+    def update_at_progress_in_step(self, progress, new_loop, loop_instance, step_progress, step_name):
+        """
+        This is the alternate version of an update method which should be
+        implemented by classes that want to define a set of "steps" or "modes"
+        for the overall animation loop. See set_steps() for more info.
+
+        Only one of the update_at_progress() or update_at_progress_in_step() 
+        methods will be called, depending on whether steps have been set
+        or not. Thus subclasses typically will implement only one or the other.
+        """
+        pass
+
 
     @property
     def hertz(self):
@@ -119,6 +134,32 @@ class LoopingShow(object):
 
         return v
 
+    def set_steps(self, steps):
+        """
+        Calling this method with an array of tuples of the form (duration, name)
+        will establish a set of steps that define a loop. The total loop
+        duration will be set to the sum of all step durations.
+
+        After this has been called, instead of calling update_at_progress, the
+        function update_at_progress_in_step will be called INSTEAD. That
+        function adds additional arguments for the step name and the progress
+        within that step.
+        """
+        total_time = 0.0
+        for (time, name) in steps:
+            total_time += time
+
+        self.duration = total_time
+
+        self._pdns = []
+        cursor = 0.0
+        for (time, name) in steps:
+            self._pdns.append((cursor / total_time, time / total_time, name))
+            cursor += time
+
+        print str(self._pdns)
+
+
     def next_frame(self):
         """
         This is a generator called by the show runner periodically to get the
@@ -155,7 +196,24 @@ class LoopingShow(object):
             #         self._hertz, self.cm.speed_multi, speed, 
             #         distance_traveled, 
             #         self._progress, str(is_new), self._loop_instance)    
-            self.update_at_progress(self._progress, is_new, self._loop_instance)
+
+            if self._pdns is None:
+                # No steps, normal update
+                self.update_at_progress(self._progress, is_new, self._loop_instance)
+            else:
+                # There are steps, so figure out where we are
+                # so that we can send in the right name and local
+                # progress                 
+                name = None
+                for (p, d, n) in self._pdns:
+                    if self._progress < p + d:
+                        #This is the step we are currently in
+                        local_progress = (self._progress - p) / d
+                        name = n
+                        break
+
+                self.update_at_progress_in_step(self._progress, is_new, self._loop_instance, local_progress, name)
+
 
             self._last_frame_at = now
             is_first_loop = False
