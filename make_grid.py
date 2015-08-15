@@ -2,8 +2,8 @@
 vertices = []
 faces = []
 
-NUM_ROWS = 10
-NUM_COLS = 40
+NUM_ROWS = 8
+NUM_COLS = 50
 
 print "%d rows with %d cols each" % (NUM_ROWS, NUM_COLS)
 
@@ -229,3 +229,36 @@ with open("data/geom.txt", "w") as f:
             f.write("\n")
 
 print "Wrote data/geom.txt"
+
+
+
+with open("data/opc_mapping.json", "w") as f:
+
+    # tile number   close-neighbors     vertex-neighbors
+    f.write("{\n");
+
+    for r_ix in range(0, NUM_ROWS):    
+        for c_ix in range(0, NUM_COLS):
+            panel = panelNum(c_ix, r_ix)
+
+            # Strips are rows
+            fc_strip = r_ix
+            fc_pixel = c_ix
+            fc_offset = (fc_strip * 64) + fc_pixel
+
+            f.write("  \"%dp\": %d" % (panel, fc_offset) )
+
+            if r_ix < NUM_ROWS-1 or c_ix < NUM_COLS-1:
+                f.write(", \n")
+            else:
+                f.write("\n")
+
+
+    # f.write("\n")
+    # f.write("  \"_layout\": {\n")
+    # f.write("    \"num_channels\": %d,\n" % NUM_ROWS)
+    # f.write("    \"pixels_per_channel\": %d\n" % NUM_COLS)
+    # f.write("  }\n");
+    f.write("}\n");
+
+print "Wrote data/opc_mapping.json"
