@@ -18,8 +18,8 @@ class GayPride(object):
         self.name = "GayPride"
         self.createdAt = time.time()
         self.BUTT = sheep.BUTT
-        self.p = sheep_sides.partyEye
-        self.b = sheep_sides.businessEye
+        self.p = sheep_sides.party_eye
+        self.b = sheep_sides.business_eye
         self.eq_max = 17
         self.black = RGB(0,0,0)
         self.rate_min = 1
@@ -60,7 +60,7 @@ class GayPride(object):
         self.face = sheep.FACE
         self.ears = sheep.EARS
         self.head = sheep.HEAD
-        self.nose = sheep.NOSE
+        # self.nose = sheep.NOSE
         self.throat = sheep.THROAT
         self.breast = sheep.BREAST
 
@@ -110,7 +110,7 @@ class GayPride(object):
         self.cells.set_cells(self.face, gayPrideColors[0])
         self.cells.set_cells(self.ears, gayPrideColors[1])
         self.cells.set_cells(self.head, gayPrideColors[2])
-        self.cells.set_cells(self.nose, gayPrideColors[3])
+        # self.cells.set_cells(self.nose, gayPrideColors[3])
         self.cells.set_cells(self.throat, gayPrideColors[4])
         self.cells.set_cells(self.breast, gayPrideColors[5])
 
