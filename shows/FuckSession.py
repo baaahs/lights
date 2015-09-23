@@ -18,18 +18,18 @@ poundShaftRotation = [[39, 32],
 
 class FuckSession(object):
     def __init__(self, sheep_sides):
-        
+
         self.name = "FuckSession"
         self.createdAt = time.time()
         self.sheep = sheep_sides.both
         self.partyCells = sheep_sides.party
         self.businessCells = sheep_sides.business
-        
+
         self.butt = [51, 52, 53, 54, 55]
         self.tipCellRotation = [[39], [39, 32], [39, 32, 35], [39, 32, 35, 36],
                                 [39, 32, 35, 36], [39, 32, 35], [39, 32], [39]]
         self.moneyShotRotation = [[17], [17, 8], [17]]
-        
+
         self.headTone = RGB(255, 200, 201)
         self.chocolateStarfish = RGB(148, 10, 0)
         self.shaftTone = RGB(239, 214, 189)
@@ -96,7 +96,6 @@ class FuckSession(object):
 
             self.sheep.set_cells(sheep.HEAD, RGB(255, 255, 255))
             self.sheep.set_cells(sheep.EARS, RGB(255, 255, 255))
-            self.sheep.set_cells(sheep.NOSE, RGB(255, 255, 255))
             self.sheep.set_cells(sheep.FACE, RGB(255, 255, 255))
             self.sheep.set_cells(sheep.THROAT, RGB(255, 255, 255))
             self.sheep.set_cells(sheep.TAIL, RGB(255, 255, 255))
@@ -118,21 +117,21 @@ class FuckSession(object):
             elif self.mode == "lightFuck":
                 self.fullShaftFuck(0.08, fullShaftRotation)
                 self.count += 1
-                if self.count == 40:
+                if self.count == 60:
                     self.count = 0
                     self.mode = "heavyFuck"
 
             elif self.mode == "heavyFuck":
-                self.fullShaftFuck(0.08, poundShaftRotation)
+                self.fullShaftFuck(0.05, poundShaftRotation)
                 self.count += 1
-                if self.count == 60:
+                if self.count == 80:
                     self.count = 0
                     self.mode = "cum"
 
             elif self.mode == "cum":
                 self.moneyShot(0.3, poundShaftRotation)
                 self.count += 1
-                if self.count == 4:
+                if self.count == 8:
                     self.sheep.set_all_cells(RGB(0, 0, 0))
                     self.count = 0
                     self.mode = "start"
