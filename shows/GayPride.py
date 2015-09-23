@@ -16,6 +16,7 @@ class GayPride(object):
       """
     def __init__(self, sheep_sides):
         self.name = "GayPride"
+        self.sheep = sheep_sides.both
         self.createdAt = time.time()
         self.BUTT = sheep.BUTT
         self.p = sheep_sides.party_eye
@@ -60,11 +61,10 @@ class GayPride(object):
         self.face = sheep.FACE
         self.ears = sheep.EARS
         self.head = sheep.HEAD
-        # self.nose = sheep.NOSE
         self.throat = sheep.THROAT
         self.breast = sheep.BREAST
 
-        self.OSC = False
+        self.OSC = True
 
         # number of seconds to wait between frames
         self.frame_delay = 1
@@ -110,7 +110,6 @@ class GayPride(object):
         self.cells.set_cells(self.face, gayPrideColors[0])
         self.cells.set_cells(self.ears, gayPrideColors[1])
         self.cells.set_cells(self.head, gayPrideColors[2])
-        # self.cells.set_cells(self.nose, gayPrideColors[3])
         self.cells.set_cells(self.throat, gayPrideColors[4])
         self.cells.set_cells(self.breast, gayPrideColors[5])
 
@@ -121,14 +120,17 @@ class GayPride(object):
             self.eqlizer[y] = ((sin(t * self.rates[y])) + 1) * len(self.cell_map[y]) / 2
 
     def draw_equalizer(self):
-        for y in range (3):
-    	       for x in range (len(self.cell_map[y])):
-                   if x >= self.eqlizer[y]:
-                       color = self.black
-                   else:
-                       color = self.eq_colors[x]
-                   self.cells.set_cell(self.cell_map[y][x], color)
-
+		for y in range (len(self.cell_map)):
+			stripe_len = len(self.cell_map[y])
+			for x in range(stripe_len):
+				#x = stripe_len - 1 - r
+				if x >= self.eqlizer[y]:
+					color = self.black
+				else:
+					c_ix = int((float(x)/stripe_len) * len(self.eq_colors))
+					color = self.eq_colors[c_ix]
+				self.sheep.set_cell(self.cell_map[y][x], color)
+    '''
     def rotateEyeColor(self):
         # create a list of eyecolors that represent the pride flag
         prideEyeColors = [ controls_model.EYE_COLOR_RED,
@@ -145,7 +147,7 @@ class GayPride(object):
         self.b.colorPos = prideEyeColors[aDelta]
         # Set party eye:
         self.p.colorPos = prideEyeColors[aDelta]
-
+    '''
     def next_frame(self):
 
         while True:
@@ -155,7 +157,7 @@ class GayPride(object):
             self.poll_time()
             self.draw_equalizer()
             self.drawFrontAndButt()
-            self.rotateEyeColor()
+            # self.rotateEyeColor()
 
             # then wait to draw the next frame
             yield self.frame_delay
