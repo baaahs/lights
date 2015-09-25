@@ -3,7 +3,7 @@ BAAAHS 2015 Edition
 
 **IMPORTANT: Information about changing the URL for your local repo's origin is at the bottom of the file**
 
-![Simulator Screenshot](https://raw.githubusercontent.com/tomseago/baaahs2015/master/data/SheepSimulator.png)
+![Simulator Screenshot](https://raw.githubusercontent.com/baaahs/lights/master/data/SheepSimulator.png)
 
 ## Requirements
 
@@ -46,9 +46,9 @@ pip to install the two dependencies.
 
 First, check out the repository:
 
-    git clone git@github.com:tomseago/baaahs2015.git
+    git clone git@github.com:baaahs/lights.git
 
-(or alternately `git clone https://github.com/tomseago/baaahs2015.git` )
+(or alternately `git clone https://github.com/baaahs/lights.git` )
 
 (Note, the old repo for 2014 used hg instead of git and was at http://bitbucket.org/grgbrn/baaahs2014)
 
