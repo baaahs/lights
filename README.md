@@ -1,6 +1,8 @@
 BAAAHS 2015 Edition
 ===================
 
+**IMPORTANT: Information about changing the URL for your local repo's origin is at the bottom of the file**
+
 ![Simulator Screenshot](https://raw.githubusercontent.com/tomseago/baaahs2015/master/data/SheepSimulator.png)
 
 ## Requirements
@@ -149,3 +151,25 @@ Debian / Ubuntu:
 
 
 
+## Changing the Origin URL
+
+So this repo used to be hosted under tomseago's account, but then got moved to the baaahs organization. That means that if you had it checked out before and you try to update or push, things will fail because it ain't where it used to be.  But don't worry, there is an easy solution for this.  Two in fact.
+
+The first solution is that if you never made changes, then you can easily nuke your old directory and re-clone the repo from the baaahs org. This is super easy and there is no magic.
+
+The second solution is for all 3 of you who _might_ have uncommitted changes. Your work isn't orphaned, you just need to use `git remote` to update the URL for what's known as the `origin` remote. On my system it went something like this:
+
+    Zerg:baaahs2015 tseago$ git remote -v
+    origin  git@github.com:tomseago/baaahs2015 (fetch)
+    origin  git@github.com:tomseago/baaahs2015 (push)
+    Zerg:baaahs2015 tseago$ git remote set-url origin git@github.com:baaahs/lights
+    Zerg:baaahs2015 tseago$ git remote -v
+    origin  git@github.com:baaahs/lights (fetch)
+    origin  git@github.com:baaahs/lights (push)
+    Zerg:baaahs2015 tseago$
+
+As you can see from the above, the relevant command is the line
+
+    git remote set-url origin git@github.com:baaahs/lights
+
+That resets the url to the new name and all is happy and good. Note that I use SSH authentication with github. If you are using HTTPS authentication, then your url is going to be different. The `git remote -v` command conveniently shows you what the remote urls are set to currently, so it's likely you can look at the old ones to figure out the new ones. Because I'm nice though, I'll say that the https version of the url (which you can get on the http://github.com/baaahs/lights page on the right hand side) is `https://github.com/baaahs/lights.git`
