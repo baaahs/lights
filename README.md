@@ -101,7 +101,7 @@ Lighting can be controlled wirelessly over OSC. We're using [TouchOSC](http://he
 You'll need to install the app on your phone or tablet, then install a layout.
 
 1. Download the TouchOSC Editor from the [TouchOSC page](http://hexler.net/software/touchosc) (scroll down to 'Downloads') 
-2. Open the show control layout from the baaahs repository (misc/BAAAHS 2015.touchosc)
+2. Open the show control layout from the baaahs repository (misc/BAAAHS Main.touchosc)
 3. Click 'Sync' in the TouchOSC Editor menubar and follow the on-screen instructions
 	
 For more details on controlling shows with OSC, check the 'doc' directory in this repository.
