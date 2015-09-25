@@ -8,7 +8,7 @@ BAAAHS 2015 Edition
 * Python 2.7
   [http://www.python.org](http://www.python.org)
 
-* Processing 2.2.1+ (for simulator only)
+* Processing 2.2.1+ (for simulator only. Processing 3 is not supported yet)
   [http://www.processing.org](http://www.processing.org)
 
 There are a few 3rd party python modules that need to be installed:
@@ -34,6 +34,11 @@ The Processing libraries are pretty reliable to install.
   * In the dialog window that opens, search for "G4P" then search for "Shapes 3D". Both are by Peter Lager because apparently he does good work.
 
 Unlike the python code, without those libraries the simulator won't run. The good news is that they are easy to install.
+
+Raspberry Pi Note:
+
+You need to first install the `python-pip` package using apt-get, then use
+pip to install the two dependencies.
 
 ## Getting Started
 
@@ -118,6 +123,12 @@ do the following on 14.04:
     sudo echo deb   http://apt.openlighting.org/ubuntu trusty main >> /etc/apt/sources.list
     sudo apt-get update 
     sudo apt-get install ola ola-python 
+
+Raspbian:
+
+    sudo echo deb http://apt.openlighting.org/raspbian/ wheezy main >> /etc/apt/sources.list
+    sudo apt-get update
+    sudo apt-get install ola ola-python
 
 ## Tips
 
