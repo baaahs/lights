@@ -41,8 +41,13 @@ class BlinkOne(looping_show.LoopingShow):
             else:
                 continue
 
-            self.dmx_to_panel[dmx] = key
-            self.dmx_addrs.append(dmx)
+            if type(dmx) is int:
+                self.dmx_to_panel[dmx] = key
+                self.dmx_addrs.append(dmx)
+            else:
+                for x in dmx:
+                    self.dmx_to_panel[x] = key
+                    self.dmx_addrs.append(x)
 
         self.party_panels = sorted(self.party_panels)
         self.business_panels = sorted(self.business_panels)

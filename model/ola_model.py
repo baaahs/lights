@@ -52,14 +52,26 @@ class OLAModel(object):
         # return PANEL_IDS        
         return PANEL_MAP.keys()
 
+    def set_pixel(self, ix, color):
+        # dmx is 1-based, python lists are 0-based
+        # I don't whole-heartedly believe in this anymore, but for consistency we're
+        # keeping it for now
+        ix = ix - 1
+        self.pixels[ix] = color.r
+        self.pixels[ix+1] = color.g
+        self.pixels[ix+2] = color.b
+
     def set_cell(self, cell, color):
         # cell is a string like "14b"
         # ignore unmapped cells
         if cell in PANEL_MAP:
-            ix = PANEL_MAP[cell] - 1 # dmx is 1-based, python lists are 0-based
-            self.pixels[ix]   = color.r
-            self.pixels[ix+1] = color.g
-            self.pixels[ix+2] = color.b
+            v = PANEL_MAP[cell]
+
+            if type(v) is int:
+                self.set_pixel(v, color) 
+            elif type(v) is list:
+                for x in v:
+                    self.set_pixel(x, color)
 
     def set_cells(self, cells, color):
         for cell in cells:
