@@ -2,11 +2,12 @@
 vertices = []
 faces = []
 
-NUM_ROWS = 8
-NUM_COLS = 50
+NUM_ROWS = 6
+NUM_COLS = 4
 
 print "%d rows with %d cols each" % (NUM_ROWS, NUM_COLS)
 
+# The cell size and margins are for the simulator file
 CELL_WIDTH = 4
 CELL_HEIGHT = 4
 
