@@ -8,7 +8,7 @@
     "y": 10.0, 
     "x": 5.0
   }, 
-  "mode": "simulator", 
+  "mode": "opc", 
   "eye_positions": {
     "disco": [
       [

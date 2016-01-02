@@ -17,6 +17,7 @@ import watchdog
 
 from model.simulator import SimulatorModel
 from model.mirror import MirrorModel
+from model.fc_opc import FCOPCModel
 
 import config
 
@@ -822,6 +823,14 @@ if __name__=='__main__':
     if config.has("mode"):
         cfg_mode = config.get("mode")
 
+    opc_host = "127.0.0.1"
+    if config.has("opc_host"):
+        opc_host = config.get("opc_host")
+
+    opc_port = 7890
+    if config.has("opc_port"):
+        opc_port = config.get("opc_port")
+
     import argparse
     parser = argparse.ArgumentParser(description='Baaahs Light Control')
 
@@ -831,6 +840,10 @@ if __name__=='__main__':
     parser.add_argument('--simulator',dest='simulator',action='store_true')
     parser.add_argument('--host',dest='sim_host', type=str, default=sim_host, help="Hostname or ip for simulator")
     parser.add_argument('--port',dest='sim_port', type=int, default=sim_port, help="Port for simulator")
+
+    parser.add_argument('--opc',dest='opc',action='store_true')
+    parser.add_argument('--opc_host',dest='opc_host', type=str, default=opc_host, help="Hostname or ip for opc server")
+    parser.add_argument('--opc_port',dest='opc_port', type=int, default=opc_port, help="Port for OPC Server")
 
     parser.add_argument('--universe',dest='universe', type=int, default=0, help="DMX universe")
 
@@ -861,6 +874,18 @@ if __name__=='__main__':
         # sim_host = "localhost"
         print "Using SheepSimulator at %s:%d" % (args.sim_host, args.sim_port)
         model = SimulatorModel(args.sim_host, port=args.sim_port, debug=args.debug)
+
+    elif cfg_mode == "mirror_opc":
+        print "Mirroring to both OPC and sim %s:%d" % (args.sim_host, args.sim_port)
+        sim = SimulatorModel(args.sim_host, port=args.sim_port, debug=args.debug)
+        opc_model = FCOPCModel("%s:%d" % (args.opc_host, args.opc_port), args.debug)
+        model = MirrorModel(sim, opc_model)
+
+    elif args.opc or cfg_mode == "opc":
+        # sim_host = "localhost"
+        print "Using OPC Server at %s:%d" % (args.opc_host, args.opc_port)
+        model = FCOPCModel("%s:%d" % (args.opc_host, args.opc_port), args.debug)
+
     else:
         from model.ola_model import OLAModel
         print "Using OLA model universe=%d" % args.universe
