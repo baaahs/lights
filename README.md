@@ -42,6 +42,8 @@ Raspberry Pi Note:
 You need to first install the `python-pip` package using apt-get, then use
 pip to install the two dependencies.
 
+*More notes at the end about installing these things*
+
 ## Getting Started
 
 First, check out the repository:
@@ -138,6 +140,13 @@ Trouble installing python dependencies?  Try some of these magic incantations:
 
 OS X:
 
+  The system python might not be happy on El Capitan. Easy work around is to install from homebrew
+
+    brew install python
+
+  That should then give you pip, so you can do the following:
+
+
     pip install --no-use-wheel CherryPy
 
     pip install setuptools-git
@@ -149,6 +158,10 @@ Debian / Ubuntu:
 
     pip install --allow-external pybonjour --allow-unverified pybonjour pybonjour
 
+For whatever reason pybonjour seems problematic via the package managers. You may have better luck if you download pybonjour and unpack it from the distribution. It's on [Google Code](https://code.google.com/archive/p/pybonjour/downloads)
+
+    cd pybonjour-1.1.1
+    sudo python setup.py install
 
 
 ## Changing the Origin URL
