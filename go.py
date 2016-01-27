@@ -9,7 +9,7 @@ import random
 import os
 
 import sheep
-import shows
+import icicle_shows as shows
 import util
 import controls_model
 import touch_osc
@@ -831,6 +831,10 @@ if __name__=='__main__':
     if config.has("opc_port"):
         opc_port = config.get("opc_port")
 
+    max_pixels = 512
+    if config.has("max_pixels"):
+        max_pixels = config.get("max_pixels")
+
     import argparse
     parser = argparse.ArgumentParser(description='Baaahs Light Control')
 
@@ -844,6 +848,7 @@ if __name__=='__main__':
     parser.add_argument('--opc',dest='opc',action='store_true')
     parser.add_argument('--opc_host',dest='opc_host', type=str, default=opc_host, help="Hostname or ip for opc server")
     parser.add_argument('--opc_port',dest='opc_port', type=int, default=opc_port, help="Port for OPC Server")
+    parser.add_argument('--max_pixels',dest='max_pixels', type=int, default=max_pixels, help="Maxium number of OPC pixels")
 
     parser.add_argument('--universe',dest='universe', type=int, default=0, help="DMX universe")
 
@@ -878,13 +883,13 @@ if __name__=='__main__':
     elif cfg_mode == "mirror_opc":
         print "Mirroring to both OPC and sim %s:%d" % (args.sim_host, args.sim_port)
         sim = SimulatorModel(args.sim_host, port=args.sim_port, debug=args.debug)
-        opc_model = FCOPCModel("%s:%d" % (args.opc_host, args.opc_port), args.debug)
+        opc_model = FCOPCModel("%s:%d" % (args.opc_host, args.opc_port), args.debug, args.max_pixels)
         model = MirrorModel(sim, opc_model)
 
     elif args.opc or cfg_mode == "opc":
         # sim_host = "localhost"
         print "Using OPC Server at %s:%d" % (args.opc_host, args.opc_port)
-        model = FCOPCModel("%s:%d" % (args.opc_host, args.opc_port), args.debug)
+        model = FCOPCModel("%s:%d" % (args.opc_host, args.opc_port), args.debug, args.max_pixels)
 
     else:
         from model.ola_model import OLAModel

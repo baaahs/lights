@@ -21,15 +21,15 @@ import json
 class FCOPCModel(object):
 
 
-    def __init__(self, server_ip_port="localhost:7890", debug=False):
-        print "Connecting to OPC server %s" % server_ip_port
+    def __init__(self, server_ip_port="localhost:7890", debug=False, max_pixels=512):
+        print "Connecting to OPC server %s, max_pixels=%d" % (server_ip_port, max_pixels)
         self.opc = opc.Client(server_ip_port, True)
 
         # Load a pixel mapping from "panel name" format to channel & ix
         with open("data/opc_mapping.json") as f:
             self.panel_map = json.load(f)
 
-        self.pixels = [(0,0,0)] * 512
+        self.pixels = [(0,0,0)] * max_pixels
         
         # layout = self.panel_map["_layout"]
         # self.panel_map.pop("_layout", None)
