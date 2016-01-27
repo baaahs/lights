@@ -6,8 +6,10 @@
 from color import RGB
             
 class White(object):
+    name = "_White"
+    ok_for_random = False
+
     def __init__(self, cells):
-        self.name = "White"
         self.cells = cells.party
         self.speed = 1
         

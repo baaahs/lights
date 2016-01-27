@@ -67,10 +67,18 @@ class RYB(looping_show.LoopingShow):
         looping_show.LoopingShow.__init__(self, sheep_sides)
         self.duration = 32
 
+        # Setup a unique offset for each icicle
+        self.offsets = []
+        for icicle in ice_geom.ICICLES:
+            self.offsets.append(random.random())
+
+
     def set_controls_model(self, cm):
         super(RYB, self).set_controls_model(cm)
 
-        self.cm.reset_step_modifiers()
+        self.cm.reset_step_modifiers(random.randrange(3))
+        #print "MODE = %d" % (self.step_mode(3))
+        #self.cm.reset_step_modifiers()
 
     def clear(self):
         c = self.background
@@ -79,16 +87,59 @@ class RYB(looping_show.LoopingShow):
 
         self.ss.both.set_all_cells(c)
 
+    def control_modifiers_changed(self):
+        if self.cm.modifiers[3]:
+            self.duration = 16
+        else:
+            self.duration = 32
+
     def control_step_modifiers_changed(self):
-        self.cm.set_message("Mode %d" % self.step_mode(5))
+        self.cm.set_message("Mode %d" % self.step_mode(3))
 
     def update_at_progress(self, progress, new_loop, loop_instance):
+        mode = self.step_mode(3)
 
-        hsv = (progress, 1.0, 1.0)
+        if mode == 0:
+            # Color striped from top to bottom by slices
+            v_range = 0.2  # how much of the hue cycle to spread across top to bottom
 
-        rgbTuple = color.hsvRYB_to_rgb(hsv)
-        rgb = color.RGB(*rgbTuple)
-        self.ss.party.set_all_cells(rgb)
+            per_slice = v_range / len(ice_geom.SLICES)
+
+            for idx, sl in enumerate(ice_geom.SLICES):
+                hue = progress - (idx * per_slice)
+                if hue > 1.0:
+                    hue -= 1.0
+                if hue < 0.0:
+                    hue += 1.0
+                hsv = (hue, 1.0, 1.0)
+
+                rgbTuple = color.hsvRYB_to_rgb(hsv)
+                rgb = color.RGB(*rgbTuple)
+
+                self.ss.party.set_cells(sl, rgb)
+
+
+        elif mode == 1:
+            # Each icicle gets a unique color based on it's offset
+            for idx,icicle in enumerate(ice_geom.ICICLES):
+                hue = progress + self.offsets[idx]
+                if hue > 1.0:
+                    hue -= 1.0
+                hsv = (hue, 1.0, 1.0)
+
+                rgbTuple = color.hsvRYB_to_rgb(hsv)
+                rgb = color.RGB(*rgbTuple)
+
+                self.ss.party.set_cells(icicle, rgb)
+
+        else:
+            # Everything the same color
+            hsv = (progress, 1.0, 1.0)
+
+            rgbTuple = color.hsvRYB_to_rgb(hsv)
+            rgb = color.RGB(*rgbTuple)
+            self.ss.party.set_all_cells(rgb)
+
 
         #if new_loop:
 

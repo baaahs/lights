@@ -1,6 +1,12 @@
 Startup Scripts
 ===============
 
+These startup scripts use upstart. So on a debian linux you will want to
+
+    apt-get install upstart
+
+before you move on to the other things.
+
 To install the baaahs server as a system service, the code from the repo
 has to be in the right place, and then two config script/files need to
 get copied into appropriate locations.

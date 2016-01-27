@@ -61,8 +61,9 @@ class Areas(looping_show.LoopingShow):
     # Because we extend LoopingShow we must explicitly override is_show to be True
     is_show = True
     
-    name = "Areas"
-
+    name = "_Areas"
+    ok_for_random = False
+    
     def __init__(self, sheep_sides):
         looping_show.LoopingShow.__init__(self, sheep_sides)
         self.foreground = random_color(luminosity="light")

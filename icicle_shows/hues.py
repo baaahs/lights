@@ -8,8 +8,10 @@ import color
 from icicles import ice_geom
             
 class Hues(object):
+    name = "_Hues"
+    ok_for_random = False
+
     def __init__(self, cells):
-        self.name = "Hues"
         self.cells = cells.party
         self.speed = 1        
         self.count = 0

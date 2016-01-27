@@ -998,9 +998,14 @@ class ControlsModel(object):
 
         self._notify_step_modifiers_changed()
 
-    def reset_step_modifiers(self):
-        for ix in range(0, len(self.step_modifiers)):
-            self.step_modifiers[ix] = 0
+    def reset_step_modifiers(self, reset_to=0):
+        if reset_to == 0:
+            for ix in range(0, len(self.step_modifiers)):          
+                self.step_modifiers[ix] = 0
+        else:
+            self.step_modifiers[0] = 0
+            for ix in range(1, len(self.step_modifiers)):            
+                self.step_modifiers[ix] = reset_to
 
         self._notify_step_modifiers_changed()
 

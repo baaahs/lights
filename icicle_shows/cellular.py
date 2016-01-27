@@ -7,18 +7,20 @@ import math
 
 import looping_show
 from randomcolor import random_color
-import morph
 
-class Cellular(object):
+class Cellular(looping_show.LoopingShow):
     name = "Cellular"
+    is_show = True
 
     def __init__(self, cells):
+        looping_show.LoopingShow.__init__(self, cells)
         self.cells = cells.party
 
         self.white = color.RGB(255,255,255)
         self.blue = color.BLUE
         self.darker_blue = color.RGB(  0,  0, 128)
 
+        self.duration = 0.5
 
         # Setup a model for each icicle which we we later map to colors
         self.model = []
@@ -30,7 +32,7 @@ class Cellular(object):
 
 
     def set_controls_model(self, cm):
-        self.cm = cm
+        super(Cellular, self).set_controls_model(cm)
 
         self.cm.reset_step_modifiers()
 
@@ -40,6 +42,12 @@ class Cellular(object):
     #         c = color.BLACK
 
     #     self.ss.both.set_all_cells(c)
+
+    def control_modifiers_changed(self):
+        if self.cm.modifiers[3]:
+            self.duration = 0.25
+        else:
+            self.duration = 0.5
 
     # def control_step_modifiers_changed(self):
     #     self.cm.set_message("Mode %d" % self.step_mode(4))
@@ -56,7 +64,6 @@ class Cellular(object):
             darker_blue = color.RED
 
 
-
         for idx, im in enumerate(self.model):
             icicle = ice_geom.ICICLES[idx]
 
@@ -70,9 +77,8 @@ class Cellular(object):
                 self.cells.set_cell(icicle[jdx], c)
 
 
-    def next_frame(self):   
-        while (True):
-
+    def update_at_progress(self, progress, new_loop, loop_instance):
+        if new_loop:
             past = self.model
             self.model = []
             for idx, im in enumerate(past):
@@ -100,5 +106,3 @@ class Cellular(object):
                 self.model.append(next_im)
 
             self.map_model()
-                
-            yield 0.5

@@ -39,6 +39,9 @@ def easeInOutQuad(start, end, distance):
     return -(c/2) * (t*(t-2) - 1) + start
 
 
+# Performs a linear interpolation between one list and the next on an
+# item by item basis. All items are advanced by the given distance from
+# the start towards the end.
 def listLinear(startList, endList, distance):
     out = []
     for x in range(0, len(startList)):
@@ -46,6 +49,10 @@ def listLinear(startList, endList, distance):
 
     return out
 
+
+# Performs an easeInOutQuad interpolation between one list and the next on an
+# item by item basis. All items are advanced by the given distance from
+# the start towards the end.
 def listEaseInOutQuad(startList, endList, distance):
     out = []
     for x in range(0, len(startList)):
