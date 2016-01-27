@@ -81,7 +81,7 @@ class LoopingShow(object):
     @property
     def hertz(self):
         """
-        The speed the loop is running at in hertz. The default value is 0.5, 
+        The speed the loop is running at in hertz. The default value is 2, 
         which corresponds to 120bpm, and a loop_time of 2s. Note that this is
         the 'natural' speed of the loop and it will be adjusted by the speed
         set in the controls model.

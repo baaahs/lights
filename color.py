@@ -97,6 +97,69 @@ def hsv_to_rgb(hsv):
     return (r,g,b)
 
 
+###########
+# RYB -> RGB
+
+# Perform a biased (non-linear) interpolation between values A and B
+# using t as the interpolation factor.
+def cubicInt(t, A, B):
+    weight = t * t * (3-2*t)
+    return A + weight * (B-A)
+
+# Given ryb[] with values 0.0 - 0.1, return rgb with 0.0 to 0.1 for 
+# each channel
+def subinterp(ryb):
+    out = [0.0, 0.0, 0.0]
+
+    # red
+    x0 = cubicInt(ryb[2], 1.0, 0.163)
+    x1 = cubicInt(ryb[2], 1.0, 0.0)
+    x2 = cubicInt(ryb[2], 1.0, 0.5)
+    x3 = cubicInt(ryb[2], 1.0, 0.2)
+
+    y0 = cubicInt(ryb[1], x0, x1)
+    y1 = cubicInt(ryb[1], x2, x3)
+    out[0] = cubicInt(ryb[0], y0, y1)
+
+    # green
+    x0 = cubicInt(ryb[2], 1.0, 0.373)
+    x1 = cubicInt(ryb[2], 1.0, 0.66)
+    x2 = cubicInt(ryb[2], 0.0, 0.0)
+    x3 = cubicInt(ryb[2], 0.5, 0.094)
+
+    y0 = cubicInt(ryb[1], x0, x1)
+    y1 = cubicInt(ryb[1], x2, x3)
+    out[1] = cubicInt(ryb[0], y0, y1)
+
+    # blue
+    x0 = cubicInt(ryb[2], 1.0, 0.6)
+    x1 = cubicInt(ryb[2], 0.0, 0.2)
+    x2 = cubicInt(ryb[2], 0.0, 0.5)
+    x3 = cubicInt(ryb[2], 0.0, 0.0)
+
+    y0 = cubicInt(ryb[1], x0, x1)
+    y1 = cubicInt(ryb[1], x2, x3)
+    out[2] = cubicInt(ryb[0], y0, y1)
+    
+    return out
+
+
+def ryb_to_rgb(ryb):    
+    rybF = [ryb[0] / 255.0, ryb[1] / 255.0, ryb[2] / 255.0]
+    rgbF = subinterp(rybF)
+
+    return (rgbF[0] * 255.0, rgbF[1] * 255.0, rgbF[2] * 255.0)
+
+def hsvRYB_to_rgb(hsv):
+    rybF = colorsys.hsv_to_rgb(*hsv)
+    rgbF = subinterp(rybF)
+
+    return (rgbF[0] * 255.0, rgbF[1] * 255.0, rgbF[2] * 255.0)
+
+
+###########
+
+
 POS_BY_IX = [0, 9, 17, 25, 33, 41, 49, 57, 66, 74, 83, 92, 101, 110, 119]
 def ix_to_pos(colIx):
     """
@@ -360,8 +423,18 @@ class Color(object):
 ##  up above.
 ##
 
-BLACK = RGB(0,0,0)
-WHITE = RGB(255,255,255)
+BLACK  = RGB(0,0,0)
+WHITE  = RGB(255,255,255)
+RED    = RGB(255,   0,   0)
+ORANGE = RGB(255, 128,   0)
+YELLOW = RGB(255, 255,   0)
+GREEN  = RGB(  0, 168,  51)
+BLUE   = RGB( 41,  95, 153)
+PURPLE = RGB(128,   0, 128)
+
+RGB_G  = RGB(  0, 255,   0)
+RGB_B  = RGB(  0,   0, 255)
+
 
 
 ###########

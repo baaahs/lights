@@ -70,7 +70,7 @@ class ShowRunner(threading.Thread):
         super(ShowRunner, self).__init__(name="ShowRunner")
 
         self.profile = None
-        self.do_profiling = True
+        self.do_profiling = False
 
         self.model = model
         self.mutable_model = sheep.make_mutable_sheep(model)
