@@ -99,15 +99,17 @@ class Areas(looping_show.LoopingShow):
             self.clear()
 
 
-        mode = self.step_mode(5)
+        mode = self.step_mode(4)
 
         # _list defines what we loop over
-        if mode == 2:            
+        if mode == 3:            
             _list = ice_geom.ICICLES
-        elif mode == 1:            
+        elif mode == 2:            
             _list = ice_geom.COLS
-        elif mode == 0:
+        elif mode == 1:
             _list = ice_geom.ROWS
+        elif mode == 0:
+            _list = ice_geom.SLICES
         # if mode == 4:
         #     _list = sheep.ALL
         # elif mode == 3:

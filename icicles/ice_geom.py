@@ -57,8 +57,8 @@ for size in FRONT_ROW_SIZES:
         count += 1
     ICICLES.append(c)
 
-print "Iciciles is \n"
-print ICICLES
+# print "Iciciles is \n"
+# print ICICLES
 
 # Now the rows
 BACK_ROW = []
@@ -95,8 +95,21 @@ for i in range(m):
     COLS.append(col)
 
 
-print "Rows are:"
-print ROWS
+# print "Rows are:"
+# print ROWS
 
-print "Columns are:"
-print COLS
+# print "Columns are:"
+# print COLS
+
+
+# Slices - vertical slices moving down
+SLICES = []
+
+for i in range(LEN_LARGE):
+    s = []
+
+    for icicle in ICICLES:
+        if i < len(icicle):
+            s.append(icicle[i])
+
+    SLICES.append(s)

@@ -15,6 +15,8 @@ import controls_model
 import touch_osc
 import watchdog
 
+import cProfile
+
 from model.simulator import SimulatorModel
 from model.mirror import MirrorModel
 from model.fc_opc import FCOPCModel
@@ -66,6 +68,9 @@ watchdog = watchdog.Watchdog()
 class ShowRunner(threading.Thread):
     def __init__(self, model, queue, cm, max_showtime=240):
         super(ShowRunner, self).__init__(name="ShowRunner")
+
+        self.profile = None
+        self.do_profiling = True
 
         self.model = model
         self.mutable_model = sheep.make_mutable_sheep(model)
@@ -293,6 +298,20 @@ class ShowRunner(threading.Thread):
 
 
     def next_show(self, name=None):
+
+        if self.profile:
+            # Stop it
+            print "****** Stopping profiling"
+            self.profile.disable()
+            self.profile.dump_stats("Stats")
+        elif self.do_profiling:
+            # Start a profiler
+            self.do_profiling = False
+            self.profile = cProfile.Profile()
+            print "****** Starting profiling"
+            self.profile.enable()
+
+
         s = None
         if name:
             if name in self.shows:
