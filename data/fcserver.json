@@ -8,7 +8,7 @@
     , "devices": [
         {
             "type": "fadecandy"
-            , "serial": "one"
+            , "serial": "EAIKEKZNVJOZSVYL"
             , "map": [
               [0, 0, 0, 43],
               [0, 43, 64, 29],
@@ -22,7 +22,7 @@
         }
         , {
             "type": "fadecandy"
-            , "serial": "two"
+            , "serial": "HDRPYERJRPQLWPGD"
             , "map": [
               [0, 400, 0, 29],
               [0, 429, 64, 43],

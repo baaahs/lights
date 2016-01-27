@@ -15,7 +15,7 @@ for i, size in enumerate(all_sizes):
         second.append(size)
 
 
-serials = ["one", "two"]
+serials = ["EAIKEKZNVJOZSVYL", "HDRPYERJRPQLWPGD"]
 
 
 result = ['{']
