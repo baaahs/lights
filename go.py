@@ -581,14 +581,25 @@ class ShowRunner(threading.Thread):
 
                 self.show_runtime = start - show_started_at
 
+                frame_muted = False
+
                 if start >= next_frame_at:
                     #print "%f next frame" % start
                     # ZOMG, gotta get a new show from
+
                     d = self.get_next_frame()
 
                     # If they give us an advisory time, we will record it, otherwise
                     # we will keep asking for frames as quickly as we can
                     if d:
+                        if isinstance(d, tuple):
+                            if len(d) > 1:
+                                frame_muted = d[1]
+                            if len(d) > 0:
+                                d = d[0]
+                            else:
+                                d = 0.0001 # Failsafe for something small
+
                         next_frame_at = time.time() + (d * self.speed_x)
 
                 else:
@@ -614,9 +625,10 @@ class ShowRunner(threading.Thread):
                     self.model.business_eye.go()
                     self.model.both.go()
                 else:
-                    self.mutable_model.party_eye.go()
-                    self.mutable_model.business_eye.go()
-                    self.mutable_model.both.go()
+                    if not frame_muted:
+                        self.mutable_model.party_eye.go()
+                        self.mutable_model.business_eye.go()
+                        self.mutable_model.both.go()
 
                 # Maybe this show is done?
                 if self.show_runtime > self.max_show_time:

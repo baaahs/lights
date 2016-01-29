@@ -117,3 +117,8 @@ class Cellular(looping_show.LoopingShow):
                 self.model.append(next_im)
 
             self.map_model()
+            return False
+
+        else:
+            # Yes, mute the frame so the FC can do it's job
+            return True
