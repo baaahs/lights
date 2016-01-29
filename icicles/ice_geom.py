@@ -4,6 +4,7 @@
 #
 
 import math
+from color import RGB
 
 LEN_SMALL = 29
 LEN_MEDIUM = 43
@@ -60,6 +61,14 @@ for size in FRONT_ROW_SIZES:
 # print "Iciciles is \n"
 # print ICICLES
 
+BACK_MIDDLE_IX = len(BACK_ROW_SIZES) / 2
+FRONT_MIDDLE_IX = len(BACK_ROW_SIZES) + (len(FRONT_ROW_SIZES) / 2)
+
+BACK_LEFT_IX = len(BACK_ROW_SIZES) - 1
+BACK_RIGHT_IX = 0
+FRONT_LEFT_IX = len(BACK_ROW_SIZES)
+FRONT_RIGHT_IX = len(ICICLES) - 1
+
 # Now the rows
 BACK_ROW = []
 FRONT_ROW = []
@@ -113,3 +122,24 @@ for i in range(LEN_LARGE):
             s.append(icicle[i])
 
     SLICES.append(s)
+
+
+# Some good colors
+BLUE   = RGB( 41,  95, 153)
+DARKER_BLUE   = RGB( 0,  0, 200)
+
+PURPLE = RGB(200,   0, 200)
+
+BLACK  = RGB(0,0,0)
+WHITE  = RGB(255,255,255)
+
+RED    = RGB(255,   0,   0)
+
+# ORANGE = RGB(255, 128,   0)
+# YELLOW = RGB(255, 255,   0)
+# GREEN  = RGB(  0, 168,  51)
+
+# MAGENTA= RGB(255,   0, 255)
+
+# RGB_G  = RGB(  0, 255,   0)
+# RGB_B  = RGB(  0,   0, 255)

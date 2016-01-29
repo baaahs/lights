@@ -975,6 +975,15 @@ class ControlsModel(object):
             except AttributeError:
                 pass # ignore
 
+    def set_modifier(self, mIx, new_val):
+        mIx = color.clamp(mIx, 0, len(self.modifiers))
+
+        if self.modifiers[mIx] == new_val:
+            return
+
+        self.modifiers[mIx] = new_val
+        self._notify_modifiers_changed()
+
     def toggle_modifier(self, mIx):
         mIx = color.clamp(mIx, 0, len(self.modifiers))
 

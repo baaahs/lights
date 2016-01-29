@@ -180,6 +180,12 @@ def HSV(h,s,v):
     "Create a new HSV color"
     return Color((h,s,v))
 
+def HSVryb(h,s,v):
+    "Create a new HSV color, using RYB space"
+    t = (h,s,v)
+    return Color(rgb_to_hsv(hsvRYB_to_rgb(t)))
+
+
 def Hex(value):
     "Create a new Color from a hex string"
     value = value.lstrip('#')
@@ -431,6 +437,8 @@ YELLOW = RGB(255, 255,   0)
 GREEN  = RGB(  0, 168,  51)
 BLUE   = RGB( 41,  95, 153)
 PURPLE = RGB(128,   0, 128)
+
+MAGENTA= RGB(255,   0, 255)
 
 RGB_G  = RGB(  0, 255,   0)
 RGB_B  = RGB(  0,   0, 255)

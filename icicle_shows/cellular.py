@@ -12,13 +12,20 @@ class Cellular(looping_show.LoopingShow):
     name = "Cellular"
     is_show = True
 
+    modifier_usage = {
+        "toggles": {
+            3: "Increase speed 2x",
+            4: "Black background, Red cells"
+        }
+    }
+
     def __init__(self, cells):
         looping_show.LoopingShow.__init__(self, cells)
         self.cells = cells.party
 
-        self.white = color.RGB(255,255,255)
-        self.blue = color.BLUE
-        self.darker_blue = color.RGB(  0,  0, 128)
+        self.white = ice_geom.WHITE
+        self.blue = ice_geom.BLUE
+        self.darker_blue = ice_geom.DARKER_BLUE
 
         self.duration = 0.5
 
@@ -34,7 +41,11 @@ class Cellular(looping_show.LoopingShow):
     def set_controls_model(self, cm):
         super(Cellular, self).set_controls_model(cm)
 
-        self.cm.reset_step_modifiers()
+        # self.cm.reset_step_modifiers()
+
+    def was_selected_randomly(self):
+        self.cm.set_modifier(3, (random.randrange(10) > 4))
+        self.cm.set_modifier(4, (random.randrange(10) > 8))
 
     # def clear(self):
     #     c = self.background
@@ -59,9 +70,9 @@ class Cellular(looping_show.LoopingShow):
         darker_blue = self.darker_blue
 
         if self.cm.modifiers[4]:
-            white = color.BLACK
-            blue = color.BLUE
-            darker_blue = color.RED
+            white = ice_geom.BLACK
+            blue = ice_geom.BLUE
+            darker_blue = ice_geom.RED
 
 
         for idx, im in enumerate(self.model):

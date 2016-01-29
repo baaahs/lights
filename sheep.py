@@ -161,7 +161,11 @@ class Sheep(object):
 
         resolved = []
         for c in cells:
-            resolved.extend(self._resolve(c))
+            if isinstance(c, list):
+                for cb in c:
+                    resolved.extend(self._resolve(cb))
+            else:
+                resolved.extend(self._resolve(c))
 
         if self.handle_colorized and self.cm:
             color = color.colorize(self.cm.colorized)

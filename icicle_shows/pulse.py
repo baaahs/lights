@@ -74,6 +74,12 @@ class Pulse(looping_show.LoopingShow):
     
     name = "Pulse"
 
+    modifier_usage = {
+        "toggles": {
+            3: "Increase speed 2x",
+        }
+    }
+
     def __init__(self, sheep_sides):
         looping_show.LoopingShow.__init__(self, sheep_sides)
 
@@ -85,7 +91,11 @@ class Pulse(looping_show.LoopingShow):
     def set_controls_model(self, cm):
         super(Pulse, self).set_controls_model(cm)
 
-        self.cm.reset_step_modifiers(random.randrange(3))
+        # self.cm.reset_step_modifiers()
+
+    def was_selected_randomly(self):
+        self.cm.set_modifier(3, (random.randrange(10) > 4))
+
         #print "MODE = %d" % (self.step_mode(3))
         #self.cm.reset_step_modifiers()
 
