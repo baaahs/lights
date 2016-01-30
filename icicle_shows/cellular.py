@@ -14,8 +14,9 @@ class Cellular(looping_show.LoopingShow):
 
     modifier_usage = {
         "toggles": {
+            1: "Don't use automata rules",
             3: "Increase speed 2x",
-            4: "Black background, Red cells"
+            4: "Black background, Red cells",
         }
     }
 
@@ -44,6 +45,7 @@ class Cellular(looping_show.LoopingShow):
         # self.cm.reset_step_modifiers()
 
     def was_selected_randomly(self):
+        self.cm.set_modifier(1, (random.randrange(10) > 6))
         self.cm.set_modifier(3, (random.randrange(10) > 4))
         self.cm.set_modifier(4, (random.randrange(10) > 8))
 
@@ -100,18 +102,24 @@ class Cellular(looping_show.LoopingShow):
                         # Insert a random value at 0
                         next_val = random.randrange(3)
                     else:
-                        # Look at one or two elements above
-                        if jdx <= 2:
-                            # Copy old 0
+                        if self.cm.modifiers[0]:
+                            # No cellular automata
+                            # Just take previous value
                             next_val = im[jdx-1]
                         else:
-                            c = val + im[jdx-1] + im[jdx-2]
-                            if c > 4:
-                                next_val = 2
-                            elif c > 2:
-                                next_val = 1
+                            # Some automata rules
+                            # Look at one or two elements above
+                            if jdx <= 2:
+                                # Copy old 0
+                                next_val = im[jdx-1]
                             else:
-                                next_val = 0
+                                c = val + im[jdx-1] + im[jdx-2]
+                                if c > 4:
+                                    next_val = 2
+                                elif c > 2:
+                                    next_val = 1
+                                else:
+                                    next_val = 0
 
                     next_im.append(next_val)
                 self.model.append(next_im)

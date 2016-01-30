@@ -119,7 +119,7 @@ class TranceFun(looping_show.LoopingShow):
         notes.add_notes(2, NOTES_BEEPS)
         notes.add_notes(2, NOTES_BEEPS)
 
-        notes.dump()
+        #notes.dump()
 
         self.beeps = Track(
             notes,
@@ -141,7 +141,7 @@ class TranceFun(looping_show.LoopingShow):
         notes.add_notes(1, NOTES_FOUR_PULSE)
 
         notes.add_notes(1, NOTES_SILENCE, count=8)
-        notes.dump()
+        #notes.dump()
 
 
         self.two_pulse = Track(
