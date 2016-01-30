@@ -28,10 +28,23 @@ class Sparkle(object):
             # Setup our colors
             colors = []
 
-            colors.append(RGB(255, 255,  27))
-            colors.append(RGB( 64, 255, 218))
-            colors.append(RGB(245, 218,  64))
-            colors.append(RGB(255, 140, 140))
+            if self.cm.modifiers[1]:
+                # Ha! Jordan's colors...
+                colors.append(RGB(255, 255,  27))
+                colors.append(RGB( 64, 255, 218))
+                colors.append(RGB(245, 218,  64))
+                colors.append(RGB(255, 140, 140))
+
+            elif self.cm.modifiers[0]:
+                colors = self.cm.chosen_colors
+
+            else:
+                # Default colors
+                colors.append(ice_geom.BLUE)
+                colors.append(ice_geom.DARKER_BLUE)
+                colors.append(ice_geom.WHITE)
+                colors.append(ice_geom.BLUE)
+
 
             bg = RGB(0,0,0)
 
@@ -43,7 +56,7 @@ class Sparkle(object):
                 if random.random() < sparkle_thresh:
                     # Sparkle it
                     # It gets one of 4 inensities
-                    clr = colors[random.randrange(4)]
+                    clr = colors[random.randrange(len(colors))]
                     self.cells.set_cell(pixel, clr)
 
                 else:
