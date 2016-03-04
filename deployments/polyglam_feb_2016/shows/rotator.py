@@ -17,11 +17,13 @@ class Rotator(looping_show.LoopingShow):
 
     modifier_usage = {
         "toggles": {
-            # 0: "Add 0.25 to brightness",
-            # 1: "Add second 0.25 to brightness",
+            0: "Use chosen color instead of random",
+            1: "Backwards",
             3: "Increase speed 2x",
         },
         "step": {
+            0: "Full sweep",
+            1: "Sector sweep",
             # 0: "Icicles are colored in order",
             # 1: "Random colors per icicle",
             # 2: "Rays of color",
@@ -43,6 +45,7 @@ class Rotator(looping_show.LoopingShow):
         # self.cm.reset_step_modifiers(random.randrange(3))
         self.cm.set_modifier(0, (random.randrange(10) > 7))
         self.cm.set_modifier(1, (random.randrange(10) > 4))
+        self.cm.set_modifier(3, (random.randrange(10) > 6))
         # self.cm.set_intensified((random.random() * 2.0) - 1.0)
 
     def control_modifiers_changed(self):
@@ -51,12 +54,12 @@ class Rotator(looping_show.LoopingShow):
         else:
             self.duration = 2.0
 
-    # def control_step_modifiers_changed(self):
-    #     mode = self.step_mode(4)
-    #     if mode in self.modifier_usage["step"]:
-    #         self.cm.set_message(self.modifier_usage["step"][mode])
-    #     else:
-    #         self.cm.set_message("Mode %d" % mode)
+    def control_step_modifiers_changed(self):
+        mode = self.step_mode(2)
+        if mode in self.modifier_usage["step"]:
+            self.cm.set_message(self.modifier_usage["step"][mode])
+        else:
+            self.cm.set_message("Mode %d" % mode)
 
     def calcV(self, el_start, el_end, p, size):
         half_size = size / 2.0
