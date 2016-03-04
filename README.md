@@ -151,6 +151,8 @@ OS X:
 
     pip install setuptools-git
     pip install --allow-external pybonjour pybonjour
+    # The pybonjour install will probably fail on El Capitan. See below
+    # for how to install from 'source'
 
 Debian / Ubuntu:
 
@@ -161,6 +163,7 @@ Debian / Ubuntu:
 For whatever reason pybonjour seems problematic via the package managers. You may have better luck if you download pybonjour and unpack it from the distribution. It's on [Google Code](https://code.google.com/archive/p/pybonjour/downloads)
 
     cd pybonjour-1.1.1
+    # You may not need the sudo for this - try it without first
     sudo python setup.py install
 
 
