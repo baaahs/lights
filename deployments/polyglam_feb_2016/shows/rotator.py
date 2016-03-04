@@ -81,34 +81,41 @@ class Rotator(looping_show.LoopingShow):
         if p_end < p_start:
             p_end += 1.0
 
-        if p_start < 0.0:
-            el_start += 1.0
-            el_end += 1.0
-            p_start += 1.0
-            p_end += 1.0
+
+        # if p_start < 0.0:
+        #     el_start += 1.0
+        #     el_end += 1.0
+        #     p_start += 1.0
+        #     p_end += 1.0
 
         #print "    %.2f,%.2f  %.2f  %.2f,%.2f" % (el_start, el_end, p, p_start, p_end)
         # Get the easy cases out of the way
-        if p_end < el_start:
+        if p_end < el_start and (p_end - 1.0) < el_start:
             return 0.0
 
-        if p_start > el_end:
+        if p_start > el_end and p_start > (el_end - 1.0):
             return 0.0
 
         # Now we examine things more closely
         # We know:
         #     p_end > el_start && 
         #     p_start < el_end
-        if p_end > el_end:
+        if p_end > el_end and p_end > (el_end - 1.0):
             if p_start < el_start:
                 return 1.0
 
             return abs(el_end - p_start)
 
         elif p_start < el_start:
+            while p_end > 1.0:
+                p_end -= 1.0
+
             return abs(p_end - el_start)
 
         else:
+            while p_end > 1.0:
+                p_end -= 1.0
+
             return abs(p_end - p_start)
 
 
@@ -157,7 +164,7 @@ class Rotator(looping_show.LoopingShow):
 
                 elif mode == 1:
                     # A 0.25 segment
-                    v = self.calcV(el_start, el_end, p, 0.5)
+                    v = self.calcV(el_start, el_end, p, 0.25)
                     #print v
 
                 clr = color.HSV(*tween.hsvLinear(self.background, self.foreground, v))
