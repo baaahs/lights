@@ -83,7 +83,7 @@ class Areas(looping_show.LoopingShow):
 
     def __init__(self, sheep_sides):
         looping_show.LoopingShow.__init__(self, sheep_sides)
-        self.foreground = random_color()
+        self.foreground = random_color(luminosity="dark")
         self.background = self.foreground.copy()
         self.background.h += 0.5
 
