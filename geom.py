@@ -89,4 +89,4 @@ WHITE  = RGB(255,255,255)
 
 RED    = RGB(255,   0,   0)
 
-DARK_RED = RGB(20, 0, 0)
+DARK_RED = RGB(10, 0, 0)
