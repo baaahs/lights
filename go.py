@@ -26,11 +26,11 @@ import config
 
 # fail gracefully if cherrypy isn't available
 _use_cherrypy = False
-try:
-    import cherrypy
-    _use_cherrypy = True
-except ImportError:
-    print "WARNING: CherryPy not found; web interface disabled"
+# try:
+#     import cherrypy
+#     _use_cherrypy = True
+# except ImportError:
+#     print "WARNING: CherryPy not found; web interface disabled"
 
 def _stacktraces(signum, frame):
     txt = []
