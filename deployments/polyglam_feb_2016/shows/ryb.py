@@ -17,6 +17,8 @@ class RYB(looping_show.LoopingShow):
 
     modifier_usage = {
         "toggles": {
+            0: "Add 0.25 to brightness",
+            1: "Add second 0.25 to brightness",
             3: "Increase speed 2x",
         },
         "step": {
@@ -60,6 +62,14 @@ class RYB(looping_show.LoopingShow):
         else:
             self.cm.set_message("Mode %d" % mode)
 
+    def finalFromRGB(self, rgb):
+        b = 0.5
+        if self.cm.modifiers[0]:
+            b += 0.25
+        if self.cm.modifiers[1]:
+            b += 0.25
+
+        return color.RGB(rgb[0] * b, rgb[1] * b, rgb[2] * b)
 
     def update_at_progress(self, progress, new_loop, loop_instance):
         mode = self.step_mode(4)
@@ -83,12 +93,12 @@ class RYB(looping_show.LoopingShow):
                 rgbTuple = color.hsvRYB_to_rgb(hsv)
 
                 # Now factor in an intensity
-                v = 0.2 + (((self.cm.intensified + 1.0) / 2.0) * 0.8)
+                # v = 0.2 + (((self.cm.intensified + 1.0) / 2.0) * 0.8)
 
                 # rgb = color.RGB(*rgbTuple)
-                rgb = color.RGB(rgbTuple[0] * v, rgbTuple[1] * v, rgbTuple[2] * v)
+                # rgb = color.RGB(rgbTuple[0] * v, rgbTuple[1] * v, rgbTuple[2] * v)
 
-                self.ss.party.set_cells(sl, rgb)
+                self.ss.party.set_cells(sl, self.finalFromRGB(rgbTuple))
 
 
         elif mode == 1:
@@ -100,9 +110,9 @@ class RYB(looping_show.LoopingShow):
                 hsv = (hue, 1.0, 1.0)
 
                 rgbTuple = color.hsvRYB_to_rgb(hsv)
-                rgb = color.RGB(*rgbTuple)
+                # rgb = color.RGB(*rgbTuple)
 
-                self.ss.party.set_cells(icicle, rgb)
+                self.ss.party.set_cells(icicle, self.finalFromRGB(rgbTuple))
 
         elif mode == 2:
             # Set colors element by element in each ring based on radial
@@ -119,9 +129,9 @@ class RYB(looping_show.LoopingShow):
                     hsv = (hue, 1.0, 1.0)
 
                     rgbTuple = color.hsvRYB_to_rgb(hsv)
-                    rgb = color.RGB(*rgbTuple)
+                    # rgb = color.RGB(*rgbTuple)
 
-                    self.ss.party.set_cell(tube, rgb)
+                    self.ss.party.set_cell(tube, self.finalFromRGB(rgbTuple))
 
 
         else:
@@ -129,8 +139,7 @@ class RYB(looping_show.LoopingShow):
             hsv = (progress + self.offsets[0], 1.0, 1.0)
 
             rgbTuple = color.hsvRYB_to_rgb(hsv)
-            rgb = color.RGB(*rgbTuple)
-            self.ss.party.set_all_cells(rgb)
+            self.ss.party.set_all_cells(self.finalFromRGB(rgbTuple))
 
 
  
