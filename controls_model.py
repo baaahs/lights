@@ -232,7 +232,7 @@ class ControlsModel(object):
         self.time_limits = [30, 20 * 60]
         self.max_time = 42.0
 
-        self.brightness = 1.0
+        self.brightness = 0.5
 
         self.set_default_effects()
         self.load_effects()
