@@ -1,4 +1,5 @@
-from icicles import ice_geom
+import geom
+
 import color
 import time
 
@@ -84,7 +85,7 @@ class Pulse(looping_show.LoopingShow):
         looping_show.LoopingShow.__init__(self, sheep_sides)
 
         self.updaters = []        
-        for icicle in ice_geom.ICICLES:
+        for icicle in geom.ICICLES:
             self.updaters.append(IPulse(icicle, 0.05 + (0.15 * random.random()), sheep_sides))
 
 
