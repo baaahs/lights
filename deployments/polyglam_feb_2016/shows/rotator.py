@@ -18,8 +18,10 @@ class Rotator(looping_show.LoopingShow):
     modifier_usage = {
         "toggles": {
             0: "Use chosen color instead of random",
-            1: "Backwards",
+            1: "Random chance 1.0",
+            2: "Backwards",
             3: "Increase speed 2x",
+            4: "Choose 2 colors not just one",
         },
         "step": {
             0: "Full sweep",
@@ -45,7 +47,9 @@ class Rotator(looping_show.LoopingShow):
         # self.cm.reset_step_modifiers(random.randrange(3))
         self.cm.set_modifier(0, (random.randrange(10) > 7))
         self.cm.set_modifier(1, (random.randrange(10) > 4))
+        self.cm.set_modifier(2, (random.randrange(10) > 5))
         self.cm.set_modifier(3, (random.randrange(10) > 6))
+        self.cm.set_modifier(4, (random.randrange(10) > 7))
         # self.cm.set_intensified((random.random() * 2.0) - 1.0)
 
     def control_modifiers_changed(self):
@@ -61,7 +65,7 @@ class Rotator(looping_show.LoopingShow):
         else:
             self.cm.set_message("Mode %d" % mode)
 
-    def calcV(self, el_start, el_end, p, size):
+    def calcV(self, el_start, el_end, p, size, debug=False):
         half_size = size / 2.0
 
         # Normalize el & p such that start happens in 0 to 1
@@ -70,7 +74,7 @@ class Rotator(looping_show.LoopingShow):
             el_start += 1.0
             el_end += 1.0
 
-        if el_end < el_start:
+        if el_end < el_start and el_end > 0.0:
             el_end += 1.0
 
         # Same for p
@@ -91,13 +95,35 @@ class Rotator(looping_show.LoopingShow):
         #     p_start += 1.0
         #     p_end += 1.0
 
-        #print "    %.2f,%.2f  %.2f  %.2f,%.2f" % (el_start, el_end, p, p_start, p_end)
+        if debug:
+            print "%.2f,%.2f  %.2f  %.2f,%.2f" % (el_start, el_end, p, p_start, p_end)
         # Get the easy cases out of the way
-        if p_end < el_start and (p_end - 1.0) < el_start:
-            return 0.0
+        # if p_end < el_start and (p_end - 1.0) < el_start:
+        #     # Haven't reached it yet
+        #     return 0.0
 
-        if p_start > el_end and p_start > (el_end - 1.0):
-            return 0.0
+        # if p_start > el_end and p_start > (el_end - 1.0):
+        if p_end < 1.0:            
+            # Haven't gotten there
+            if p_end < el_start:
+                return 0.0
+
+            if p_start > el_end:
+                # Already past it
+                return 0.0
+        else:
+            # It wraps across the boundary
+
+            # Haven't gotten there
+            if (p_end - 1.0) < el_start and el_end < p_start:
+                return 0.0
+
+            # Already past
+            if p_start > (el_end + 1.0):
+                return 0.0
+
+        # if p_start > el_end and p_start > (el_end - 1.0):
+        #     return 0.0
 
         # Now we examine things more closely
         # We know:
@@ -110,13 +136,13 @@ class Rotator(looping_show.LoopingShow):
             return abs(el_end - p_start)
 
         elif p_start < el_start:
-            while p_end > 1.0:
+            while p_end >= 1.0:
                 p_end -= 1.0
 
             return abs(p_end - el_start)
 
         else:
-            while p_end > 1.0:
+            while p_end >= 1.0:
                 p_end -= 1.0
 
             return abs(p_end - p_start)
@@ -129,19 +155,39 @@ class Rotator(looping_show.LoopingShow):
                 self.foreground = self.cm.chosen_colors[0]
                 self.background = self.cm.chosen_colors[1]
             else:
-                self.foreground = random_color(luminosity="dark")
-                self.background = self.foreground.copy()
-                self.background.h += 0.5
+                if self.cm.modifiers[1] or (random.randrange(10) > 7) or (not hasattr(self, "foreground")):
+                    # Definitely need a new color
+                    if random.randrange(10) > 7:
+                        # Also reverse direction
+                        self.cm.set_modifier(2, not self.cm.modifiers[2])
+
+                    if self.cm.modifiers[4] or (not hasattr(self, "foreground")):
+                        # Two totally new colors
+                        self.foreground = random_color(luminosity="dark")
+                        self.background = self.foreground.copy()
+                        if self.background.h < 0.5:
+                            self.background.h += 0.5
+                        else:
+                            self.background.h -= 0.5
+                    else:
+                        # Keep old foreground
+                        self.background = self.foreground
+                        self.foreground = random_color(luminosity="dark")
 
 
         for ring in geom.RINGS:
             el_size = 1.0 / len(ring)
 
+            # Debug ring 3 only
+            # debug = el_size < 0.4
+            # if debug:
+            #     print
+
             for ix, el in enumerate(ring):
                 partial = 1.0
 
                 el_start = (ix * el_size) + 0.25
-                if el_start > 1.0:
+                if el_start >= 1.0:
                     el_start -= 1.0
                 el_end = ((ix+1) * el_size) + 0.25
                 if el_end > 1.0:
@@ -150,16 +196,17 @@ class Rotator(looping_show.LoopingShow):
 
                 v = 0.0
                 p = progress
-                backwards = self.cm.modifiers[1]
+                backwards = self.cm.modifiers[2]
 
                 if backwards:
                     p = 1.0 - progress
+
 
                 mode = self.step_mode(2)
 
                 if mode == 0:
                     # A single edge that sweeps from 0 to full
-                    if p > el_end:
+                    if p >= el_end:
                         v = 1.0
                     elif p > el_start:
                         v = (p - el_start) / el_size
@@ -167,82 +214,11 @@ class Rotator(looping_show.LoopingShow):
 
                 elif mode == 1:
                     # A 0.25 segment
-                    v = self.calcV(el_start, el_end, p, 0.25)
-                    #print v
+                    v = self.calcV(el_start, el_end, p, 0.25, debug=False)
+                    # if debug:
+                    #     print "  %0.4f" % v
 
                 clr = color.HSV(*tween.hsvLinear(self.background, self.foreground, v))
 
                 self.ss.party.set_cell(el, clr)
 
-
-        # mode = self.step_mode(4)
-
-        # if mode == 0:
-        #     # Color striped from top to bottom by slices
-        #     v_range = tween.easeInQuad(0.1, 0.98, (self.cm.intensified + 1.0)/2.0)
-        #     #v_range = 0.1 + ((self.cm.intensified + 1.0)/2.0 * 0.89)  # how much of the hue cycle to spread across top to bottom
-
-        #     per_slice = v_range / len(geom.ICICLES)
-
-        #     for idx, sl in enumerate(geom.ICICLES):
-        #         hue = progress - (idx * per_slice) + self.offsets[0]
-        #         while hue > 1.0:
-        #             hue -= 1.0
-        #         while hue < 0.0:
-        #             hue += 1.0
-
-        #         hsv = (hue, 1.0, 1.0)
-
-        #         rgbTuple = color.hsvRYB_to_rgb(hsv)
-
-        #         # Now factor in an intensity
-        #         # v = 0.2 + (((self.cm.intensified + 1.0) / 2.0) * 0.8)
-
-        #         # rgb = color.RGB(*rgbTuple)
-        #         # rgb = color.RGB(rgbTuple[0] * v, rgbTuple[1] * v, rgbTuple[2] * v)
-
-        #         self.ss.party.set_cells(sl, self.finalFromRGB(rgbTuple))
-
-
-        # elif mode == 1:
-        #     # Each icicle gets a unique color based on it's offset
-        #     for idx,icicle in enumerate(geom.ICICLES):
-        #         hue = progress + self.offsets[idx]
-        #         if hue > 1.0:
-        #             hue -= 1.0
-        #         hsv = (hue, 1.0, 1.0)
-
-        #         rgbTuple = color.hsvRYB_to_rgb(hsv)
-        #         # rgb = color.RGB(*rgbTuple)
-
-        #         self.ss.party.set_cells(icicle, self.finalFromRGB(rgbTuple))
-
-        # elif mode == 2:
-        #     # Set colors element by element in each ring based on radial
-        #     for ring_ix, ring in enumerate(geom.RINGS):
-        #         step = 1.0 / len(ring)
-
-        #         for tube_ix, tube in enumerate(ring):
-        #             hue = progress + self.offsets[0] + tube_ix * step
-        #             while hue > 1.0:
-        #                 hue -= 1.0
-        #             while hue < 0.0:
-        #                 hue += 1.0
-
-        #             hsv = (hue, 1.0, 1.0)
-
-        #             rgbTuple = color.hsvRYB_to_rgb(hsv)
-        #             # rgb = color.RGB(*rgbTuple)
-
-        #             self.ss.party.set_cell(tube, self.finalFromRGB(rgbTuple))
-
-
-        # else:
-        #     # Everything the same color
-        #     hsv = (progress + self.offsets[0], 1.0, 1.0)
-
-        #     rgbTuple = color.hsvRYB_to_rgb(hsv)
-        #     self.ss.party.set_all_cells(self.finalFromRGB(rgbTuple))
-
-
- 

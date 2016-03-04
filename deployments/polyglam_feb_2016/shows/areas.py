@@ -102,7 +102,7 @@ class Areas(looping_show.LoopingShow):
     def clear(self):
         c = self.background
         if self.cm.modifiers[1]:
-            c = geom.DEEP_RED
+            c = geom.DARK_RED
 
         self.ss.both.set_all_cells(c)
 
@@ -160,7 +160,7 @@ class Areas(looping_show.LoopingShow):
         for i in range(0, len(_list)):
             c = self.background
             if self.cm.modifiers[1]:
-                c = color.DEEP_RED
+                c = color.DARK_RED
 
             if i <= to_light:
                 x = i
