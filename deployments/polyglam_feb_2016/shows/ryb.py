@@ -77,10 +77,16 @@ class RYB(looping_show.LoopingShow):
                     hue -= 1.0
                 while hue < 0.0:
                     hue += 1.0
+
                 hsv = (hue, 1.0, 1.0)
 
                 rgbTuple = color.hsvRYB_to_rgb(hsv)
-                rgb = color.RGB(*rgbTuple)
+
+                # Now factor in an intensity
+                v = 0.2 + (((self.cm.intensified + 1.0) / 2.0) * 0.8)
+
+                # rgb = color.RGB(*rgbTuple)
+                rgb = color.RGB(rgbTuple[0] * v, rgbTuple[1] * v, rgbTuple[2] * v)
 
                 self.ss.party.set_cells(sl, rgb)
 
