@@ -63,7 +63,12 @@ class IPulse(IcicleLoop):
             t_prog = (self.progress - 0.5) * 2
             sat = tween.easeInOutQuad(1.0, 0, t_prog)
 
-        c = color.HSV(0.66, sat, 1.0)
+
+        h = 0.0
+        if cm.modifiers[0]:
+            h = 0.66
+
+        c = color.HSV(h, sat, 1.0)
         self.cells.set_cells(self.icicle, c)
 
 
@@ -77,6 +82,7 @@ class Pulse(looping_show.LoopingShow):
 
     modifier_usage = {
         "toggles": {
+            0: "Blue tint instead of red",
             3: "Increase speed 2x",
         }
     }
@@ -95,6 +101,7 @@ class Pulse(looping_show.LoopingShow):
         # self.cm.reset_step_modifiers()
 
     def was_selected_randomly(self):
+        self.cm.set_modifier(0, (random.randrange(10) > 7))
         self.cm.set_modifier(3, (random.randrange(10) > 4))
 
         #print "MODE = %d" % (self.step_mode(3))
