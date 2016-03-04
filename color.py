@@ -260,7 +260,7 @@ class Color(object):
         return deepcopy(self)
 
     def _set_hsv(self, hsv_tuple):
-        assert is_hsv_tuple(hsv_tuple)
+        assert is_hsv_tuple(hsv_tuple), "malformed hsv tuple:" + str(hsv_tuple)
         # convert to a list for component reassignment
         self.hsv_t = list(hsv_tuple)
 

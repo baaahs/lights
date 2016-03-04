@@ -117,7 +117,7 @@ class Areas(looping_show.LoopingShow):
 
         if new_loop:
             if not self.cm.modifiers[0]:
-                self.foreground = random_color(luminosity="light")
+                self.foreground = random_color(luminosity="dark")
                 self.background = self.foreground.copy()
                 self.background.h += 0.5
             else:
