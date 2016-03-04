@@ -8,7 +8,7 @@
     "y": 10.0, 
     "x": 5.0
   }, 
-  "mode": "simulator", 
+  "mode": "ola", 
   "max_pixels": 740,
   "eye_positions": {
     "disco": [
