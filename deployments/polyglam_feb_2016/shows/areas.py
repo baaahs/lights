@@ -62,12 +62,28 @@ class Areas(looping_show.LoopingShow):
     # Because we extend LoopingShow we must explicitly override is_show to be True
     is_show = True
     
-    name = "_Areas"
-    ok_for_random = False
+    name = "Areas"
+    ok_for_random = True
     
+    modifier_usage = {
+        "toggles": {
+            0: "Use chosen instead of random colors",
+            1: "Use deep red as background color",
+            2: "Reverse color list",
+            3: "Increase speed 2x",
+        },
+        "step": {
+            0: "Horizontal Stripes",
+            1: "Vertical Stripes",
+            2: "Rings",
+            3: "Quadrants"
+        },
+        "intensified": "Length of hue range"
+    }
+
     def __init__(self, sheep_sides):
         looping_show.LoopingShow.__init__(self, sheep_sides)
-        self.foreground = random_color(luminosity="light")
+        self.foreground = random_color()
         self.background = self.foreground.copy()
         self.background.h += 0.5
 
@@ -76,20 +92,31 @@ class Areas(looping_show.LoopingShow):
 
         self.cm.reset_step_modifiers()
 
+    def was_selected_randomly(self):
+        self.cm.reset_step_modifiers(random.randrange(4))
+        self.cm.set_modifier(0, (random.randrange(10) > 7))
+        self.cm.set_modifier(1, (random.randrange(10) > 4))
+
+        self.cm.set_modifier(3, (random.randrange(10) > 4))
+
     def clear(self):
         c = self.background
         if self.cm.modifiers[1]:
-            c = color.BLACK
+            c = geom.DEEP_RED
 
         self.ss.both.set_all_cells(c)
 
     def control_step_modifiers_changed(self):
-        self.cm.set_message("Mode %d" % self.step_mode(4))
+        mode = self.step_mode(4)
+        if mode in self.modifier_usage["step"]:
+            self.cm.set_message(self.modifier_usage["step"][mode])
+        else:
+            self.cm.set_message("Mode %d" % mode)
 
     def update_at_progress(self, progress, new_loop, loop_instance):
 
         if new_loop:
-            if self.cm.modifiers[0]:
+            if not self.cm.modifiers[0]:
                 self.foreground = random_color(luminosity="light")
                 self.background = self.foreground.copy()
                 self.background.h += 0.5
@@ -123,6 +150,9 @@ class Areas(looping_show.LoopingShow):
         # elif mode == 0:
         #     _list = sheep.HSTRIPES
 
+        if len(_list) % 2 == 1:
+            _list = _list + [[]]
+
         # Because progress will never actually hit 1.0, this will always
         # produce a valid list index
         to_light = int(progress * len(_list))
@@ -130,7 +160,7 @@ class Areas(looping_show.LoopingShow):
         for i in range(0, len(_list)):
             c = self.background
             if self.cm.modifiers[1]:
-                c = color.BLACK
+                c = color.DEEP_RED
 
             if i <= to_light:
                 x = i
