@@ -6,8 +6,8 @@ import math
 import controls_model as controls
 from eyes import Eye, MutableEye
 
-#from geom import ALL
-from icicles.ice_geom import ALL
+from geom import ALL
+#from icicles.ice_geom import ALL
 
 def load_geometry(mapfile):
     """

@@ -9,7 +9,8 @@ import random
 import os
 
 import sheep
-import icicle_shows as shows
+import shows
+#import icicle_shows as shows
 import util
 import controls_model
 import touch_osc
