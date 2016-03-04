@@ -109,7 +109,7 @@ class Sheep(object):
         self.cm = None
         self.handle_colorized = False
 
-        self._brightness = 1.0
+        self._brightness = 0.5
 
     def __repr__(self):
         return "Sheep(%s, side='%s')" % (self.model, self.side)
