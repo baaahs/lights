@@ -447,5 +447,27 @@ RGB_B  = RGB(  0,   0, 255)
 
 ###########
 if __name__=='__main__':
-    import doctest
-    doctest.testmod()
+    #import doctest
+    #doctest.testmod()
+
+    steps = 10
+    hueChange = 1.0 / steps
+
+    bright = []
+    half = []
+    third = []
+    for i in range(0, steps):
+        h = hueChange * i
+
+        clr = HSVryb(h, 1.0, 1.0)
+        bright.append(clr.rgb)
+
+        half.append(HSVryb(h, 1.0, 0.5).rgb)
+        third.append(HSVryb(h, 1.0, 0.33).rgb)
+
+        #print clr.rgb
+
+
+    print "bright = %s" % bright
+    print "half = %s" % half
+    print "third = %s" % third
