@@ -6,7 +6,7 @@ import looping_show
 
 from music import *
 
-from randomcolor import random_color
+
 
 
 #################################################
@@ -63,41 +63,30 @@ class KickSnare(looping_show.LoopingShow):
 
         self.tracks = []
 
-        self.kick_instrument = Instrument(
-            # All Cells
-            cells.party,
-
-            # Instrument target
-            geom.RINGS[0],
-
-            # BG
-            geom.BLACK,
-
-            # FG
-            geom.PURPLE,
-
-            # Envelope
-            FixedDelay()
-            )
-
         self.tracks.append(
             Track(
                 # Phrase
                 FOUR_ON_FLOOR, 
 
                 # Instrument
-                self.kick_instrument
+                Instrument(
+                    # All Cells
+                    cells.party,
+
+                    # Instrument target
+                    geom.RINGS[0],
+
+                    # BG
+                    geom.BLACK,
+
+                    # FG
+                    geom.PURPLE,
+
+                    # Envelope
+                    FixedDelay()
+                    )
             )
         )
-
-        self.snare_instrument = FallingSpike(
-            cells.party,
-            geom.RINGS[2],
-            geom.BLACK,
-            geom.BLUE,
-            FixedDelay(.250)
-
-            )
 
         self.tracks.append(
             Track(
@@ -105,7 +94,14 @@ class KickSnare(looping_show.LoopingShow):
                 OFF_BEATS, 
 
                 # Instrument
-                self.snare_instrument
+                FallingSpike(
+                    cells.party,
+                    geom.RINGS[2],
+                    geom.BLACK,
+                    geom.BLUE,
+                    FixedDelay(.250)
+
+                    )
             )
         )
 
@@ -149,19 +145,6 @@ class KickSnare(looping_show.LoopingShow):
             self.ss.party.set_cells(geom.ALL, geom.WHITE)
         else:
             self.ss.party.set_cells(geom.ALL, geom.DARK_RED)
-
-        if new_loop:
-            self.kick_instrument.fg = geom.PURPLE
-            self.snare_instrument.fg = geom.BLUE
-
-            if self.cm.modifiers[1]:
-                self.kick_instrument.fg = self.cm.chosen_colors[0]
-                self.snare_instrument.fg = self.cm.chosen_colors[1]
-            
-            if self.cm.modifiers[2]:
-                self.kick_instrument.fg = random_color(luminosity="dark")
-                self.snare_instrument.fg = random_color(luminosity="dark")
-
 
         for track in self.tracks:
             track.update_at_progress(progress, new_loop, loop_instance)
