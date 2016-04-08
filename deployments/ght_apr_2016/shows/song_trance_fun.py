@@ -6,6 +6,7 @@ import color
 import looping_show
 
 from music import *
+from randomcolor import random_color
 
 #################################################
 ACCENT_LVL = 1.0
@@ -81,19 +82,21 @@ class TranceFun(looping_show.LoopingShow):
         self.tracks = []
 
         # A kick drum that has two intensities, so two hues.
+        self.kick_instrument = HueSpike(
+            cells.party,
+            [
+                [15, 14, 13, 19, 20, 21],
+                [18, 17, 16, 22, 23, 24],
+            ],
+            geom.BLACK,
+            color.MAGENTA,
+            FixedDelay(),
+            hue_offset = 0.15
+        )
+
         self.kick = Track(
             TRANCE_KICK_AND_SNARE,
-            HueSpike(
-                cells.party,
-                [
-                    [15, 14, 13, 19, 20, 21],
-                    [18, 17, 16, 22, 23, 24],
-                ],
-                geom.BLACK,
-                color.MAGENTA,
-                FixedDelay(),
-                hue_offset = 0.15
-            )
+            self.kick_instrument
         )
         self.tracks.append(self.kick)
 
@@ -122,15 +125,17 @@ class TranceFun(looping_show.LoopingShow):
 
         #notes.dump()
 
+        self.beeps_instrument = Instrument(
+            cells.party,
+            [],
+            geom.DARK_RED,
+            geom.PURPLE
+        )
+
         self.beeps = Track(
             notes,
             TargetRandomizer(
-                Instrument(
-                    cells.party,
-                    [],
-                    geom.DARK_RED,
-                    geom.PURPLE
-                ),
+                self.beeps_instrument,
                 [6, 5, 9, 10, 8, 7, 11, 12],
                 1,
                 2
@@ -146,16 +151,17 @@ class TranceFun(looping_show.LoopingShow):
         notes.add_notes(1, NOTES_SILENCE, count=8)
         #notes.dump()
 
+        self.snare_instrument = Instrument(
+            cells.party,
+            geom.RINGS[0],
+            geom.BLACK,
+            geom.BLUE,
+            FixedDelay(16 * F64)
+        )
 
         self.two_pulse = Track(
             notes,
-            Instrument(
-                cells.party,
-                geom.RINGS[0],
-                geom.BLACK,
-                geom.BLUE,
-                FixedDelay(16 * F64)
-            ),
+            self.snare_instrument
         )
         self.tracks.append(self.two_pulse)
 
@@ -168,6 +174,19 @@ class TranceFun(looping_show.LoopingShow):
 
         self.ss.party.set_cells(geom.ALL, clr)
 
+        if new_loop:
+            self.kick_instrument.fg = geom.PURPLE
+            self.snare_instrument.fg = geom.BLUE
+            self.beeps_instrument.fg = geom.PURPLE
+
+            if self.cm.modifiers[1]:
+                self.kick_instrument.fg = self.cm.chosen_colors[0]
+                self.snare_instrument.fg = self.cm.chosen_colors[1]
+            
+            if self.cm.modifiers[2]:
+                self.kick_instrument.fg = random_color(luminosity="dark")
+                self.snare_instrument.fg = random_color(luminosity="dark")
+                self.beeps_instrument.fg = random_color(luminosity="light")
 
         for track in self.tracks:
             track.update_at_progress(progress, new_loop, loop_instance)

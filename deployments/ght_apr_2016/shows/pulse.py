@@ -10,6 +10,8 @@ import looping_show
 from randomcolor import random_color
 import tween
 
+master_hue = 0.0
+
 class IcicleLoop(object):
     def __init__(self, icicle, hertz, ss):
         self.icicle = icicle
@@ -52,24 +54,42 @@ class IcicleLoop(object):
 class IPulse(IcicleLoop):
     def __init__(self, icicle, hertz, cells):
         IcicleLoop.__init__(self, icicle, hertz, cells)
+        self.hue = 0.0
 
     def update_at_progress(self, cm, is_new):
+        t_prog = 0.0
+        b_mod = 0.0
         if self.progress < 0.5:
             # Heading towards max
             t_prog = self.progress * 2
             sat = tween.easeInOutQuad(0, 1.0, t_prog)
+            b_mod = tween.easeInOutQuad(0.2, 1.0, t_prog)
         else:
             # Heading from max towards min
             t_prog = (self.progress - 0.5) * 2
             sat = tween.easeInOutQuad(1.0, 0, t_prog)
+            b_mod = tween.easeInOutQuad(1.0, 0.2, t_prog)
 
 
-        h = 0.0
-        if cm.modifiers[0]:
-            h = 0.66
+        if is_new:
+            self.hue = 0.0
 
-        c = color.HSV(h, sat, 1.0)
-        self.cells.set_cells(self.icicle, c)
+            if cm.modifiers[0]:
+                self.hue = 0.66
+
+            if cm.modifiers[1]:
+                self.hue = random.random()
+
+            if cm.modifiers[2]:
+                self.hue = master_hue
+                # print "Use master_hue self.hue=%s" % self.hue
+
+        b = 1.0
+        if cm.modifiers[4]:
+            b = b_mod
+
+        c = color.HSV(self.hue, sat, b)
+        self.cells.set_cell(self.icicle, c)
 
 
 
@@ -83,7 +103,10 @@ class Pulse(looping_show.LoopingShow):
     modifier_usage = {
         "toggles": {
             0: "Blue tint instead of red",
+            1: "Random Hue",
+            2: "Use random master hue",
             3: "Increase speed 2x",
+            4: "Modify brightness",
         }
     }
 
@@ -91,7 +114,7 @@ class Pulse(looping_show.LoopingShow):
         looping_show.LoopingShow.__init__(self, sheep_sides)
 
         self.updaters = []        
-        for icicle in geom.ICICLES:
+        for icicle in geom.ALL:
             self.updaters.append(IPulse(icicle, 0.05 + (0.15 * random.random()), sheep_sides))
 
 
@@ -102,7 +125,10 @@ class Pulse(looping_show.LoopingShow):
 
     def was_selected_randomly(self):
         self.cm.set_modifier(0, (random.randrange(10) > 7))
+        self.cm.set_modifier(1, (random.randrange(10) > 4))
+        self.cm.set_modifier(2, (random.randrange(10) > 3))
         self.cm.set_modifier(3, (random.randrange(10) > 4))
+        self.cm.set_modifier(4, (random.randrange(10) > 3))
 
         #print "MODE = %d" % (self.step_mode(3))
         #self.cm.reset_step_modifiers()
@@ -117,7 +143,12 @@ class Pulse(looping_show.LoopingShow):
         self.cm.set_message("Mode %d" % self.step_mode(3))
 
     def update_at_progress(self, progress, new_loop, loop_instance):
+        global master_hue
         now = time.time()
+
+        if new_loop and (loop_instance % len(geom.ICICLES) == 0):
+            master_hue = random.random()
+            # print "loop_instance=%d new loop master_hue= %s" % (loop_instance, master_hue)
 
         for updater in self.updaters:
             updater.update_at(self.cm, now)

@@ -71,12 +71,14 @@ class Areas(looping_show.LoopingShow):
             1: "Use deep red as background color",
             2: "Reverse color list",
             3: "Increase speed 2x",
+            4: "Reverse direction",
         },
         "step": {
             0: "Horizontal Stripes",
             1: "Vertical Stripes",
             2: "Rings",
-            3: "Quadrants"
+            3: "Quadrants",
+            4: "Spiral"
         },
         "intensified": "Length of hue range"
     }
@@ -107,7 +109,7 @@ class Areas(looping_show.LoopingShow):
         self.ss.both.set_all_cells(c)
 
     def control_step_modifiers_changed(self):
-        mode = self.step_mode(4)
+        mode = self.step_mode(5)
         if mode in self.modifier_usage["step"]:
             self.cm.set_message(self.modifier_usage["step"][mode])
         else:
@@ -124,14 +126,20 @@ class Areas(looping_show.LoopingShow):
                 self.background = self.cm.chosen_colors[1]
                 self.foreground = self.cm.chosen_colors[0]
 
-            self.color_list = morph.transition_list(self.foreground, self.background, steps=16)
+            if self.cm.modifiers[2]:
+                t = self.foreground
+                self.foreground = self.background
+                self.background = t
+            # self.color_list = morph.transition_list(self.foreground, self.background, steps=16)
             self.clear()
 
 
-        mode = self.step_mode(4)
+        mode = self.step_mode(5)
 
         # _list defines what we loop over
-        if mode == 3:            
+        if mode == 4:            
+            _list = geom.SPIRAL
+        elif mode == 3:            
             _list = geom.QUADRANTS
         elif mode == 2:            
             _list = geom.RINGS
@@ -150,6 +158,7 @@ class Areas(looping_show.LoopingShow):
         # elif mode == 0:
         #     _list = sheep.HSTRIPES
 
+        # Make sure it always has an even count
         if len(_list) % 2 == 1:
             _list = _list + [[]]
 
@@ -157,21 +166,31 @@ class Areas(looping_show.LoopingShow):
         # produce a valid list index
         to_light = int(progress * len(_list))
 
+
         for i in range(0, len(_list)):
+            # Determine a background
             c = self.background
             if self.cm.modifiers[1]:
-                c = color.DARK_RED
+                c = geom.DARK_RED
 
+            # But possibly make it a lit color
             if i <= to_light:
-                x = i
-                if len(_list) < len(self.color_list) / 2:
-                    x = i * 2
-                c_ix = x % len(self.color_list)
+                c = self.foreground
 
-                if self.cm.modifiers[2] and (loop_instance % 2 == 0):
-                    c_ix = len(self.color_list) - 1 - c_ix
+                # Don't like all this color morph stuff...
+                # x = i
+                # if len(_list) < len(self.color_list) / 2:
+                #     x = i * 2
+                # c_ix = x % len(self.color_list)
 
-                c = self.color_list[c_ix]
+                # if self.cm.modifiers[2] and (loop_instance % 2 == 0):
+                #     c_ix = len(self.color_list) - 1 - c_ix
+
+                # c = self.color_list[c_ix]
 
             el = _list[i]
+
+            if self.cm.modifiers[4]:
+                el = _list[len(_list) - 1 - i]
+
             self.ss.both.set_cell(el, c)
