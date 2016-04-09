@@ -218,7 +218,7 @@ class Eye(object):
         self.model.set_eye_dmx(s, EYE_DMX_COLOR, int(color_pos))
 
         # Add in the brightness at the last moment
-        self.model.set_eye_dmx(s, EYE_DMX_DIMMER, int(math.floor(255 * dimmer * self._brightness)))
+        self.model.set_eye_dmx(s, EYE_DMX_DIMMER, int(math.floor(255 * dimmer * (self._brightness * 2.0))))
 
         #print "pan=%d dPan = %d  dTilt = %d" % (pan, dPan, dTilt)
         if effect is None:
