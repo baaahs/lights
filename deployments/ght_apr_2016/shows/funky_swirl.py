@@ -6,6 +6,7 @@ import random
 import math
 
 import controls_model as controls
+import eye_effect
 
 
 class EyeSwirl(object):
@@ -79,5 +80,18 @@ class EyeSwirl(object):
             self.p.tilt +=  tiltPos * 8.0
             self.b.pan += panPos * 8.0
             self.b.tilt += tiltPos * 8.0
+
+            if random.randrange(1000) > 900:
+                print "Change effect"
+
+                if random.randrange(1000) > 500:
+                    # Remove it
+                    print "Removing any effect"
+                    self.p.effect = None
+                else:
+                    ef = eye_effect.random_effect()
+                    print "Chose effect %s" % ef
+                    self.p.effect = ef
+                    self.b.effect = ef
 
             yield 0.001
