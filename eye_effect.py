@@ -3,6 +3,8 @@ import traceback
 
 import eyes
 
+from random import *
+
 SHUTTER_OPEN    = "open"
 SHUTTER_CLOSED  = "closed"
 SHUTTER_STROBE  = "strobe"
@@ -54,6 +56,39 @@ def clear_all(dmxer):
     dmxer.set_eye_dmx(eyes.EYE_DMX_EFFECT, 0)
     # Don't modify focus
     dmxer.set_eye_dmx(eyes.EYE_DMX_FROST, 0)
+
+
+def random_effect():
+    e = EyeEffect()
+
+    # Do a gobo?
+    if randrange(100) > 90:
+        e.gobo = randrange(17)
+
+    # Do a prism effect?
+    if randrange(100) > 80:
+        ef = randrange(3)
+        if ef == 0:
+            e.effect = EFFECT_LADDER
+        elif ef == 1:
+            e.effect = EFFECT_8_FACET
+        elif ef == 2:
+            e.effect = EFFECT_3_FACET
+
+    # Do a shutter thing?
+    if randrange(100) > 80:
+        ef = randrange(3)
+
+        if ef == 0:
+            e.shutter_type = SHUTTER_STROBE
+        elif ef == 1:
+            e.shutter_type = SHUTTER_PULSE
+        elif ef == 2:
+            e.shutter_type = SHUTTER_RANDOM
+
+        e.shutter_speed = random()
+
+    return e
 
 
 class EyeEffect(object):
