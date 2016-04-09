@@ -1,15 +1,15 @@
 {
-  "parallax_distance": 0.125, 
+  "parallax_distance": 1.0, 
   "eye_rotation": {
-    "p": 22.0, 
-    "b": -22.0
+    "p": 0.0, 
+    "b": 0.0
   }, 
   "xy_scale": {
     "y": 10.0, 
     "x": 5.0
   }, 
   "mode": "ola", 
-  "max_pixels": 740,
+  "max_pixels": 64,
   "eye_positions": {
     "disco": [
       [
