@@ -227,6 +227,8 @@ class Eye(object):
         else:
             effect.go(self, speed=ext_speed)
 
+        self.model.set_eye_dmx(s, EYE_DMX_PNT_SPEED, 254)
+
         # The reset mode
         if self._reset_mode == EYE_RESET_NONE:
             self.model.set_eye_dmx(s, EYE_DMX_LAMP, 0)
