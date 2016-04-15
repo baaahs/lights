@@ -229,7 +229,7 @@ class ControlsModel(object):
         self.master_name = ""
         self.eo_name = ""
 
-        self.time_limits = [30, 20 * 60]
+        self.time_limits = [30, 60 * 60]
         self.max_time = 42.0
 
         self.brightness = 0.5

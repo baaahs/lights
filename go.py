@@ -904,8 +904,8 @@ if __name__=='__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Baaahs Light Control')
 
-    parser.add_argument('--max-time', type=float, default=float(300),
-                        help='Maximum number of seconds a show will run (default 300)')
+    parser.add_argument('--max-time', type=float, default=float(1800),
+                        help='Maximum number of seconds a show will run (default 1800=30mins)')
 
     parser.add_argument('--simulator',dest='simulator',action='store_true')
     parser.add_argument('--host',dest='sim_host', type=str, default=sim_host, help="Hostname or ip for simulator")
