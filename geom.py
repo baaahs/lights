@@ -3,20 +3,35 @@ from color import RGB
 BIRD_SIZE = 60
 BIRD_FRONT_WING_SIZE = 16
 
-NUM_BIRDS = 10
+# Find these with channel_on. List from bottom to top
+BIRD_CHANNELS = [10, 8, 9, 16, 17, 18, 3, 1, 2, 0]
+NUM_BIRDS = len(BIRD_CHANNELS)
 
 ALL = []
 BIRDS = []
 
-base = 0 # Because we offset to each channel of 64
-for i in range(0, NUM_BIRDS):
-    bird = []
-    for l in range(0, BIRD_SIZE):
-        bird.append(base + l)
-        ALL.append(base + l)
-    BIRDS.append(bird)
-    base += 64
+ATOMS = []
+for i in range(0, (BIRD_SIZE / 2)):
+	ATOMS.append([])
 
+base = 0 # Because we offset to each channel of 64
+for i in BIRD_CHANNELS:
+    bird = []
+    base = 64 * i
+    for l in range(0, BIRD_SIZE):
+    	p = base + l
+        bird.append(p)
+        ALL.append(p)
+
+        if l < BIRD_SIZE / 2:
+        	ATOMS[l].append(p)
+        else:
+        	ATOMS[BIRD_SIZE - l - 1].append(p)
+
+    BIRDS.append(bird)
+
+
+#print ATOMS
 
 # TOP = [15, 18, 14, 6, 8, 17]
 # HIGH = [13, 5, 1, 2, 7, 16]
@@ -75,6 +90,23 @@ VSTRIPES = BIRDS
 # SPIRAL_3way = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 24, 17, 18, 19, 20, 21, 22, 23]
 # SPIRAL = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17, 13, 18, 19, 14, 20, 21, 15, 22, 23, 16, 24]
 
+def front_of_bird(bird):
+	out = []
+	for ix in range(0, BIRD_FRONT_WING_SIZE):
+		out.append(bird[ix])
+		out.append(bird[BIRD_SIZE - 1 - ix])
+
+	return out
+
+def rear_of_bird(bird):
+	out = []
+	for ix in range(BIRD_FRONT_WING_SIZE, BIRD_SIZE/2):
+		out.append(bird[ix])
+		out.append(bird[BIRD_SIZE - 1 - ix])
+
+	return out
+
+
 # Some good colors
 BLUE   = RGB( 41,  95, 153)
 DARKER_BLUE   = RGB( 0,  0, 200)
@@ -87,3 +119,6 @@ WHITE  = RGB(255,255,255)
 RED    = RGB(255,   0,   0)
 
 DARK_RED = RGB(10, 0, 0)
+
+ROSE = RGB(247, 202, 201)
+QUARTZ = RGB(145, 168, 209)

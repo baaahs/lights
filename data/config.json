@@ -8,8 +8,9 @@
     "y": 10.0, 
     "x": 5.0
   }, 
-  "mode": "ola", 
-  "max_pixels": 740,
+  "mode": "opc",
+  "opc_host": "10.0.1.103",
+  "max_pixels": 1500,
   "eye_positions": {
     "disco": [
       [

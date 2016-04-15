@@ -15,6 +15,7 @@ import util
 import controls_model
 import touch_osc
 import watchdog
+import tween
 
 import cProfile
 
@@ -171,6 +172,11 @@ class ShowRunner(threading.Thread):
         self._push_overlay_names()
         self.cm.set_max_time(self.max_show_time)
 
+        # Use this when changing shows automatically
+        self.do_transitions = True
+        self.non_transition_brightness = self.cm.brightness
+        self.transition_duration = 3.0  # in seconds for half the transition
+
         self.force_muted = False
 
 
@@ -209,6 +215,13 @@ class ShowRunner(threading.Thread):
     # because there are so many other things they won't care about so
     # let's not waste the time with those
     def control_brightness_changed(self, val):
+        self.non_transition_brightness = val
+
+        # Pass it on for now. It might get modified in the run loop, but
+        # that will use the non_transition_brightness as necessary.
+        self.set_all_model_brightness(val)
+
+    def set_all_model_brightness(self, val):
         self.model.both.set_brightness(val)
         self.model.party.set_brightness(val)
         self.model.business.set_brightness(val)
@@ -314,7 +327,7 @@ class ShowRunner(threading.Thread):
 
 
         s = None
-        is_a_random_selection = False
+        self.is_a_random_selection = False
         if name:
             if name in self.shows:
                 s = self.shows[name]
@@ -329,7 +342,7 @@ class ShowRunner(threading.Thread):
         if not s:
             print "choosing random show"
             name = self.randseq.next()
-            is_a_random_selection = True
+            self.is_a_random_selection = True
             s = self.shows[name]
 
         self.clear()
@@ -360,7 +373,7 @@ class ShowRunner(threading.Thread):
         self.cm.add_listener(self.show)
         try:
             self.show.set_controls_model(self.cm)
-            if is_a_random_selection:
+            if self.is_a_random_selection:
                 self.show.was_selected_randomly()
         except AttributeError:
             pass
@@ -584,6 +597,22 @@ class ShowRunner(threading.Thread):
 
                 frame_muted = False
 
+                # If we are nearing the max time, fade out the brightness
+                remaining_time = self.max_show_time - self.show_runtime
+                if remaining_time < self.transition_duration and remaining_time > 0:
+                    trans_distance = 1.0 - (remaining_time / self.transition_duration)
+                    trans_brightness = tween.easeInQuad(self.non_transition_brightness, 0.0, trans_distance)
+                    #print "Fade out %f" % trans_brightness
+                    self.set_all_model_brightness(trans_brightness)
+                elif self.show_runtime < self.transition_duration:
+                    trans_distance = self.show_runtime / self.transition_duration
+                    trans_brightness = tween.easeOutQuad(0.0, self.non_transition_brightness, trans_distance)
+                    #print "Fade in %f" % trans_brightness
+                    self.set_all_model_brightness(trans_brightness)
+                # Assume that the brightness is okay at all other times. We might
+                # miss the very end of the easeOut, but whatever...
+
+                # Get the next values
                 if start >= next_frame_at:
                     #print "%f next frame" % start
                     # ZOMG, gotta get a new show from
@@ -618,6 +647,7 @@ class ShowRunner(threading.Thread):
 
                     if doverlay:
                         next_overlay_frame_at = time.time() + (doverlay * self.speed_x)
+
 
                 # Always output things, because they could have
                 # changed by UI controls for instance
