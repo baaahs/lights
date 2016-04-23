@@ -1,34 +1,9 @@
 from color import RGB
 
-BIRD_SIZE = 60
-BIRD_FRONT_WING_SIZE = 16
-
-# Find these with channel_on. List from bottom to top
-BIRD_CHANNELS = [10, 8, 9, 16, 17, 18, 3, 1, 2, 0]
-NUM_BIRDS = len(BIRD_CHANNELS)
 
 ALL = []
-BIRDS = []
-
-ATOMS = []
-for i in range(0, (BIRD_SIZE / 2)):
-	ATOMS.append([])
-
-base = 0 # Because we offset to each channel of 64
-for i in BIRD_CHANNELS:
-    bird = []
-    base = 64 * i
-    for l in range(0, BIRD_SIZE):
-    	p = base + l
-        bird.append(p)
-        ALL.append(p)
-
-        if l < BIRD_SIZE / 2:
-        	ATOMS[l].append(p)
-        else:
-        	ATOMS[BIRD_SIZE - l - 1].append(p)
-
-    BIRDS.append(bird)
+for i in range(1, 17):
+    ALL.append(i)
 
 
 #print ATOMS
@@ -38,9 +13,64 @@ for i in BIRD_CHANNELS:
 # MEDIUM = [19, 9, 3, 4, 11, 22]
 # LOW = [10, 10, 12, 23, 21, 24]
 
-HSTRIPES = BIRDS
-VSTRIPES = BIRDS
+HSTRIPES = [
+    [4,     5,  9, 13],
+    [1, 3,  6, 10, 14],
+    [1, 3,  7, 11, 15],
+    [2,     8, 12, 16],
+]
 
+VSTRIPES = [
+    [3,     5, 6, 7, 8],
+    [2, 4,  9, 10, 11, 12],
+    [1,    13, 14, 15, 16],
+]
+
+DSTRIPES = [
+    [16],
+    [ 15, 12],
+    [ 14, 11, 8],
+    [13, 10, 7],
+    [1, 9, 6],
+    [2, 5],
+    [4, 3],
+]
+
+DSTRIPES2 = [
+    [8],
+    [7, 12],
+    [6,11,16],
+    [5, 10, 15],
+    [3, 9, 14],
+    [2, 13],
+    [4, 1],
+]
+
+RINGS = [
+    [1, 2, 3, 4],
+    [11, 10],
+    [15, 16, 12, 8, 7, 6, 5, 9, 13, 14],
+]
+
+QUADRANTS = [
+    [1, 11, 15, 16],
+    [2, 12, 8, 7],
+    [3, 10, 6, 5],
+    [4, 9, 13, 14]
+]
+
+REAR = [1, 2, 3, 4]
+SIDE_ROWS = [
+    [5, 6, 7, 8],
+    [9, 10, 11, 12],
+    [13, 14, 15, 16]
+]
+SIDE_COLS = [
+    [13, 9, 5],
+    [14, 10, 6],
+    [15, 11, 7],
+    [16, 12, 8],
+]
 # FRONT_SPIRAL = [1,2,3,4]
 
 # # From tom's "sheep tailoring" diagram (link?)
