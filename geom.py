@@ -4,7 +4,9 @@ BIRD_SIZE = 60
 BIRD_FRONT_WING_SIZE = 16
 
 # Find these with channel_on. List from bottom to top
-BIRD_CHANNELS = [10, 8, 9, 16, 17, 18, 3, 1, 2, 0]
+#BIRD_CHANNELS = [10, 8, 9, 16, 17, 18, 3, 1, 2, 0]
+#BIRD_CHANNELS = [7,5,4, 16, 6, 18, 3, 1, 2, 0]
+BIRD_CHANNELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 16]
 NUM_BIRDS = len(BIRD_CHANNELS)
 
 ALL = []

@@ -2,7 +2,8 @@ import model.opc as opc
 import sys
 import time
 
-server_ip_port = "10.0.1.103:7890"
+#server_ip_port = "10.0.1.103:7890"
+server_ip_port = "0.0.0.0:7890"
 max_pixels = 1500
 
 client = opc.Client(server_ip_port, True)

@@ -9,7 +9,7 @@
     "x": 5.0
   }, 
   "mode": "opc",
-  "opc_host": "10.0.1.103",
+  "xxxopc_host": "10.0.1.103",
   "max_pixels": 1500,
   "eye_positions": {
     "disco": [
