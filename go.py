@@ -630,7 +630,16 @@ class ShowRunner(threading.Thread):
                             else:
                                 d = 0.0001 # Failsafe for something small
 
-                        next_frame_at = time.time() + (d * self.speed_x)
+                        # Set a minimum frame rate that works out to the
+                        # DMX framerate. Do it here in case output of the
+                        # pixels takes a long time. This is still lame
+                        # because the time to calculate the pixels didn't get
+                        # accounted for though...
+                        if d < 0.023:
+                            d = 0.023
+
+                        #next_frame_at = time.time() + (d * self.speed_x)
+                        next_frame_at = start + (d * self.speed_x)
 
                 else:
                     #print "%f not yet" % start
@@ -672,21 +681,27 @@ class ShowRunner(threading.Thread):
                     # of 44hz
 
                     now = time.time()
-                    to_sleep = 0.023 
                     until_next = next_frame_at - now
                     until_next_eo = next_eo_frame_at - now
                     until_next_overlay = next_overlay_frame_at - now
 
+                    # Find the smallest until_next value
                     if until_next_eo < until_next and until_next_eo > 0.001:
                         until_next = until_next_eo
 
                     if until_next_overlay < until_next and until_next_overlay > 0.001:
                         until_next = until_next_overlay
 
-                    if until_next < to_sleep and until_next > 0.001:
-                        to_sleep = until_next
+                    # Cap until_next at the minimum
+                    # The min to sleep time, which isn't necessarily the min
+                    # frame rate, but if this is too low it's going to nuke the
+                    # cpu hard core. until_next could be negative at this point
+                    # if output took a long time in particular
+                    to_sleep = until_next
+                    if to_sleep < 0.005:
+                        to_sleep = 0.005
 
-                    #print "toSleep = %s" % str(toSleep)
+                    print "to_sleep = %s" % str(to_sleep)
                     time.sleep(to_sleep)
 
             except Exception:
@@ -956,7 +971,7 @@ if __name__=='__main__':
         # sim_host = "localhost"
         print "Configuring for birds servers %s:%d" % (args.opc_host, args.opc_port)
 
-        fc_local = FCOPCModel("localhost:7890", args.debug, filename="data/fc-birds.json", max_pixels=830)
+        fc_local = FCOPCModel("10.2.1.1:7890", args.debug, filename="data/fc-birds.json", max_pixels=830)
         fc_remote = FCOPCModel("10.2.1.2:7890", args.debug, filename="data/fc-birds2.json", max_pixels=830)
         model = MirrorModel(fc_local, fc_remote)
 
