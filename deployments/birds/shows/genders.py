@@ -16,6 +16,7 @@ class Genders(looping_show.LoopingShow):
     is_show = True
     
     name = "Genders"
+    ok_for_random = False
 
     modifier_usage = {
         "toggles": {
@@ -141,47 +142,3 @@ class Genders(looping_show.LoopingShow):
                         self.ss.party.set_cell(pVal, clr)
 
 
-        # # mode 0
-        # stripes = geom.BIRDS
-
-        # if mode == 1:
-        #     stripes = geom.ATOMS
-        # # elif mode == 2:
-        # #     stripes = geom.RINGS
-        # # elif mode == 3:
-        # #     stripes = geom.QUADRANTS
-        # # elif mode == 4:
-        # #     stripes = geom.SPIRAL
-        # # elif mode == 5:
-        # #     stripes = geom.ICICLES
-
-
-
-        # l = len(stripes) - 1
-        # for ix, row in enumerate(stripes):
-        #     distance = 0.0
-
-        #     if self.cm.modifiers[1]:
-        #         # Reverse
-        #         distance = (float(l - ix) / float(len(stripes))) + progress
-        #     else:
-        #         # Normal progression
-        #         distance = (float(ix) / float(len(stripes))) + progress
-            
-        #     # Clamp
-        #     while distance > 1.0:
-        #         distance = distance - 1.0
-
-        #     while distance < 0.0:
-        #         distance = distance + 1.0
-
-
-        #     if self.cm.modifiers[0]:
-        #         clr = color.HSVryb(distance, 1.0, 1.0)
-        #     else:
-        #         clr = color.HSV(distance, 1.0, 1.0)
-
-        #     if mode == 4:
-        #         self.ss.party.set_cell(row, clr)
-        #     else:
-        #         self.ss.party.set_cells(row, clr)            
