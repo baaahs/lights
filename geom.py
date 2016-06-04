@@ -6,7 +6,8 @@ BIRD_FRONT_WING_SIZE = 16
 # Find these with channel_on. List from bottom to top
 #BIRD_CHANNELS = [10, 8, 9, 16, 17, 18, 3, 1, 2, 0]
 #BIRD_CHANNELS = [7,5,4, 16, 6, 18, 3, 1, 2, 0]
-BIRD_CHANNELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 16]
+#BIRD_CHANNELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 16]
+BIRD_CHANNELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
 NUM_BIRDS = len(BIRD_CHANNELS)
 
 ALL = []
@@ -19,7 +20,7 @@ for i in range(0, (BIRD_SIZE / 2)):
 base = 0 # Because we offset to each channel of 64
 for i in BIRD_CHANNELS:
     bird = []
-    base = 64 * i
+    base = BIRD_SIZE * i
     for l in range(0, BIRD_SIZE):
     	p = base + l
         bird.append(p)
@@ -107,6 +108,15 @@ def rear_of_bird(bird):
 		out.append(bird[BIRD_SIZE - 1 - ix])
 
 	return out
+
+BIRD_FRONTS = []
+BIRD_REARS = []
+
+for bird in BIRDS:
+    BIRD_FRONTS.append(front_of_bird(bird))
+    BIRD_REARS.append(rear_of_bird(bird))
+
+
 
 
 # Some good colors

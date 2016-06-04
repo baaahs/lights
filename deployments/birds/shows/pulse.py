@@ -101,6 +101,7 @@ class Pulse(looping_show.LoopingShow):
     is_show = True
     
     name = "Pulse"
+    ok_for_random = False
 
     modifier_usage = {
         "toggles": {

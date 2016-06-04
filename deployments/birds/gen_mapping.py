@@ -4,6 +4,6 @@ import geom
 print "{"
 
 for x in geom.ALL:
-	print "\"%dp\": %d," % x
+	print "\"%dp\": %d," % (x, x)
 
 print "}"
