@@ -447,5 +447,12 @@ RGB_B  = RGB(  0,   0, 255)
 
 ###########
 if __name__=='__main__':
-    import doctest
-    doctest.testmod()
+    # import doctest
+    # doctest.testmod()
+
+    for i in range(0,12):
+        hsv = (i * 1/12.0, 1.0, 1.0)
+        rgb = hsvRYB_to_rgb(hsv)
+
+        print "0x%.2x%.2x%.2x" % (round(rgb[0]), round(rgb[1]), round(rgb[2]))
+
