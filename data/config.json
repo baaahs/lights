@@ -8,7 +8,7 @@
     "y": 10.0, 
     "x": 5.0
   }, 
-  "mode": "opc",
+  "mode": "birds",
   "xxxopc_host": "10.0.1.103",
   "max_pixels": 1500,
   "eye_positions": {

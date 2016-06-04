@@ -952,6 +952,14 @@ if __name__=='__main__':
         opc_model = FCOPCModel("%s:%d" % (args.opc_host, args.opc_port), args.debug, args.max_pixels)
         model = MirrorModel(sim, opc_model)
 
+    elif cfg_mode == "birds":
+        # sim_host = "localhost"
+        print "Configuring for birds servers %s:%d" % (args.opc_host, args.opc_port)
+
+        fc_local = FCOPCModel("localhost:7890", args.debug, filename="data/fc-birds.json", max_pixels=830)
+        fc_remote = FCOPCModel("10.2.1.2:7890", args.debug, filename="data/fc-birds2.json", max_pixels=830)
+        model = MirrorModel(fc_local, fc_remote)
+
     elif args.opc or cfg_mode == "opc":
         # sim_host = "localhost"
         print "Using OPC Server at %s:%d" % (args.opc_host, args.opc_port)
