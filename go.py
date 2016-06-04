@@ -701,7 +701,7 @@ class ShowRunner(threading.Thread):
                     if to_sleep < 0.005:
                         to_sleep = 0.005
 
-                    print "to_sleep = %s" % str(to_sleep)
+                    #print "to_sleep = %s" % str(to_sleep)
                     time.sleep(to_sleep)
 
             except Exception:
