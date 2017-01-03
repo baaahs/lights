@@ -809,8 +809,8 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
     PShape curPanel = sheepPanelArray[panelCursor];
     if (curPanel != null) {
       sheepPanelArray[panelCursor].disableStyle(); 
-      fill(0xff00ff00);
-      shape(sheepPanelArray[panelCursor]);
+//      fill(0xff00ff00);
+//      shape(sheepPanelArray[panelCursor]);
       sheepPanelArray[panelCursor].enableStyle(); 
     }
     
