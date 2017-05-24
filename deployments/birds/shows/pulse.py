@@ -62,12 +62,12 @@ class IPulse(IcicleLoop):
         if self.progress < 0.5:
             # Heading towards max
             t_prog = self.progress * 2
-            sat = tween.easeInOutQuad(0, 1.0, t_prog)
+            sat = tween.easeInOutQuad(0, 0.6, t_prog)
             b_mod = tween.easeInOutQuad(0.2, 1.0, t_prog)
         else:
             # Heading from max towards min
             t_prog = (self.progress - 0.5) * 2
-            sat = tween.easeInOutQuad(1.0, 0, t_prog)
+            sat = tween.easeInOutQuad(0.6, 0, t_prog)
             b_mod = tween.easeInOutQuad(1.0, 0.2, t_prog)
 
 
@@ -117,8 +117,8 @@ class Pulse(looping_show.LoopingShow):
         looping_show.LoopingShow.__init__(self, sheep_sides)
 
         self.updaters = []        
-        for icicle in geom.ALL:
-            self.updaters.append(IPulse(icicle, 0.05 + (0.15 * random.random()), sheep_sides))
+        for bird in geom.BIRDS:
+            self.updaters.append(IPulse(bird, 0.05 + (0.15 * random.random()), sheep_sides))
 
 
     def set_controls_model(self, cm):

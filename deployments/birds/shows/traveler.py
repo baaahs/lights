@@ -42,9 +42,10 @@ class BirdUpdater:
 
         self.last_progress = progress
 
-        factor = 1.0
+        # Like calmer factors
+        factor = 0.5
         if cm.modifiers[4]:
-            factor = 0.5
+            factor = 0.25
 
         # Decay our energy by some rate
         if self.state == "increasing":

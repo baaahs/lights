@@ -35,7 +35,7 @@ class BirdUpdater:
         self.hue = hue
 
 
-    def update(self, cm, mode, progress):
+    def update(self, cm, base_hue, mode, progress):
         if progress < self.last_progress:
             self.last_progress = progress
 
@@ -43,9 +43,10 @@ class BirdUpdater:
 
         self.last_progress = progress
 
-        factor = 1.0
+        # These half factors are calmer
+        factor = 0.5
         if cm.modifiers[4]:
-            factor = 0.5
+            factor = 0.25
 
         # Decay our energy by some rate
         if self.state == "increasing":
@@ -70,7 +71,7 @@ class BirdUpdater:
 
         if mode == 0:
             # Everything as white
-            clr = color.HSV(0.0, 0.0, v)
+            clr = color.HSV(base_hue, self.energy, v)
             self.cells.set_cells(self.bird, clr)
 
             # Eyes as red
@@ -196,12 +197,15 @@ class DeathBirds(looping_show.LoopingShow):
             # Assume red
             self.hue = 0.0
 
+            # But maybe blue...
             if self.cm.modifiers[0]:
                 self.hue = 0.66
 
+            # Or a random color
             if self.cm.modifiers[1]:
                 self.hue = random.random()
 
+            # Or the chosen color
             if self.cm.modifiers[2]:
                 self.hue = self.cm.chosen_colors[0].h
 
@@ -213,5 +217,5 @@ class DeathBirds(looping_show.LoopingShow):
         mode = self.step_mode(len(self.modifier_usage["step"]))
 
         for updater in self.updaters:
-            updater.update(self.cm, mode, progress)
+            updater.update(self.cm, self.hue, mode, progress)
 

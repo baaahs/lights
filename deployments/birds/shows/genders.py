@@ -33,7 +33,7 @@ class Genders(looping_show.LoopingShow):
     def __init__(self, sheep_sides):
         looping_show.LoopingShow.__init__(self, sheep_sides)
 
-        self.duration = 30
+        self.duration = 20
 
         self.is_quartz = []
         self.in_transition = []

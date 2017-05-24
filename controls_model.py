@@ -10,7 +10,7 @@ import traceback
 import eyes
 import eye_effect
 import config
-
+import random
 
 
 PREDEFINED_COLORS = [
@@ -199,7 +199,7 @@ class ControlsModel(object):
         # If the currently running show does not set handles_colorized to True this
         # will be handled by the system, otherwise it is left to the show to modify
         # it's colors appropriately
-        self.colorized = 0.0
+        self.colorized = 0.3
 
         # These are modifiers that a show can interpret as it wishes.
         # The first step is a set of binary on/off ones. Only the first 5
@@ -232,7 +232,7 @@ class ControlsModel(object):
         self.time_limits = [30, 60 * 60]
         self.max_time = 42.0
 
-        self.brightness = 0.5
+        self.brightness = 1.0
 
         self.set_default_effects()
         self.load_effects()
@@ -841,6 +841,9 @@ class ControlsModel(object):
 
         self._notify_chosen_color_changed(c_ix)
    
+    def randomize_color_selections(self):
+        self.set_color_ix(0, random.randrange(len(PREDEFINED_COLORS)))
+        self.set_color_ix(1, random.randrange(len(PREDEFINED_COLORS)))
 
     def _notify_chosen_color_changed(self, c_ix):
         print "_notify_chosen_color_changed"
