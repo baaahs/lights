@@ -152,7 +152,8 @@ OS X:
     pip install setuptools-git
     pip install --allow-external pybonjour pybonjour
     # The pybonjour install will probably fail on El Capitan. See below
-    # for how to install from 'source'
+    # for how to install from 'source' BUT, instead of using the google code
+    # source, you are going to want to get this repo [El Capitan Fixes for pybonjour](https://github.com/jamezilla/pybonjour)
 
 Debian / Ubuntu:
 
