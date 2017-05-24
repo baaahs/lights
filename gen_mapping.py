@@ -12,13 +12,23 @@ print "{"
 
 for ix, bird in enumerate(geom.BIRDS):
     channel = ix
-    if ix > 4 and ix < 10:
+
+    # 5 on "A", 0-4, channels 0-7
+
+    # 5 on "B", 5-9, channels 8-15 (skipping B4)
+    if ix >= 5 and ix <= 9:
         channel += 3
 
-    if ix > 9 and ix < 14:
+        # B4 is busted though so we add one to move it to B5
+        if ix == 9:
+            channel += 1 
+
+    # 4 on "C", 10-13, channels 0-7 on birds2
+    if ix >= 10 and ix <= 13:
         channel -= 10
 
-    if ix > 13:
+    # Everything else on "D", 14-19ish, channels 8-15 on birds2
+    if ix >= 14:
         channel -= 6
 
     base = channel * 64
