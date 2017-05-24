@@ -36,6 +36,7 @@ Recommended use:
 import socket
 import struct
 import sys
+import threading
 
 class Client(object):
 
@@ -87,6 +88,7 @@ class Client(object):
         try:
             self._debug('_ensure_connected: trying to connect...')
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._socket.settimeout(1.0)
             self._socket.connect((self._ip, self._port))
             self._debug('_ensure_connected:    ...success')
             return True
@@ -179,3 +181,175 @@ class Client(object):
         return True
 
 
+class ThreadedClient(threading.Thread):
+
+    def __init__(self, server_ip_port, long_connection=True, verbose=False):
+        """Create an OPC client object which sends pixels to an OPC server.
+
+        server_ip_port should be an ip:port or hostname:port as a single string.
+        For example: '127.0.0.1:7890' or 'localhost:7890'
+
+        There are two connection modes:
+        * In long connection mode, we try to maintain a single long-lived
+          connection to the server.  If that connection is lost we will try to
+          create a new one whenever put_pixels is called.  This mode is best
+          when there's high latency or very high framerates.
+        * In short connection mode, we open a connection when it's needed and
+          close it immediately after.  This means creating a connection for each
+          call to put_pixels. Keeping the connection usually closed makes it
+          possible for others to also connect to the server.
+
+        A connection is not established during __init__.  To check if a
+        connection will succeed, use can_connect().
+
+        If verbose is True, the client will print debugging info to the console.
+
+        """
+        super(ThreadedClient, self).__init__(name=("OPC %s"%server_ip_port))
+        self.daemon = True
+
+        self.verbose = verbose
+
+        self._long_connection = long_connection
+
+        self._ip, self._port = server_ip_port.split(':')
+        self._port = int(self._port)
+
+        self._socket = None  # will be None when we're not connected
+
+        self.data_ready = threading.Event()
+        self.message_lock = threading.Lock()
+        self.start()
+
+
+    def _debug(self, m):
+        if self.verbose:
+            print('    %s' % str(m))
+
+    def _ensure_connected(self):
+        """Set up a connection if one doesn't already exist.
+
+        Return True on success or False on failure.
+
+        """
+        if self._socket:
+            self._debug('_ensure_connected: already connected, doing nothing')
+            return True
+
+        try:
+            self._debug('_ensure_connected: trying to connect...')
+            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._socket.settimeout(2.0)
+            self._socket.connect((self._ip, self._port))
+            self._debug('_ensure_connected:    ...success')
+            return True
+        except socket.error:
+            self._debug('_ensure_connected:    ...failure')
+            self._socket = None
+            return False
+
+    def disconnect(self):
+        """Drop the connection to the server, if there is one."""
+        self._debug('disconnecting')
+        if self._socket:
+            self._socket.close()
+        self._socket = None
+
+    def can_connect(self):
+        """Try to connect to the server.
+
+        Return True on success or False on failure.
+
+        If in long connection mode, this connection will be kept and re-used for
+        subsequent put_pixels calls.
+
+        """
+        success = self._ensure_connected()
+        if not self._long_connection:
+            self.disconnect()
+        return success
+
+    def _put_pixels(self):
+        """Send the list of pixel colors to the OPC server on the given channel.
+
+        channel: Which strand of lights to send the pixel colors to.
+            Must be an int in the range 0-255 inclusive.
+            0 is a special value which means "all channels".
+
+        pixels: A list of 3-tuples representing rgb colors.
+            Each value in the tuple should be in the range 0-255 inclusive. 
+            For example: [(255, 255, 255), (0, 0, 0), (127, 0, 0)]
+            Floats will be rounded down to integers.
+            Values outside the legal range will be clamped.
+
+        Will establish a connection to the server as needed.
+
+        On successful transmission of pixels, return True.
+        On failure (bad connection), return False.
+
+        The list of pixel colors will be applied to the LED string starting
+        with the first LED.  It's not possible to send a color just to one
+        LED at a time (unless it's the first one).
+
+        """
+        self._debug('put_pixels: connecting')
+        is_connected = self._ensure_connected()
+        if not is_connected:
+            self._debug('put_pixels: not connected.  ignoring these pixels.')
+            return False
+
+
+        self._debug('put_pixels: sending pixels to server %s' % self._ip)
+        self.message_lock.acquire()
+        try:
+            self._socket.send(self.message)
+        except socket.error:
+            self._debug('put_pixels: connection lost.  could not send pixels.')
+            self._socket = None
+            self.message_lock.release()
+            return False
+
+        self.message_lock.release()
+        if not self._long_connection:
+            self._debug('put_pixels: disconnecting')
+            self.disconnect()
+
+        return True
+
+    def put_pixels(self, pixels, channel=0):
+        # build OPC message
+        len_hi_byte = int(len(pixels)*3 / 256)
+        len_lo_byte = (len(pixels)*3) % 256
+        command = 0  # set pixel colors from openpixelcontrol.org
+
+        header = struct.pack("BBBB", channel, command, len_hi_byte, len_lo_byte)
+
+        pieces = [ struct.pack( "BBB",
+                     min(255, max(0, int(r))),
+                     min(255, max(0, int(g))),
+                     min(255, max(0, int(b)))) for r, g, b in pixels ]
+
+        self.message_lock.acquire()
+        if sys.version_info[0] == 3:
+            # bytes!
+            self.message = header + b''.join(pieces)
+        else:
+            # strings!
+            self.message = header + ''.join(pieces)
+        self.message_lock.release()
+
+        self._debug('new pixel message ready')
+        self.data_ready.set()
+
+        return True
+
+
+    def run(self):
+        while True:
+            self._debug('waiting on new pixel message')
+            self.data_ready.wait()
+            self.data_ready.clear()
+            try:
+                self._put_pixels()
+            except:
+                self._debug("Exception during real _put_pixels")

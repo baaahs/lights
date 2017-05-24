@@ -25,7 +25,7 @@ class FCOPCModel(object):
         print "Connecting to OPC server %s, max_pixels=%d" % (server_ip_port, max_pixels)
 
         # long lived connections and not verbose debug
-        self.opc = opc.Client(server_ip_port, True, False)
+        self.opc = opc.ThreadedClient(server_ip_port, True, False)
 
         # Load a pixel mapping from "panel name" format to channel & ix
         with open(filename) as f:

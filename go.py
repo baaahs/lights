@@ -976,6 +976,7 @@ if __name__=='__main__':
         print "Configuring for birds servers %s:%d" % (args.opc_host, args.opc_port)
 
         fc_local = FCOPCModel("10.2.1.1:7890", args.debug, filename="data/fc-birds.json", max_pixels=900)
+        model = fc_local
         fc_remote = FCOPCModel("10.2.1.2:7890", args.debug, filename="data/fc-birds2.json", max_pixels=900)
         model = MirrorModel(fc_local, fc_remote)
 
