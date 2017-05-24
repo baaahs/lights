@@ -164,7 +164,7 @@ class Client(object):
             # strings!
             message = header + ''.join(pieces)
 
-        self._debug('put_pixels: sending pixels to server')
+        self._debug('put_pixels: sending pixels to server %s' % self._ip)
         try:
             self._socket.send(message)
         except socket.error:
