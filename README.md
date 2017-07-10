@@ -110,7 +110,7 @@ For more details on controlling shows with OSC, check the 'doc' directory in thi
 
 ## Hardware Support
 
-Communicating with the hardware requires [OLA.](http://www.opendmx.net)
+Communicating with the hardware requires [OLA](https://www.openlighting.org/ola/).
 
 OS X:
 
@@ -118,10 +118,16 @@ OS X:
 
 Debian / Ubuntu:
 
+To build from source see https://www.openlighting.org/ola/linuxinstall/
+
+Since Jessie/Xenial OLA has been in the main repos, so just:
+    sudo apt-get update 
+    sudo apt-get install ola ola-python 
+
 More info about pre-built packages is at http://opendmx.net/index.php/OLA_Debian_/_Ubuntu
 
 Note that page doesn't mention *trusty*, which is Ubuntu 14.04 LTS, but
-there is a version in the repo that exists for that. Thus you cad
+there is a version in the repo that exists for that. Thus you can
 do the following on 14.04:
 
     sudo echo deb   http://apt.openlighting.org/ubuntu trusty main >> /etc/apt/sources.list
@@ -129,6 +135,12 @@ do the following on 14.04:
     sudo apt-get install ola ola-python 
 
 Raspbian:
+
+To build from source see https://www.openlighting.org/ola/linuxinstall/
+
+Since Jessie/Xenial OLA has been in the main repos, so just:
+    sudo apt-get update 
+    sudo apt-get install ola ola-python 
 
     sudo echo deb http://apt.openlighting.org/raspbian/ wheezy main >> /etc/apt/sources.list
     sudo apt-get update
