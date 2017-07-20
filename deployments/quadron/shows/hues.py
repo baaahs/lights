@@ -20,7 +20,7 @@ class Hues(object):
 
         while (True):
 
-            _list = geom.HSTRIPES
+            _list = geom.by_long_planes
 
             for row in _list:
                 distance = float(self.count % len(_list)) / len(_list)
