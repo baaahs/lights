@@ -4,11 +4,6 @@ import inspect
 from operator import itemgetter
 import random
 
-from util import memoized
-
-# I don't see why we would bother to memoize this. That can almost certainly
-# not be a terribly good thing to do...
-#@memoized
 def load_shows(path=None):
     "Return a list of tuples (name, class) describing shows found in the shows directory"
     if not path:

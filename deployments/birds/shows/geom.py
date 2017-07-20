@@ -1,5 +1,61 @@
 from color import RGB
 
+
+# FC_CHANNELS = {
+#     "BOTTOM_LEFT_SS_REAR": 0, # Rev
+#     "BOTTOM_LEFT_SS_FRONT": 1, # Forward
+#     "BOTTOM_LEFT_LS": 2, # Forward
+#     "BOTTOM_RIGHT_SS_FRONT": 3, # rev
+#     # 4 = nothing
+#     "BOTTOM_RIGHT_SS_REAR": 12, # Forward
+#     "BOTTOM_RIGHT_LS": 5, # Forward
+#     "TOP_REAR_LEFT": 6, # Rev
+#     "TOP_REAR_MIDDLE": 7, # Rev
+#     "TOP_REAR_RIGHT": 8, # Forward
+#     "TOP_FRONT_RIGHT": 10, # Rev
+#     "TOP_FRONT_MIDDLE": 11, # Rev
+#     "TOP_FRONT_LEFT": 9, # Forward
+# }
+
+# SHORT_SIDE = 36
+# LONG_SIDE = 60
+
+# def make_list(channel, forward, is_long=False):    
+#     #start = FC_CHANNELS[id] * 64
+#     start = channel * 64
+#     end = start + SHORT_SIDE
+#     if is_long:
+#         end = start + LONG_SIDE
+
+#     step = 1
+
+#     if !forward:
+#         temp = end
+#         end = start
+#         start = temp
+#         step = -1
+
+#     out = []
+#     for ix in range(start, end, step):
+#         out.append(ix)
+#     return out
+
+# BOTTOM_LEFT_SS_REAR = make_channel(0, False)
+# BOTTOM_LEFT_SS_FRONT = make_channel(1, True)
+# BOTTOM_LEFT_LS = make_channel(2, True) # Forward
+# BOTTOM_RIGHT_SS_FRONT = make_channel(3, False) # rev
+# BOTTOM_RIGHT_SS_REAR = make_channel(12, True)  # Forward
+# BOTTOM_RIGHT_LS = make_channel(5, True)  # Forward
+# TOP_REAR_LEFT = make_channel(6, False) # Rev
+# TOP_REAR_MIDDLE = make_channel(7, False) # Rev
+# TOP_REAR_RIGHT = make_channel(8, True)  # Forward
+# TOP_FRONT_RIGHT = make_channel(10, False) # Rev
+# TOP_FRONT_MIDDLE = make_channel(11, False) # Rev
+# TOP_FRONT_LEFT = make_channel(9, True)  # Forward
+
+
+
+
 BIRD_SIZE = 60
 BIRD_FRONT_WING_SIZE = 16
 

@@ -56,6 +56,10 @@ class SimulatorModel(object):
         for cell in cells:
             self.set_cell(cell, color)
 
+    def set_all_cells(self, color):
+        for p in self.cell_ids():
+            self.set_cell(p, color)
+            
     def set_eye_dmx(self, isParty, channel, value):
 
         offset = BUSINESS_OFFSET

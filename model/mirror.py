@@ -30,6 +30,10 @@ class MirrorModel(object):
         for m in self.models:
             m.set_cells(cells, color)
 
+    def set_all_cells(self, color):
+        for m in self.models:
+            m.set_all_cells(color)
+
     def set_eye_dmx(self, isParty, channel, value):
         for m in self.models:
             m.set_eye_dmx(isParty, channel, value)

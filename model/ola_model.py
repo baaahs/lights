@@ -41,6 +41,19 @@ class OLAModel(object):
         self.wrapper = ClientWrapper()
         self.client = self.wrapper.Client()
 
+        # Extract just the cells from the panel map ignoring the eyes or other
+        # logical DMX things with non-integer values
+        self.cell_keys = []
+        for key in PANEL_MAP.keys:
+            val = key[:-1]
+            try:
+                int(val)
+            except Exception as e:
+                pass            
+            else:
+                self.cell_keys += [key]
+
+
         self.pixels = [0] * max_dmx
 
     def __repr__(self):
@@ -50,7 +63,7 @@ class OLAModel(object):
 
     def cell_ids(self):
         # return PANEL_IDS        
-        return PANEL_MAP.keys()
+        return cell_keys
 
     def set_pixel(self, ix, color):
         # dmx is 1-based, python lists are 0-based
@@ -76,6 +89,10 @@ class OLAModel(object):
     def set_cells(self, cells, color):
         for cell in cells:
             self.set_cell(cell, color)
+
+    def set_all_cells(self, color):
+        for key in self.cell_keys:
+            self.set_cell(key, color)
 
     def set_eye_dmx(self, isParty, channel, value):
         "A direct access to the dmx control for the eyes. Party eye is before business eye"

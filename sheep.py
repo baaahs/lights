@@ -6,8 +6,6 @@ import math
 import controls_model as controls
 from eyes import Eye, MutableEye
 
-from geom import *
-#from icicles.ice_geom import ALL
 
 def load_geometry(mapfile):
     """
@@ -105,7 +103,26 @@ class Sheep(object):
         if side not in VALID_SIDES:
             raise Exception("%s is not a valid side. use one of a,b,p")
         self.side = side
-        self.cells = set(ALL)
+
+        # Figure out the list of valid side ids for us based on what our model
+        # will actually allow
+        model_ids = self.model.cell_ids()
+        if self.side == 'a':
+            valid_suffixes = ['b', 'p']
+        else:
+            valid_suffixes = [side]
+        self.cells = []
+        for mid in model_ids:
+            suffix = mid[-1]
+            val = mid[:-1]
+            if suffix in valid_suffixes:
+                try:
+                    int(val)
+                except Exception as e:
+                    pass
+                else:
+                    self.cells += [mid]
+
         self.cm = None
         self.handle_colorized = False
 
@@ -119,7 +136,7 @@ class Sheep(object):
 
     def all_cells(self):
         "Return the list of valid cell IDs"
-        return ALL
+        return self.model.cell_ids
 
     # handle setting both sides here to keep the commands sent
     # to the simulator as close as possible to the actual hardware
@@ -136,6 +153,16 @@ class Sheep(object):
         else:
             return []
 
+    def _adapt_color(self, color):
+        if self.handle_colorized and self.cm:
+            color = color.colorize(self.cm.colorized)
+
+        if self._brightness < 1.0:
+            color = color.copy()
+            color.v = color.v * self._brightness
+
+        return color
+
     def set_cell(self, cell, color):
         if isinstance(cell, list):
             return self.set_cells(cell, color)
@@ -145,12 +172,7 @@ class Sheep(object):
         if not c:
             return
 
-        if self.handle_colorized and self.cm:
-            color = color.colorize(self.cm.colorized)
-
-        if self._brightness < 1.0:
-            color = color.copy()
-            color.v = color.v * self._brightness
+        color = self._adapt_color(color)
 
         # print "setting", c
         self.model.set_cells(c, color)
@@ -167,18 +189,15 @@ class Sheep(object):
             else:
                 resolved.extend(self._resolve(c))
 
-        if self.handle_colorized and self.cm:
-            color = color.colorize(self.cm.colorized)
-
-        if self._brightness < 1.0:
-            color = color.copy()
-            color.v = color.v * self._brightness
+        color = self._adapt_color(color)
 
         # print "setting", resolved
         self.model.set_cells(resolved, color)
 
     def set_all_cells(self, color):
-        self.set_cells(ALL, color)
+        color = self._adapt_color(color)
+
+        self.model.set_all_cells(color)
 
     def clear(self):
         ""
@@ -199,7 +218,7 @@ class Sheep(object):
 
     def set_test_colors(self):
         ix = 0
-        for p in ALL:
+        for p in self.model.cell_ids():
             self.set_cell(p, TEST_COLORS[ix])
             ix += 1
             if ix == len(TEST_COLORS):
@@ -212,8 +231,10 @@ class NullSheep(object):
     can be handed to a show which might try to modify it, and thus can run
     without crashing, while only the eye modifications are used.
     """
+
+    # Just return an empty list because from our perspective there are no panels
     def all_cells(self):
-        return ALL
+        return []
 
     def set_cell(self, cell, color):
         pass
@@ -290,3 +311,40 @@ class MutableSheep(object):
     def vertex_neighbors(self, cell):
         return self.parent.vertex_neighbors(cell)
 
+
+
+
+###########
+if __name__=='__main__':
+    PANEL_MAP = {
+        '1p': 1,
+        '2p': 2,
+        '3p': 3,
+
+        '1b': 11,
+        '2b': 12,
+        '3b': 13,
+
+        'EYEp': 200,
+    }
+
+    class TestModel(object):
+        def __init__(self):
+            pass
+
+        # Model basics
+
+        def cell_ids(self):
+            # return PANEL_IDS        
+            return PANEL_MAP.keys()
+
+
+    test_model = TestModel()
+
+    print test_model.cell_ids()
+
+    sheep_b = Sheep(test_model, 'b')
+    print sheep_b.cells
+
+    sheep_a = Sheep(test_model, 'a')
+    print sheep_a.cells
