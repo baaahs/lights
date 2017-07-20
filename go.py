@@ -1,6 +1,7 @@
 #!/usr/bin/env python2.7
 import sys
 import time
+import datetime
 import traceback
 import Queue
 import threading
@@ -92,6 +93,7 @@ class ShowRunner(threading.Thread):
         self.running = True
         self.max_show_time = max_showtime
         self.show_runtime = 0
+        self.runner_start = datetime.datetime.utcnow()
 
         # map of names -> show ctors
         self.shows = dict(shows.load_shows())
@@ -350,7 +352,7 @@ class ShowRunner(threading.Thread):
                 print "unknown show:", name
 
         if not s:
-            print "choosing random show"
+            print "Choosing random show. Server running since {}".format(util.prettydate(self.runner_start))
             name = self.randseq.next()
             self.is_a_random_selection = True
             s = self.shows[name]
