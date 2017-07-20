@@ -443,7 +443,14 @@ MAGENTA= RGB(255,   0, 255)
 RGB_G  = RGB(  0, 255,   0)
 RGB_B  = RGB(  0,   0, 255)
 
+#
+DARKER_BLUE   = RGB( 0,  0, 200)
 
+PURPLE2 = RGB(200,   0, 200)
+DARK_RED = RGB(10, 0, 0)
+
+ROSE = RGB(247, 202, 201)
+QUARTZ = RGB(145, 168, 209)
 
 ###########
 if __name__=='__main__':

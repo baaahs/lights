@@ -2,6 +2,7 @@ from collections import defaultdict, namedtuple
 from color import RGB, clamp
 
 import math
+import types
 
 import controls_model as controls
 from eyes import Eye, MutableEye
@@ -107,6 +108,8 @@ class Sheep(object):
         # Figure out the list of valid side ids for us based on what our model
         # will actually allow
         model_ids = self.model.cell_ids()
+        print self
+        #print "model_ids = {}".format(model_ids)
         if self.side == 'a':
             valid_suffixes = ['b', 'p']
         else:
@@ -117,11 +120,14 @@ class Sheep(object):
             val = mid[:-1]
             if suffix in valid_suffixes:
                 try:
-                    int(val)
+                    v = int(val)
                 except Exception as e:
                     pass
                 else:
-                    self.cells += [mid]
+                    if not v in self.cells:
+                        self.cells.append(v)
+
+        print "cells = {}".format(sorted(self.cells))
 
         self.cm = None
         self.handle_colorized = False
@@ -135,8 +141,8 @@ class Sheep(object):
         self._brightness = val
 
     def all_cells(self):
-        "Return the list of valid cell IDs"
-        return self.model.cell_ids
+        "Return the list of valid cell numbers (without the suffix)"
+        return self.cells
 
     # handle setting both sides here to keep the commands sent
     # to the simulator as close as possible to the actual hardware
@@ -145,12 +151,19 @@ class Sheep(object):
         Translate an integer cell id into a model cell identifier
         'a' will be translated into two cells
         """
+        if isinstance(cell, types.StringType):
+            return [cell]
+
         if cell in self.cells:
             if self.side == 'a':
                 return [str(cell)+'b', str(cell)+'p']
             else:
                 return [str(cell) + self.side]
         else:
+            print "Did not find cell {} in {}. My cells are {}".format(cell, self, sorted(self.cells))
+            if int(cell) in self.cells:
+                print "Cast to int worked"
+            exit()
             return []
 
     def _adapt_color(self, color):
@@ -323,7 +336,6 @@ if __name__=='__main__':
 
         '1b': 11,
         '2b': 12,
-        '3b': 13,
 
         'EYEp': 200,
     }
@@ -342,6 +354,9 @@ if __name__=='__main__':
     test_model = TestModel()
 
     print test_model.cell_ids()
+
+    sheep_p = Sheep(test_model, 'p')
+    print sheep_p.cells
 
     sheep_b = Sheep(test_model, 'b')
     print sheep_b.cells

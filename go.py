@@ -10,7 +10,7 @@ import os
 
 import sheep
 import shows
-#import icicle_shows as shows
+# #import icicle_shows as shows
 import util
 import controls_model
 import touch_osc
@@ -194,16 +194,24 @@ class ShowRunner(threading.Thread):
 
         seen = []
         while True:
+            print "Random eligible shows = {}".format(seq)
+            if len(seq) == 0:
+                print "\n\nABORT! No more random eligible shows\n"
+                os._exit(100)
+
             n = random.choice(seq)
-            while n in seen:
-                n = random.choice(seq)
-            seen.append(n)
+            if len(seq) > len(seen):
+                while n in seen:
+                    n = random.choice(seq)
+
+            if not n in seen:
+                seen.append(n)
             while len(seen) >= norepeat:
                 seen.pop(0)
             yield n
 
     def control_speed_changed(self):
-        print "Setting default show speed to %f" % self.cm.speed_multi
+        #print "Setting default show speed to %f" % self.cm.speed_multi
 
         # speed_x is opposite of speedMulti, so we have to invert speedMulti
         self.speed_x = 1.0 / self.cm.speed_multi
@@ -332,6 +340,8 @@ class ShowRunner(threading.Thread):
             if name in self.shows:
                 s = self.shows[name]
 
+                # We really mean to pick the next eyes_only show, so
+                # we delegate out to that method
                 if hasattr(s, "show_type") and s.show_type == "eyes_only":
                     self.next_eo_show(name)
                     return
@@ -348,7 +358,18 @@ class ShowRunner(threading.Thread):
         self.clear()
         self.prev_show = self.show
 
-        self.show = s(self.mutable_model)
+        # This might fail while trying to instantiate the show class if it
+        # refers to wrong globals etc
+        try:
+            self.show = s(self.mutable_model)
+        except Exception as e:
+            traceback.print_exc()
+
+            print "\nUnable to instantiate show {} -- Removing it from random eligibility and choosing something random.".format(name)
+            self.random_eligible_shows.remove(name)
+            self.next_show()
+            return
+
         print "next show:" + self.show.name
         self.framegen = self.show.next_frame()
         # self.show_params = hasattr(self.show, 'set_param')
@@ -709,8 +730,11 @@ class ShowRunner(threading.Thread):
                     time.sleep(to_sleep)
 
             except Exception:
-                print "unexpected exception in show loop!"
                 traceback.print_exc()
+
+                print "\nException running show {} -- Removing it from random eligibility and choosing something else random.".format(self.show.name)
+                if self.show.name in self.random_eligible_shows:
+                    self.random_eligible_shows.remove(self.show.name)
                 self.next_show()
 
 def osc_listener(q, cm, port=5700):
@@ -744,7 +768,7 @@ class SheepServer(object):
         self.sheep_model = sheep_model
 
         self.queue = Queue.LifoQueue()
-        self.controls_model = controls_model.ControlsModel()
+        self.controls_model = controls_model.ControlsModel(args.debug)
 
         # All of the sheep_model elements need to know about the
         # controls_model for various reasons, so we inject it here
@@ -891,49 +915,33 @@ class SheepServer(object):
                             '/',
                             config=config)
 
+###########################################################################################
 
 if __name__=='__main__':
 
-    config.load()
+    default_config = config.copy()
 
-    sim_host = ""
-    if config.has("sim_host"):
-        sim_host = config.get("sim_host")
-
-    sim_port = 4444
-    if config.has("sim_port"):
-        sim_port = config.get("sim_port")
-
-    cfg_mode = None
-    if config.has("mode"):
-        cfg_mode = config.get("mode")
-
-    opc_host = "127.0.0.1"
-    if config.has("opc_host"):
-        opc_host = config.get("opc_host")
-
-    opc_port = 7890
-    if config.has("opc_port"):
-        opc_port = config.get("opc_port")
-
-    max_pixels = 512
-    if config.has("max_pixels"):
-        max_pixels = config.get("max_pixels")
+    ########## 
+    # Parse command line args so that the config filename can be set on the command line
 
     import argparse
     parser = argparse.ArgumentParser(description='Baaahs Light Control')
 
-    parser.add_argument('--max-time', type=float, default=float(900),
+    parser.add_argument('--config', type=str, default="data/config.json", help="Config file to user")
+
+    parser.add_argument('--mode', type=str, default=config.get("mode"), help="Server mode (ola, simulator, mirror, opc, birds, quadron)")
+
+    parser.add_argument('--max_time', type=int, default=config.get("max_time"),
                         help='Maximum number of seconds a show will run (default 900=15mins)')
 
-    parser.add_argument('--simulator',dest='simulator',action='store_true')
-    parser.add_argument('--host',dest='sim_host', type=str, default=sim_host, help="Hostname or ip for simulator")
-    parser.add_argument('--port',dest='sim_port', type=int, default=sim_port, help="Port for simulator")
+    # parser.add_argument('--simulator',dest='simulator',action='store_true')
+    parser.add_argument('--host',dest='sim_host', type=str, default=config.get("sim_host"), help="Hostname or ip for simulator")
+    parser.add_argument('--port',dest='sim_port', type=int, default=config.get("sim_port"), help="Port for simulator")
 
-    parser.add_argument('--opc',dest='opc',action='store_true')
-    parser.add_argument('--opc_host',dest='opc_host', type=str, default=opc_host, help="Hostname or ip for opc server")
-    parser.add_argument('--opc_port',dest='opc_port', type=int, default=opc_port, help="Port for OPC Server")
-    parser.add_argument('--max_pixels',dest='max_pixels', type=int, default=max_pixels, help="Maxium number of OPC pixels")
+    # parser.add_argument('--opc',dest='opc',action='store_true')
+    parser.add_argument('--opc_host',dest='opc_host', type=str, default=config.get("opc_host"), help="Hostname or ip for opc server")
+    parser.add_argument('--opc_port',dest='opc_port', type=int, default=config.get("opc_port"), help="Port for OPC Server")
+    parser.add_argument('--max_pixels',dest='max_pixels', type=int, default=config.get("max_pixels"), help="Maxium number of OPC pixels")
 
     parser.add_argument('--universe',dest='universe', type=int, default=0, help="DMX universe")
 
@@ -947,6 +955,37 @@ if __name__=='__main__':
 
     args = parser.parse_args()
 
+    ############
+    # Now load the config file to get new values potentially
+    print "Loading configuration from {}".format(args.config)
+    config.load(args.config)
+    # print "config = {}".format(config.copy())
+    # print "args = {}".format(args)
+
+    if args.mode == default_config["mode"] and config.has("mode"):
+        print "Updating mode to {}".format(config.get("mode"))
+        args.mode = config.get("mode")
+
+    if args.max_time == default_config["max_time"] and config.has("max_time"):
+        args.max_time = config.get("max_time")
+
+    if args.sim_host == default_config["sim_host"] and config.has("sim_host"):
+        args.sim_host = config.get("sim_host")
+
+    if args.sim_port == default_config["sim_port"] and config.has("sim_port"):
+        args.sim_port = config.get("sim_port")
+
+    if args.opc_host == default_config["opc_host"] and config.has("opc_host"):
+        args.opc_host = config.get("opc_host")
+
+    if args.opc_port == default_config["opc_port"] and config.has("opc_port"):
+        args.opc_port = config.get("opc_port")
+
+    if args.max_pixels == default_config["max_pixels"] and config.has("max_pixels"):
+        args.max_pixels = config.get("max_pixels")
+
+    # print "\n\nargs now = {}".format(args)
+
     if args.list:
         print "Available shows:"
         print ', '.join([s[0] for s in shows.load_shows()])
@@ -954,24 +993,25 @@ if __name__=='__main__':
 
 
 
-    if args.mirror or cfg_mode == "mirror":
+    if args.mode == "mirror":
         from model.ola_model import OLAModel
         print "Mirroring to both OLA universe %d and sim %s:%d" % (args.universe, args.sim_host, args.sim_port)
         sim = SimulatorModel(args.sim_host, port=args.sim_port, debug=args.debug)
         ola = OLAModel(512, universe=args.universe)
         model = MirrorModel(sim, ola)
-    elif args.simulator or cfg_mode == "simulator":
+
+    elif args.mode == "simulator":
         # sim_host = "localhost"
         print "Using SheepSimulator at %s:%d" % (args.sim_host, args.sim_port)
         model = SimulatorModel(args.sim_host, port=args.sim_port, debug=args.debug)
 
-    elif cfg_mode == "mirror_opc":
+    elif args.mode == "mirror_opc":
         print "Mirroring to both OPC and sim %s:%d" % (args.sim_host, args.sim_port)
         sim = SimulatorModel(args.sim_host, port=args.sim_port, debug=args.debug)
         opc_model = FCOPCModel("%s:%d" % (args.opc_host, args.opc_port), args.debug, args.max_pixels)
         model = MirrorModel(sim, opc_model)
 
-    elif cfg_mode == "birds":
+    elif args.mode == "birds":
         # sim_host = "localhost"
         print "Configuring for birds servers %s:%d" % (args.opc_host, args.opc_port)
 
@@ -980,7 +1020,14 @@ if __name__=='__main__':
         fc_remote = FCOPCModel("10.2.1.2:7890", args.debug, filename="data/fc-birds2.json", max_pixels=900)
         model = MirrorModel(fc_local, fc_remote)
 
-    elif args.opc or cfg_mode == "opc":
+    elif args.mode == "quadron":
+        # sim_host = "localhost"
+        server_str = "%s:%d" % (args.opc_host, args.opc_port)
+        print "Configuring for quadron FC server @ %s" % server_str
+
+        model = FCOPCModel(server_str, args.debug, filename="deployments/quadron/mapping.json", max_pixels=832)
+
+    elif args.mode == "opc":
         # sim_host = "localhost"
         print "Using OPC Server at %s:%d" % (args.opc_host, args.opc_port)
         model = FCOPCModel("%s:%d" % (args.opc_host, args.opc_port), args.debug, args.max_pixels)
@@ -989,6 +1036,8 @@ if __name__=='__main__':
         from model.ola_model import OLAModel
         print "Using OLA model universe=%d" % args.universe
         model = OLAModel(512, universe=args.universe)
+
+
 
     sheep_sides = sheep.make_sheep(model)
     app = SheepServer(sheep_sides, args)

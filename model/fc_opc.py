@@ -21,8 +21,9 @@ import json
 class FCOPCModel(object):
 
 
-    def __init__(self, server_ip_port="localhost:7890", debug=False, max_pixels=512, filename="data/opc_mapping.json"):
+    def __init__(self, server_ip_port="localhost:7890", debug=False, max_pixels=512, filename="data/opc_mapping.json", ignore_business=False):
         print "Connecting to OPC server %s, max_pixels=%d" % (server_ip_port, max_pixels)
+        print "Loading mapping from {}".format(filename)
 
         # long lived connections and not verbose debug
         self.opc = opc.ThreadedClient(server_ip_port, True, False)
@@ -32,6 +33,7 @@ class FCOPCModel(object):
             self.panel_map = json.load(f)
 
         self.pixels = [(0,0,0)] * max_pixels
+        self.ignore_business = ignore_business
         
         # layout = self.panel_map["_layout"]
         # self.panel_map.pop("_layout", None)
@@ -55,7 +57,7 @@ class FCOPCModel(object):
         return self.panel_map.keys()
 
     def set_cell(self, cell, color):
-        if cell[-1] == "b":
+        if self.ignore_business and cell[-1] == "b":
             return
 
         if not cell in self.panel_map:

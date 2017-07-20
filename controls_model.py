@@ -95,7 +95,9 @@ class ControlsModel(object):
 
     
 
-    def __init__(self):
+    def __init__(self, debug = False):
+        self.debug = debug
+
         # Pan and tilt are stored in degrees from the central
         # position. Pan has a range of +/- 270 and tilt has a 
         # range of +/- 135
@@ -563,7 +565,8 @@ class ControlsModel(object):
         self._notify_color()
 
     def _notify_color(self):
-        print "_notify_color"
+        if self.debug:
+            print "_notify_color"
         for listener in self.listeners:
             if listener.control_color_changed:
                 listener.control_color_changed()
@@ -723,7 +726,8 @@ class ControlsModel(object):
 
 
     def _notify_eye_changed(self, isParty):
-        print "_notify_eye_changed isParty=%s" % isParty
+        if self.debug:
+            print "_notify_eye_changed isParty=%s" % isParty
         for listener in self.listeners:
             try:
                 listener.control_eye_changed(isParty)
@@ -846,7 +850,8 @@ class ControlsModel(object):
         self.set_color_ix(1, random.randrange(len(PREDEFINED_COLORS)))
 
     def _notify_chosen_color_changed(self, c_ix):
-        print "_notify_chosen_color_changed"
+        if self.debug:
+            print "_notify_chosen_color_changed"
         for listener in self.listeners:
             try:
                 listener.control_chosen_color_changed(c_ix)
@@ -927,7 +932,8 @@ class ControlsModel(object):
 
 
     def _notify_speed_changed(self):
-        print "_notify_speed_changed"
+        if self.debug:
+            print "_notify_speed_changed"
         for listener in self.listeners:
             try:
                 listener.control_speed_changed()
@@ -943,7 +949,8 @@ class ControlsModel(object):
 
 
     def _notify_intensified_changed(self):
-        print "_notify_intensified_changed"
+        if self.debug:
+            print "_notify_intensified_changed"
         for listener in self.listeners:
             try:
                 listener.control_intensified_changed()
@@ -957,7 +964,8 @@ class ControlsModel(object):
 
 
     def _notify_colorized_changed(self):
-        print "_notify_colorized_changed"
+        if self.debug:
+            print "_notify_colorized_changed"
         for listener in self.listeners:
             try:
                 listener.control_colorized_changed()
@@ -971,7 +979,8 @@ class ControlsModel(object):
 
 
     def _notify_brightness_changed(self):
-        print "_notify_brightness_changed"
+        if self.debug:
+            print "_notify_brightness_changed"
         for listener in self.listeners:
             try:
                 listener.control_brightness_changed(self.brightness)
@@ -995,7 +1004,8 @@ class ControlsModel(object):
         self._notify_modifiers_changed()
 
     def _notify_modifiers_changed(self):
-        print "_notify_modifiers_changed"
+        if self.debug:
+            print "_notify_modifiers_changed"
         for listener in self.listeners:
             try:
                 listener.control_modifiers_changed()
@@ -1022,7 +1032,8 @@ class ControlsModel(object):
         self._notify_step_modifiers_changed()
 
     def _notify_step_modifiers_changed(self):
-        print "_notify_step_modifiers_changed"
+        if self.debug:
+            print "_notify_step_modifiers_changed"
         for listener in self.listeners:
             try:
                 listener.control_step_modifiers_changed()
@@ -1050,7 +1061,8 @@ class ControlsModel(object):
         
 
     def _notify_eyes_mode_changed(self):
-        print "_notify_eyes_mode_changed"
+        if self.debug:
+            print "_notify_eyes_mode_changed"
         for listener in self.listeners:
             try:
                 listener.control_eyes_mode_changed()
@@ -1082,7 +1094,8 @@ class ControlsModel(object):
         self._notify_disco_color_changed()
 
     def _notify_disco_color_changed(self):
-        print "_notify_disco_color_changed"
+        if self.debug:
+            print "_notify_disco_color_changed"
         for listener in self.listeners:
             try:
                 listener.control_disco_color_changed()
@@ -1094,7 +1107,8 @@ class ControlsModel(object):
         self._notify_disco_brightness_changed()
 
     def _notify_disco_brightness_changed(self):
-        print "_notify_disco_brightness_changed"
+        if self.debug:
+            print "_notify_disco_brightness_changed"
         for listener in self.listeners:
             try:
                 listener.control_disco_brightness_changed()
@@ -1123,7 +1137,8 @@ class ControlsModel(object):
             self._notify_disco_effect_changed()
 
     def _notify_disco_effect_changed(self):
-        print "_notify_disco_effect_changed"
+        if self.debug:
+            print "_notify_disco_effect_changed"
         for listener in self.listeners:
             try:
                 listener.control_disco_effect_changed()
@@ -1143,7 +1158,8 @@ class ControlsModel(object):
 
 
     def _notify_headlights_mode_changed(self):
-        print "_notify_headlights_mode_changed"
+        if self.debug:
+            print "_notify_headlights_mode_changed"
         for listener in self.listeners:
             try:
                 listener.control_headlights_mode_changed()
@@ -1172,7 +1188,8 @@ class ControlsModel(object):
 
 
     def _notify_focus_changed(self):
-        print "_notify_focus_changed"
+        if self.debug:
+            print "_notify_focus_changed"
         for listener in self.listeners:
             try:
                 listener.control_focus_changed()
@@ -1265,7 +1282,8 @@ class ControlsModel(object):
 
 
     def _notify_show_target_mode_changed(self):
-        print "_notify_show_target_mode_changed"
+        if self.debug:
+            print "_notify_show_target_mode_changed"
         for listener in self.listeners:
             try:
                 listener.control_show_target_mode_changed()
@@ -1278,7 +1296,8 @@ class ControlsModel(object):
         self._notify_master_names_changed()
 
     def _notify_master_names_changed(self):
-        print "_notify_master_names_changed"
+        if self.debug:
+            print "_notify_master_names_changed"
         for listener in self.listeners:
             try:
                 listener.control_master_names_changed()
@@ -1290,7 +1309,8 @@ class ControlsModel(object):
         self._notify_eo_names_changed()
 
     def _notify_eo_names_changed(self):
-        print "_notify_eo_names_changed"
+        if self.debug:
+            print "_notify_eo_names_changed"
         for listener in self.listeners:
             try:
                 listener.control_eo_names_changed()
@@ -1303,7 +1323,8 @@ class ControlsModel(object):
         self._notify_overlay_names_changed()
 
     def _notify_overlay_names_changed(self):
-        print "_notify_overlay_names_changed"
+        if self.debug:
+            print "_notify_overlay_names_changed"
         for listener in self.listeners:
             try:
                 listener.control_overlay_names_changed()
@@ -1316,7 +1337,8 @@ class ControlsModel(object):
         self._notify_master_name_changed()
 
     def _notify_master_name_changed(self):
-        print "_notify_master_name_changed"
+        if self.debug:
+            print "_notify_master_name_changed"
         for listener in self.listeners:
             try:
                 listener.control_master_name_changed()
@@ -1328,7 +1350,8 @@ class ControlsModel(object):
         self._notify_eo_name_changed()
 
     def _notify_eo_name_changed(self):
-        print "_notify_eo_name_changed"
+        if self.debug:
+            print "_notify_eo_name_changed"
         for listener in self.listeners:
             try:
                 listener.control_eo_name_changed()
@@ -1346,7 +1369,8 @@ class ControlsModel(object):
         self._notify_max_time_changed()
 
     def _notify_max_time_changed(self):
-        print "_notify_max_time_changed"
+        if self.debug:
+            print "_notify_max_time_changed"
         for listener in self.listeners:
             try:
                 listener.control_max_time_changed()
@@ -1359,7 +1383,8 @@ class ControlsModel(object):
         self._notify_message_changed()
 
     def _notify_message_changed(self):
-        print "_notify_message_changed"
+        if self.debug:
+            print "_notify_message_changed"
         for listener in self.listeners:
             try:
                 listener.control_message_changed()

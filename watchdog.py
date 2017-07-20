@@ -11,6 +11,7 @@ class Watchdog(object):
         self.must_die = False
 
         self.thread = Thread(target=self)
+        self.thread.daemon = True
         self.thread.start()
 
     def __call__(self):
