@@ -6,5 +6,5 @@ set -e
 #cd /home/baaahs/baaahs2015
 cd /home/pi/lights
 
-python go.py 
+python go.py --config deployments/quadron/config.json
 
