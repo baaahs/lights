@@ -820,8 +820,7 @@ class SheepServer(object):
         config = {
             'global': {
                 'server.socket_host' : '0.0.0.0',
-                'server.socket_port' : port,
-                'server.thread_pool': 1
+                'server.socket_port' : port
                 # 'engine.timeout_monitor.on' : True,
                 # 'engine.timeout_monitor.frequency' : 240,
                 # 'response.timeout' : 60*15
