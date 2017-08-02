@@ -1,0 +1,6 @@
+{
+  "mode": "quadron",
+  "opc_host": "10.0.1.15",
+  "opc_port": 7890,
+  "max_pixels": 832
+}
