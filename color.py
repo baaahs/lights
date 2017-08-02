@@ -423,6 +423,33 @@ class Color(object):
         return Color( (new_h, tween.linear(self.s, other.s, progress), tween.linear(self.v, other.v, progress) ) )
 
 
+def colorFromPalette(palette, progress, blended=True):
+    "Returns a color from a list of colors doing interpolation along the way, including wrapping at the end"
+    if len(palette) == 1:
+        return palette[0]
+
+    if progress > 1.0:
+        progress, over = math.modf(progress)
+
+    if progress == 1.0:
+        progress = 0.0
+
+    pos = progress * len(palette)
+    lowIx = math.floor(pos)
+    highIx = lowIx + 1
+    if (highIx >= len(palette)):
+        highIx = 0
+
+    intervalDistance = pos - lowIx
+
+    if blended:
+        out = palette[lowIx].morph_towards(palette[highIx], intervalDistance)
+    else:
+        out = palette[lowIx]
+
+    return out
+
+
 #################################################################################
 ##
 ##  Some global color defaults. Have to do these after everything is defined
@@ -457,9 +484,22 @@ if __name__=='__main__':
     # import doctest
     # doctest.testmod()
 
+    print "HSV RYB"
+
     for i in range(0,12):
         hsv = (i * 1/12.0, 1.0, 1.0)
         rgb = hsvRYB_to_rgb(hsv)
 
         print "0x%.2x%.2x%.2x" % (round(rgb[0]), round(rgb[1]), round(rgb[2]))
+
+
+    print 
+    print "Color from palette"
+
+    palette = [BLACK, WHITE]
+    print palette
+    for x in range(0, 10):
+        f = float(x) / 10.0
+        print "{} = {}".format(f, colorFromPalette(palette, f))
+
 

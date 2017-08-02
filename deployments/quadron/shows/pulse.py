@@ -16,7 +16,7 @@ class IcicleLoop(object):
     def __init__(self, icicle, hertz, ss):
         self.icicle = icicle
         self.hertz = hertz
-        self.cells = ss.party
+        self.cells = ss.both
 
         self.last_frame_at = time.time()
         self.progress = random.random()
@@ -73,11 +73,11 @@ class IPulse(IcicleLoop):
 
         if is_new:
             #self.hue = 0.0
-            self.hue = geom.ROSE.h
+            self.hue = color.ROSE.h
 
             if cm.modifiers[0]:
                 #self.hue = 0.66
-                self.hue = geom.QUARTZ.h
+                self.hue = color.QUARTZ.h
 
             if cm.modifiers[1]:
                 self.hue = random.random()
@@ -91,7 +91,7 @@ class IPulse(IcicleLoop):
             b = b_mod
 
         c = color.HSV(self.hue, sat, b)
-        self.cells.set_cell(self.icicle, c)
+        self.cells.set_cells(self.icicle, c)
 
 
 
@@ -101,7 +101,7 @@ class Pulse(looping_show.LoopingShow):
     is_show = True
     
     name = "Pulse"
-    ok_for_random = False
+    ok_for_random = True
 
     modifier_usage = {
         "toggles": {
@@ -117,8 +117,9 @@ class Pulse(looping_show.LoopingShow):
         looping_show.LoopingShow.__init__(self, sheep_sides)
 
         self.updaters = []        
-        for bird in geom.BIRDS:
-            self.updaters.append(IPulse(bird, 0.05 + (0.15 * random.random()), sheep_sides))
+        for name in geom.faces:
+            face = geom.faces[name]
+            self.updaters.append(IPulse(face.cell_ids, 0.05 + (0.15 * random.random()), sheep_sides))
 
 
     def set_controls_model(self, cm):
@@ -149,7 +150,7 @@ class Pulse(looping_show.LoopingShow):
         global master_hue
         now = time.time()
 
-        if new_loop and (loop_instance % len(geom.BIRDS) == 0):
+        if new_loop and (loop_instance % len(geom.faces) == 0):
             master_hue = random.random()
             # print "loop_instance=%d new loop master_hue= %s" % (loop_instance, master_hue)
 
