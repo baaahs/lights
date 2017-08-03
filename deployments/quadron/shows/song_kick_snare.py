@@ -67,7 +67,7 @@ class KickSnare(looping_show.LoopingShow):
     is_show = True
     
     name = "S-Kick Snare"
-    ok_for_random = True
+    ok_for_random = False
 
     modifier_usage = {
         "toggles": {

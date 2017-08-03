@@ -62,7 +62,7 @@ class CellularState(threading.Thread):
                         new_cell_state = False
                         if self.current_state[cell_id]:
                             # It is currently alive, does it stay alive?
-                            if count > 2 and count < 8:
+                            if count > 3 and count < 7:
                                 new_cell_state = True
                         else:
                             # It is dead, does it come to life
@@ -86,7 +86,7 @@ class CellularState(threading.Thread):
                 total_time = time.time() - started_at
                 self.next_state_ready.set()
 
-                print "cellular frame time = {0:.0f}ms".format(total_time * 1000.0)
+                print "cellular frame time = {0:.0f}ms  total_alive={1}".format(total_time * 1000.0, total_alive)
 
 
         except Exception as e:
@@ -142,6 +142,7 @@ class Cellular(looping_show.LoopingShow):
         looping_show.LoopingShow.__init__(self, sheep_sides)
 
         # Our duration is a single automata step, so fairly short
+        self.duration = 4.0
         self.duration = 0.5
 
         # Create an initial state
@@ -186,17 +187,28 @@ class Cellular(looping_show.LoopingShow):
 
 
     def update_at_progress(self, progress, new_loop, loop_instance):
+
+        clr_on = color.RED
+        clr_off = color.BLUE
+
+        if self.cm.modifiers[0]:
+            clr_on = self.cm.chosen_colors[0]
+            clr_off = self.cm.chosen_colors[1]
+
         # One loop is a single cellular change. Thus the progress in the loop
         # is really about transitioning from one state to another.
         if new_loop:
             self.state.activate_next_state()
 
-        # Just show the current state
-        for cid, state in self.state.current_state.iteritems():
-            if state:
-                clr = color.WHITE
-            else:
-                clr = color.BLACK
+            # Just show the current state
+            for cid, state in self.state.current_state.iteritems():
+                if state:
+                    clr = clr_on
+                else:
+                    clr = clr_off
 
-            self.ss.party.set_cell(cid, clr)
+                self.ss.party.set_cell(cid, clr)
     
+        else:
+            # Mute all other output so fadecandy does our work for us
+            return True
