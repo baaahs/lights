@@ -360,6 +360,14 @@ class ShowRunner(threading.Thread):
         self.clear()
         self.prev_show = self.show
 
+        # Attempting to call a "finished" method lets the show clean up any threads
+        # it might have started in an attempt to be a better multi-core user
+        try:
+            self.prev_show.finished()
+        except AttributeError:
+            pass
+
+
         # This might fail while trying to instantiate the show class if it
         # refers to wrong globals etc
         try:
