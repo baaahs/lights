@@ -10,7 +10,7 @@ import looping_show
 from randomcolor import random_color
 import tween
 
-class Rainbow(looping_show.LoopingShow):
+class Rotator(looping_show.LoopingShow):
 
     # Because we extend LoopingShow we must explicitly override is_show to be True
     is_show = True
@@ -35,13 +35,13 @@ class Rainbow(looping_show.LoopingShow):
     def __init__(self, sheep_sides):
         looping_show.LoopingShow.__init__(self, sheep_sides)
 
-        self.duration = 30
+        self.duration = 10
 
 
     def set_controls_model(self, cm):
-        super(Rainbow, self).set_controls_model(cm)
+        super(Rotator, self).set_controls_model(cm)
 
-        self.cm.reset_step_modifiers()
+        self.cm.reset_step_modifiers(3)
 
     def was_selected_randomly(self):
         self.cm.reset_step_modifiers(self.num_steps)
@@ -69,50 +69,36 @@ class Rainbow(looping_show.LoopingShow):
 
     def update_at_progress(self, progress, new_loop, loop_instance):
 
-        mode = self.step_mode(self.num_steps)
+        units = geom.by_faces
 
-        # mode 0
-        stripes = geom.by_long_planes
-        if mode == 1:
-            stripes = geom.by_short_planes
-        elif mode == 2:
-            stripes = geom.by_edges
-        elif mode == 3:
-            stripes = geom.by_faces
-        # elif mode == 4:
-        #     stripes = geom.SPIRAL
-        # elif mode == 5:
-        #     stripes = geom.ICICLES
+        for ix, unit in enumerate(units):
+            distance = 0
+            l = len(unit) - 1
 
+            for jx, cell_id in enumerate(unit):
+                if self.cm.modifiers[1]:
+                    # Reverse
+                    distance = (float(l-jx) / float(len(unit))) + progress
+                else:
+                    distance = (float(jx) / float(len(unit))) + progress
 
-        l = len(stripes) - 1
-        for ix, row in enumerate(stripes):
-            distance = 0.0
+                # Clamp
+                if distance > 1.0:
+                    distance = distance - 1.0
+                if distance < 0.0:
+                    distance = distance + 1.0
 
-            if self.cm.modifiers[1]:
-                # Reverse
-                distance = (float(l - ix) / float(len(stripes))) + progress
-            else:
-                # Normal progression
-                distance = (float(ix) / float(len(stripes))) + progress
-            
-            # Clamp
-            while distance > 1.0:
-                distance = distance - 1.0
+                # Color
+                if self.cm.modifiers[0]:
+                    clr = color.HSVryb(distance, 1.0, 1.0)
+                elif self.cm.modifiers[1]:
+                    clr = color.Color(tween.hsvLinear(self.cm.chosen_colors[0], self.cm.chosen_colors[1], distance))
+                else:
+                    clr = color.HSV(distance, 1.0, 1.0)
 
-            while distance < 0.0:
-                distance = distance + 1.0
+                # Set the one cell
+                self.ss.party.set_cell(cell_id, clr)
+        
 
+        #self.ss.party.set_cells(geom.edges["TOP_REAR_ALL"].cell_ids, color.RED)
 
-            if self.cm.modifiers[0]:
-                clr = color.HSVryb(distance, 1.0, 1.0)
-            elif self.cm.modifiers[1]:
-                clr = color.Color(tween.hsvLinear(self.cm.chosen_colors[0], self.cm.chosen_colors[1], distance))
-            else:
-                clr = color.HSV(distance, 1.0, 1.0)
-
-
-            if mode == 4:
-                self.ss.both.set_cell(row, clr)
-            else:
-                self.ss.both.set_cells(row, clr)            
