@@ -1,13 +1,28 @@
+import math
 
 # Some basic facts about the Quadron
 SHORT_SIDE = 36
 LONG_SIDE = 60
 
+def distance_to(start, end):
+    """
+    Takes two xyz tuples and returns the distance between them
+    """
+    p0 = math.pow(start[0] - end[0], 2)
+    p1 = math.pow(start[1] - end[1], 2)
+    p2 = math.pow(start[2] - end[2], 2)
+
+    return math.sqrt(p0 + p1 + p2)
+
+
 class Edge(object):
-    def __init__(self, channel, sheep_num, sheep_side, is_forward, is_long=False):
+    def __init__(self, channel, sheep_num, sheep_side, pixels_forward, consolidate_reversed, is_long=False):
         self.channel = channel
-        self.is_forward = is_forward
+        self.pixels_forward = pixels_forward
+        self.consolidate_reversed = consolidate_reversed
         self.is_long = is_long
+        self.xyz = {}
+        self.distances = {}
 
         # Make the fade candy total universe pixel offsets
         start = channel * 64
@@ -18,7 +33,7 @@ class Edge(object):
         end = start + self.num_pixels
         step = 1
 
-        if not is_forward:
+        if not pixels_forward:
             start, end = end, start
             step = -1
 
@@ -58,11 +73,75 @@ class Edge(object):
 
         return out
 
+    def create_xyz(self, start, end):
+        """
+        Create the xyz array which maps every led to xyz space. This edge
+        will begin at the start coordinate and will increment by the offset
+        for each led
+        """
+        self.xyz = {}
+        cursor = start
+        offset = ( (end[0] - start[0]) / self.num_pixels, 
+            (end[1] - start[1]) / self.num_pixels, 
+            (end[2] - start[2]) / self.num_pixels )
+
+        for ix in range(0, self.num_pixels):
+            cell_id = self.cell_ids[ix]
+            self.xyz[cell_id] = cursor
+            cursor = (cursor[0] + offset[0], cursor[1] + offset[1], cursor[2] + offset[2])
+
+    def calculate_neighbor_distances(self, edges):
+        """
+        Given an dictionary of all edges including presumably myself, calculate
+        a distance from each led in this edge to every other led
+        """
+
+        # Key this on cell_ids which are unique (panel nums are not)
+        self.distances = {}
+        for key in edges:
+            other = edges[key]
+            for ix in range(0, self.num_pixels):
+                cell_id = self.cell_ids[ix]
+
+                if cell_id in self.distances:
+                    cell_to_other = self.distances[cell_id]
+                else:
+                    cell_to_other = {}
+                    self.distances[cell_id] = cell_to_other
+
+                if not cell_id in self.xyz:
+                    continue
+
+                for other_ix in range(0, other.num_pixels):
+                    other_cell_id = other.cell_ids[other_ix]
+                    if other_cell_id == cell_id:
+                        # Ignore myself
+                        continue
+
+                    if other_cell_id in other.xyz:
+                        cell_to_other[other_cell_id] = distance_to(self.xyz[cell_id], other.xyz[other_cell_id]) 
+
+    def cells_that_neighbor(self, cell_id, distance):
+        """
+        Returns a list of cells that neighbor the given cell_id within
+        the specified distance.
+        """
+        if not cell_id in self.distances:
+            return []
+
+        to_others = self.distances[cell_id]
+        out = []
+        for other_id, d in to_others.iteritems():
+            if d < distance:
+                out.append(other_id)
+
+        return out                   
 
 
 class CompositeEdge(object):
     def __init__(self, edges):
         self.edges = edges
+        self.consolidate_reversed = False
         self.consolidate()
 
     def __repr__(self):
@@ -85,9 +164,14 @@ class CompositeEdge(object):
         self.cell_ids = []
         self.mapping = {}
         for edge in self.edges:
-            self.pixels += edge.pixels
-            self.panel_nums += edge.panel_nums
-            self.cell_ids += edge.cell_ids
+            if edge.consolidate_reversed:
+                self.pixels += reversed(edge.pixels)
+                self.panel_nums += reversed(edge.panel_nums)
+                self.cell_ids += reversed(edge.cell_ids)
+            else:
+                self.pixels += edge.pixels
+                self.panel_nums += edge.panel_nums
+                self.cell_ids += edge.cell_ids
             self.mapping.update(edge.mapping)
 
         self.num_pixels = len(self.pixels)
@@ -105,32 +189,73 @@ class CompositeEdge(object):
         return out
 
 
-
 # Start with our most basic edges 
+# If the panel numbers or pixel numbers change a new mapping must be generated
 base_edges = {
-    "BOTTOM_REAR_LEFT":   Edge( 0, 1, "p", False),        # Rev
-    "BOTTOM_FRONT_LEFT":  Edge( 1, 2, "p",  True),        # Forward
-    "BOTTOM_LEFT_LS":     Edge( 2, 3, "p",  True, True),  # Forward
-    "BOTTOM_FRONT_RIGHT": Edge( 3, 2, "b",  True),        # rev
-    # 4 = nothing
-    "BOTTOM_REAR_RIGHT":  Edge(12, 1, "b", False),        # Forward
-    "BOTTOM_RIGHT_LS":    Edge( 5, 3, "b", False, True),  # Forward
-    "TOP_REAR_LEFT":      Edge( 6, 4, "p", False),        # Rev
-    "TOP_REAR_MIDDLE":    Edge( 7, 5, "p", False),        # Rev
-    "TOP_REAR_RIGHT":     Edge( 8, 6, "p",  True),        # Forward
-    "TOP_FRONT_RIGHT":    Edge(10, 6, "b",  True),        # Rev
-    "TOP_FRONT_MIDDLE":   Edge(11, 5, "b",  True),        # Rev
-    "TOP_FRONT_LEFT":     Edge( 9, 4, "b", False),        # Forward
+    "BOTTOM_REAR_LEFT":   Edge( 0, 1, "p", False,  False),        # Rev
+    "BOTTOM_FRONT_LEFT":  Edge( 1, 2, "p",  True,  False),        # Forward
+    "BOTTOM_LEFT_LS":     Edge( 2, 3, "p",  True,  False, True),  # Forward
+
+    "BOTTOM_FRONT_RIGHT": Edge( 3, 2, "b",  True,  True),        # rev
+    "BOTTOM_REAR_RIGHT":  Edge(12, 1, "b", False, True),        # Forward
+    "BOTTOM_RIGHT_LS":    Edge( 5, 3, "b", False, True, True),  # Forward
+
+    "TOP_REAR_LEFT":      Edge( 6, 4, "p", False, True),        # Rev
+    "TOP_REAR_MIDDLE":    Edge( 7, 5, "p", False, True),        # Rev
+    "TOP_REAR_RIGHT":     Edge( 8, 6, "p",  True, True),        # Forward
+
+    "TOP_FRONT_RIGHT":    Edge(10, 6, "b",  True, False),        # Rev
+    "TOP_FRONT_MIDDLE":   Edge(11, 5, "b",  True, False),        # Rev
+    "TOP_FRONT_LEFT":     Edge( 9, 4, "b", False, False),        # Forward
 }
 
+# Points that the sides are defined between
+PT_A = ( 0.0,   0.0, 0.0)
+PT_B = ( 0.615, 1.0, 0.367)
+PT_C = (-0.615, 1.0, 0.367)
+PT_D = ( 0.0,   2.0, 0.0)
+
+# EDGE_AC = (PT_C[0] - PT_A[0], PT_C[1] - PT_A[1], PT_C[2] - PT_A[2])
+# EDGE_AB = (PT_B[0] - PT_A[0], PT_B[1] - PT_A[1], PT_B[2] - PT_A[2])
+# EDGE_CD = (PT_D[0] - PT_C[0], PT_D[1] - PT_C[1], PT_D[2] - PT_C[2])
+# EDGE_BD = (PT_D[0] - PT_B[0], PT_D[1] - PT_B[1], PT_D[2] - PT_B[2])
+# EDGE_AD = (PT_D[0] - PT_A[0], PT_D[1] - PT_A[1], PT_D[2] - PT_A[2])
+# EDGE_CB = (PT_B[0] - PT_C[0], PT_B[1] - PT_C[1], PT_B[2] - PT_C[2])
+
+base_edges["BOTTOM_REAR_LEFT"].create_xyz( PT_C, PT_A )
+base_edges["BOTTOM_FRONT_LEFT"].create_xyz( PT_D, PT_C )
+base_edges["BOTTOM_LEFT_LS"].create_xyz( PT_A, PT_D )
+
+base_edges["BOTTOM_FRONT_RIGHT"].create_xyz( PT_B, PT_D )
+base_edges["BOTTOM_REAR_RIGHT"].create_xyz( PT_A, PT_B )
+base_edges["BOTTOM_RIGHT_LS"].create_xyz( PT_D, PT_A )
+
+base_edges["TOP_REAR_LEFT"].create_xyz( PT_A, PT_C )
+base_edges["TOP_REAR_MIDDLE"].create_xyz( PT_C, PT_B )
+base_edges["TOP_REAR_RIGHT"].create_xyz( PT_B, PT_A )
+
+base_edges["TOP_FRONT_RIGHT"].create_xyz( PT_D, PT_B )
+base_edges["TOP_FRONT_MIDDLE"].create_xyz( PT_B, PT_C )
+base_edges["TOP_FRONT_LEFT"].create_xyz( PT_C, PT_D )
+
+for name in base_edges:
+    edge = base_edges[name]
+    edge.calculate_neighbor_distances(base_edges)
+
+
 edges = base_edges.copy()
+
+
+
+
+
 
 # Now add the Composite edges
 faces = {
     "BOTTOM_LEFT_ALL": CompositeEdge.using("BOTTOM_REAR_LEFT", "BOTTOM_FRONT_LEFT", "BOTTOM_LEFT_LS"),
     "BOTTOM_RIGHT_ALL": CompositeEdge.using("BOTTOM_FRONT_RIGHT", "BOTTOM_REAR_RIGHT", "BOTTOM_RIGHT_LS"),
-    "TOP_REAR_ALL": CompositeEdge.using("TOP_REAR_LEFT", "TOP_REAR_MIDDLE", "TOP_REAR_RIGHT"),
-    "TOP_FRONT_ALL": CompositeEdge.using("TOP_FRONT_RIGHT", "TOP_FRONT_MIDDLE", "TOP_FRONT_LEFT"),
+    "TOP_REAR_ALL": CompositeEdge.using("TOP_REAR_LEFT", "TOP_REAR_RIGHT", "TOP_REAR_MIDDLE",),
+    "TOP_FRONT_ALL": CompositeEdge.using("TOP_FRONT_RIGHT", "TOP_FRONT_LEFT", "TOP_FRONT_MIDDLE"),
 }
 edges.update(faces)
 
@@ -255,17 +380,20 @@ if __name__=='__main__':
     for name, edge in base_edges.iteritems():
         print "[{}]".format(name)
 
+        if "1p" in edge.distances:
+            print edge.distances["1p"]
+        # print edge.distances
         lst = edge.mapping_list()
-        print lst
+        # print lst
         all_mappings += lst
-        print
+        # print
 
-    # print
-    # print "/* Begin JSON mapping */"
-    # print "{"
-    # all_mappings.sort(key=lambda t: t[1])
-    # for item in all_mappings:
-    #     print "\t\"{}\": {},".format(item[0], item[1])
-    # print "}"    
-    # print "/* End JSON */"
+    print
+    print "/* Begin JSON mapping */"
+    print "{"
+    all_mappings.sort(key=lambda t: t[1])
+    for item in all_mappings:
+        print "\t\"{}\": {},".format(item[0], item[1])
+    print "}"    
+    print "/* End JSON */"
 
