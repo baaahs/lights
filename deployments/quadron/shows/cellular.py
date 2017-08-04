@@ -1,6 +1,7 @@
 import geom
 
 import color
+import palette
 import time
 
 import random
@@ -13,6 +14,8 @@ import tween
 import threading
 import traceback
 
+import double_buffer
+
 
 class CellularState(threading.Thread):
     def __init__(self):
@@ -22,9 +25,16 @@ class CellularState(threading.Thread):
         self.next_state_used = threading.Event()
         self.next_state_used.set()
 
+        # The rate at which cells decay from 1.0 (alive) towards 0.0
+        # The reciprocal of this number is the number of "steps" of death
+        # that a cell will experience when it is not alive
+        self.decay_rate = 0.1
+
         self.current_state = {}
         for cid in geom.all_edges.cell_ids:
-            self.current_state[cid] = (random.randrange(10) > 6)
+            self.current_state[cid] = random.random() * 1.5
+            if self.current_state[cid] >= 1.0:
+                self.current_state[cid] = 1.0
 
         self.next_state = {}
 
@@ -55,33 +65,51 @@ class CellularState(threading.Thread):
                         # Count how many of those neighbors are activated
                         count = 0
                         for n in neighbors:
-                            if self.current_state[n]:
+                            if self.current_state[n] == 1.0:
                                 count += 1
 
                         # Decide if this cell lives or dies
-                        new_cell_state = False
-                        if self.current_state[cell_id]:
-                            # It is currently alive, does it stay alive?
+
+                        # Start with the assumption that we are going to be dead,
+                        # which means one more step towards 0.0
+                        new_cell_state = self.current_state[cell_id] - self.decay_rate
+
+                        if self.current_state[cell_id] == 1.0:
+                            # This cell is currently alive, does it stay alive?
                             if count > 3 and count < 7:
-                                new_cell_state = True
+                                new_cell_state = 1.0
                         else:
                             # It is dead, does it come to life
                             if count > 3:
-                                new_cell_state = True
+                                new_cell_state = 1.0
+
+                        # Clamp at 0
+                        if new_cell_state < 0.0:
+                            new_cell_state = 0.0
 
                         self.next_state[cell_id] = new_cell_state
-                        if new_cell_state:
+                        if new_cell_state == 1.0:
                             total_alive += 1
 
+                ids = self.next_state.keys()
                 if total_alive < 80:
                     print "Aaack. Need more cells"
                     # Aack! Need some random new stuff
-                    ids = self.next_state.keys()
                     while total_alive < 100:
                         maybe = random.choice(ids)
-                        if not self.next_state[maybe]:
-                            self.next_state[maybe] = True
+                        if self.next_state[maybe] != 1.0:
+                            self.next_state[maybe] = 1.0
                             total_alive += 1
+
+                # To ensure that the world is never perfectly stable, always randomly
+                # flip some cells which hopefully introduces just enough chaos to keep things flowing
+                for x in range(2):
+                    id = random.choice(ids)
+                    if self.next_state[id] == 1.0:
+                        self.next_state[id] -= self.decay_rate
+                    else:
+                        self.next_state[id] = 1.0
+
 
                 total_time = time.time() - started_at
                 self.next_state_ready.set()
@@ -125,27 +153,22 @@ class Cellular(looping_show.LoopingShow):
 
     modifier_usage = {
         "toggles": {
-            0: "Use HSY",
-            1: "Reverse",
-        },
-        "step": {
-            0: "Long Planes",
-            1: "Short Planes",
-            2: "Edges",
-            3: "Faces",
+            0: "Hard On/Off",
+            1: "!Blended",
         }
     }
+    modifier_usage["step"] = palette.common_names_as_step_modes()
 
-    num_steps = len(modifier_usage["step"])
+    num_step_modes = len(modifier_usage["step"])
 
     def __init__(self, sheep_sides):
         looping_show.LoopingShow.__init__(self, sheep_sides)
 
         # Our duration is a single automata step, so fairly short
-        self.duration = 4.0
-        self.duration = 0.5
+        self.duration = 2.0
+        self.core_duration = 2.0
 
-        # Create an initial state
+        self.buffer = double_buffer.DoubleBuffer()
 
         # Then make a worker thread that will create new states
         self.state = CellularState()
@@ -161,7 +184,7 @@ class Cellular(looping_show.LoopingShow):
     #     self.cm.reset_step_modifiers()
 
     def was_selected_randomly(self):
-        # self.cm.reset_step_modifiers(self.num_steps)
+        # self.cm.reset_step_modifiers(self.num_step_modes)
 
         # self.cm.set_modifier(0, (random.randrange(10) > 6))
         # self.cm.set_modifier(1, (random.randrange(10) > 4))
@@ -179,7 +202,7 @@ class Cellular(looping_show.LoopingShow):
     #     else:
     #         self.duration = 32
     def control_step_modifiers_changed(self):
-        mode = self.step_mode(self.num_steps)
+        mode = self.step_mode(-1)
         if mode in self.modifier_usage["step"]:
             self.cm.set_message(self.modifier_usage["step"][mode])
         else:
@@ -188,8 +211,12 @@ class Cellular(looping_show.LoopingShow):
 
     def update_at_progress(self, progress, new_loop, loop_instance):
 
-        clr_on = color.RED
-        clr_off = color.BLUE
+        self.duration = self.core_duration - (self.cm.intensified * (self.core_duration-0.2))
+        if self.cm.modifiers[0]:
+            self.duration += 2.0
+
+        mode = self.step_mode(-1)
+        p = palette.palette_for_step_mode(mode)
 
         if self.cm.modifiers[0]:
             clr_on = self.cm.chosen_colors[0]
@@ -199,16 +226,22 @@ class Cellular(looping_show.LoopingShow):
         # is really about transitioning from one state to another.
         if new_loop:
             self.state.activate_next_state()
+            self.buffer.advance()
 
             # Just show the current state
             for cid, state in self.state.current_state.iteritems():
-                if state:
-                    clr = clr_on
-                else:
-                    clr = clr_off
 
-                self.ss.party.set_cell(cid, clr)
+                if self.cm.modifiers[0]:
+                    # Hard on/off. No color gradiation
+                    if state == 1.0:
+                        clr = p.color_in_ramp(1.0)
+                    else:
+                        clr = p.color_in_ramp(0.0)
+                else:
+                    # Use a blended value from the current palette
+                    clr = p.color_in_ramp(state, not self.cm.modifiers[0])
+
+
+                self.buffer.set_next(cid, clr)
     
-        else:
-            # Mute all other output so fadecandy does our work for us
-            return True
+        self.buffer.tween_rgb_at(progress, lambda cell_id, clr: self.ss.both.set_cell(cell_id, clr) )

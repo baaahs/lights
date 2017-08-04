@@ -10,7 +10,7 @@ import random
 
 class Sparkle(object):
     name = "Sparkle"
-    ok_for_random = True
+    ok_for_random = False
     is_show = True
     #show_type = "overlay"
 

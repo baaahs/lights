@@ -4,6 +4,12 @@ import math
 SHORT_SIDE = 36
 LONG_SIDE = 60
 
+
+# The keys are all cell_ids. The values are the xyz position for
+# that cell_id in space. This gets populated as edges are told to
+# build their XYZ values
+cells_in_space = {}
+
 def distance_to(start, end):
     """
     Takes two xyz tuples and returns the distance between them
@@ -88,6 +94,8 @@ class Edge(object):
         for ix in range(0, self.num_pixels):
             cell_id = self.cell_ids[ix]
             self.xyz[cell_id] = cursor
+            cells_in_space[cell_id] = cursor
+
             cursor = (cursor[0] + offset[0], cursor[1] + offset[1], cursor[2] + offset[2])
 
     def calculate_neighbor_distances(self, edges):
@@ -208,12 +216,17 @@ base_edges = {
     "TOP_FRONT_MIDDLE":   Edge(11, 5, "b",  True, False),        # Rev
     "TOP_FRONT_LEFT":     Edge( 9, 4, "b", False, False),        # Forward
 }
+edges = base_edges.copy()
+
 
 # Points that the sides are defined between
 PT_A = ( 0.0,   0.0, 0.0)
 PT_B = ( 0.615, 1.0, 0.367)
 PT_C = (-0.615, 1.0, 0.367)
 PT_D = ( 0.0,   2.0, 0.0)
+
+def o(base, off):
+    return map(sum, zip(base, off))
 
 # EDGE_AC = (PT_C[0] - PT_A[0], PT_C[1] - PT_A[1], PT_C[2] - PT_A[2])
 # EDGE_AB = (PT_B[0] - PT_A[0], PT_B[1] - PT_A[1], PT_B[2] - PT_A[2])
@@ -222,28 +235,27 @@ PT_D = ( 0.0,   2.0, 0.0)
 # EDGE_AD = (PT_D[0] - PT_A[0], PT_D[1] - PT_A[1], PT_D[2] - PT_A[2])
 # EDGE_CB = (PT_B[0] - PT_C[0], PT_B[1] - PT_C[1], PT_B[2] - PT_C[2])
 
-base_edges["BOTTOM_REAR_LEFT"].create_xyz( PT_C, PT_A )
-base_edges["BOTTOM_FRONT_LEFT"].create_xyz( PT_D, PT_C )
-base_edges["BOTTOM_LEFT_LS"].create_xyz( PT_A, PT_D )
+base_edges["BOTTOM_REAR_LEFT"].create_xyz( o(PT_A, (-.02, 0, 0)), o(PT_C, (-.02, 0, 0)) )
+base_edges["BOTTOM_FRONT_LEFT"].create_xyz( o(PT_C, (-.02, 0, 0)), o(PT_D, (-.02, 0, 0)) )
+base_edges["BOTTOM_LEFT_LS"].create_xyz( o(PT_D, (-.02, .02, 0)), o(PT_A, (-.02, -0.02, 0)) )
 
-base_edges["BOTTOM_FRONT_RIGHT"].create_xyz( PT_B, PT_D )
-base_edges["BOTTOM_REAR_RIGHT"].create_xyz( PT_A, PT_B )
-base_edges["BOTTOM_RIGHT_LS"].create_xyz( PT_D, PT_A )
+base_edges["BOTTOM_FRONT_RIGHT"].create_xyz( o(PT_B, (.02, 0, 0)), o(PT_D, (.02, 0, 0)) )
+base_edges["BOTTOM_REAR_RIGHT"].create_xyz( o(PT_A, (.02, 0, 0)), o(PT_B, (.02, 0, 0)) )
+base_edges["BOTTOM_RIGHT_LS"].create_xyz( o(PT_D, (.02, .05, 0)), o(PT_A, (.02, 0.01, 0)) )
 
 base_edges["TOP_REAR_LEFT"].create_xyz( PT_A, PT_C )
 base_edges["TOP_REAR_MIDDLE"].create_xyz( PT_C, PT_B )
 base_edges["TOP_REAR_RIGHT"].create_xyz( PT_B, PT_A )
 
-base_edges["TOP_FRONT_RIGHT"].create_xyz( PT_D, PT_B )
-base_edges["TOP_FRONT_MIDDLE"].create_xyz( PT_B, PT_C )
-base_edges["TOP_FRONT_LEFT"].create_xyz( PT_C, PT_D )
+base_edges["TOP_FRONT_RIGHT"].create_xyz( PT_B, PT_D )
+base_edges["TOP_FRONT_MIDDLE"].create_xyz( PT_C, PT_B )
+base_edges["TOP_FRONT_LEFT"].create_xyz( PT_D, PT_C )
 
 for name in base_edges:
     edge = base_edges[name]
     edge.calculate_neighbor_distances(base_edges)
 
 
-edges = base_edges.copy()
 
 
 

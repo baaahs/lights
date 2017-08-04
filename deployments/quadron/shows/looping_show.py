@@ -125,8 +125,17 @@ class LoopingShow(object):
         passed, then the returned value will be in [0, max) and will
         properly loop at 0 rather. If no max is given then a negative
         value could be returned.
+
+        If max is -1 then self.num_step_modes is used as max if it has
+        a value, otherwise it is treated as if max was None
         """
         v = self.cm.step_modifiers[1] - self.cm.step_modifiers[0]
+        if max == -1:
+            try:
+                max = self.num_step_modes
+            except AttributeException:
+                max = None
+
         if max is not None:
             v = v % max
             while v < 0:

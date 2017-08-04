@@ -14,6 +14,7 @@ import shows
 # #import icicle_shows as shows
 import util
 import controls_model
+import palette
 import touch_osc
 import watchdog
 import tween
@@ -779,6 +780,9 @@ class SheepServer(object):
 
         self.queue = Queue.LifoQueue()
         self.controls_model = controls_model.ControlsModel(args.debug)
+
+        # Let the global chosen palette have at the controls model
+        palette.chosen.register_controls_model(self.controls_model)
 
         # All of the sheep_model elements need to know about the
         # controls_model for various reasons, so we inject it here

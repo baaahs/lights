@@ -405,7 +405,7 @@ class Color(object):
         self._set_hsv(rgb_to_hsv(new))
 
 
-    def morph_towards(self, other, progress, forwards=True):
+    def XXmorph_towards(self, other, progress):
 
         if forwards:
             # Move in the positive direction
