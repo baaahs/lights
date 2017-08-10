@@ -184,10 +184,10 @@ class Cellular(looping_show.LoopingShow):
     #     self.cm.reset_step_modifiers()
 
     def was_selected_randomly(self):
-        # self.cm.reset_step_modifiers(self.num_step_modes)
+        self.cm.reset_step_modifiers(random.randrange(self.num_step_modes))
 
-        # self.cm.set_modifier(0, (random.randrange(10) > 6))
-        # self.cm.set_modifier(1, (random.randrange(10) > 4))
+        self.cm.set_modifier(0, (random.randrange(10) > 7))
+        self.cm.set_modifier(1, (random.randrange(10) > 5))
         # self.cm.set_modifier(2, (random.randrange(10) > 3))
         # self.cm.set_modifier(3, (random.randrange(10) > 4))
         # self.cm.set_modifier(4, (random.randrange(10) > 3))

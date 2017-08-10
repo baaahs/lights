@@ -9,6 +9,7 @@ class BouncingSphere(object):
     name = "Sphere"
 
     is_show = True
+    ok_for_random = True
 
     boundaries = ( (-0.6, 0.6), (0, 2.0), (0, 0.3) )
 
