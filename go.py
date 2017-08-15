@@ -28,7 +28,7 @@ from model.fc_opc import FCOPCModel
 import config
 
 # fail gracefully if cherrypy isn't available
-_use_cherrypy = False
+_use_cherrypy = True
 # try:
 #     import cherrypy
 #     _use_cherrypy = True
