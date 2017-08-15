@@ -644,10 +644,10 @@ class Sheep {
       shape.setStrokeWeight(2f);
     }
 
-    sheepModel.rotateX(PI);
-    sheepModel.rotateY(PI*0.5);
+    sheepModel.rotateY(PI*1.5);
+    sheepModel.rotateZ(PI);
     //sheepModel.translate(SHEEP_SCALE * 30, SHEEP_SCALE * 10, SHEEP_SCALE * 550); // Shit, still in model coord space. Lame!
-    sheepModel.translate(SHEEP_SCALE * -60, SHEEP_SCALE * 10, SHEEP_SCALE * -20); // Shit, still in model coord space. Lame!
+    sheepModel.translate(SHEEP_SCALE * 550, SHEEP_SCALE * 0, SHEEP_SCALE * 30); // Shit, still in model coord space. Lame!
     
     leftEye = new Eye(app, "Left eye", 400, 
       new PVector(SHEEP_SCALE * -135, SHEEP_SCALE * -215, SHEEP_SCALE * 27),
