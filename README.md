@@ -9,6 +9,12 @@ BAAAHS 2017 Edition
 
 * Python 2.7
   [http://www.python.org](http://www.python.org)
+  NOTE: You might get an error when trying to install pybonjour if you are using the system installation of python2.7. It might be easier to `brew install python` and then set your python path in your .bash_profile to be:
+  
+    ```
+    PYTHONPATH=/usr/local/bin/python2.7:$PYTHONPATH
+    export PYTHONPATH
+    ```
 
 * Processing 2.2.1+ (for simulator only. Processing 3 is not supported yet)
   [http://www.processing.org](http://www.processing.org)
@@ -17,7 +23,7 @@ There are a few 3rd party python modules that need to be installed:
 
   * Python:
     * cherrypy
-    * pybonjour
+    * [pybonjour](https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/pybonjour/pybonjour-1.1.1.zip)
   * Processing:
     * G4P
     * Shapes 3D
@@ -25,6 +31,9 @@ There are a few 3rd party python modules that need to be installed:
 Install python modules with *easy_install* (You can also use *pip* if you have a preference)  For example:
 
     easy_install cherrypy
+
+To install pybonjour, you need to use the repo from google code
+`pip install https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/pybonjour/pybonjour-1.1.1.zip`
 
 Don't worry too much if you can't get some of the dependencies to install - you'll still be able to run the software, just with some features missing.  Python and Processing are the most important parts if you just want to write shows.
 
@@ -94,7 +103,7 @@ any point without needing any permission or anything like that.
 4. Set up an upstream remote to the BAAAHS repo
   * `git remote add upstream https://github.com/baaahs/lights`
 5. Create a new branch that you can do work on
-  * `git checkout -b "show/MyCoolLightShow"
+  * `git checkout -b show/MyCoolLightShow`
   * Switch to that branch using: `git checkout show/MyCoolLightShow`
 6. Go do some work, write some shows, do fun stuff, save that new light show.
 7. Add that file with:
