@@ -70,7 +70,7 @@ class EgOverlay(looping_show.LoopingShow):
 
         # These are the effect objects we will use to flash the eyes
         self.open = eye_effect.EyeEffect(shutter_type=eye_effect.SHUTTER_OPEN)
-        self.close = eye_effect.EyeEffect(shutter_type=eye_effect.SHUTTER_OPEN)
+        self.close = eye_effect.EyeEffect(shutter_type=eye_effect.SHUTTER_CLOSED)
 
 
     def update_at_progress(self, progress, new_loop, loop_instance):

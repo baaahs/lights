@@ -78,7 +78,7 @@ final int SHEEP_SCALE = 3;
 
 // setup() is called once by the environment to initialize things
 void setup() {
-  size(1200, 800, P3D);
+  size(600, 400, P3D);
   
   // Some UI stuff. Need to get G4P up and running before PeasyCam
   G4P.setGlobalColorScheme(G4P.YELLOW_SCHEME);
@@ -949,21 +949,21 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
     final float BEAM_MAX_SPOT = SHEEP_SCALE * 50;
     boolean nextIsPan;
     
-    final int DMX_PAN = 1;
-    final int DMX_PAN_FINE = 2;
-    final int DMX_TILT = 3;
-    final int DMX_TILT_FINE = 4;
-    final int DMX_COLOR_WHEEL = 5;
-    final int DMX_STROBE = 6;
-    final int DMX_DIMMER = 7;
-    final int DMX_GOBO = 8;
-    final int DMX_EFFECT = 9;
+    final int DMX_PAN = 3;
+    final int DMX_PAN_FINE = 13;
+    final int DMX_TILT = 4;
+    final int DMX_TILT_FINE = 14;
+    final int DMX_COLOR_WHEEL = 6;
+    final int DMX_STROBE = 2;
+    final int DMX_DIMMER = 1;
+    final int DMX_GOBO = 7;
+    final int DMX_EFFECT = 8;
     final int DMX_LADDER_PRISM = 10;
-    final int DMX_8_FACET_PRISM = 11;
-    final int DMX_3_FACET_PRISM = 12;
-    final int DMX_FOCUS = 13;
-    final int DMX_FROST = 14;
-    final int DMX_PAN_TILT_SPEED = 15;
+    final int DMX_8_FACET_PRISM = 0;
+    final int DMX_3_FACET_PRISM = 0;
+    final int DMX_FOCUS = 11;
+    final int DMX_FROST = 12;
+    final int DMX_PAN_TILT_SPEED = 5;
     final int DMX_RESET_AND_LAMP = 16;
     
     String me;
