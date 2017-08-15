@@ -646,7 +646,8 @@ class Sheep {
 
     sheepModel.rotateX(PI);
     sheepModel.rotateY(PI*0.5);
-    sheepModel.translate(SHEEP_SCALE * 30, SHEEP_SCALE * 10, SHEEP_SCALE * 550); // Shit, still in model coord space. Lame!
+    //sheepModel.translate(SHEEP_SCALE * 30, SHEEP_SCALE * 10, SHEEP_SCALE * 550); // Shit, still in model coord space. Lame!
+    sheepModel.translate(SHEEP_SCALE * -60, SHEEP_SCALE * 10, SHEEP_SCALE * -20); // Shit, still in model coord space. Lame!
     
     leftEye = new Eye(app, "Left eye", 400, 
       new PVector(SHEEP_SCALE * -135, SHEEP_SCALE * -215, SHEEP_SCALE * 27),
@@ -656,7 +657,7 @@ class Sheep {
       -22, 150, 160);
     
   }
-
+  
   void setPanelColor(String side, int panel, color c) {
     ArrayList<Integer> polygons = new ArrayList<Integer>();
     if (side.equals("p") && partySideMap.get(panel) != null) {
