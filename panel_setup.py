@@ -6,7 +6,7 @@ import json
 universe = 0
 wrapper = ClientWrapper()
 client = wrapper.Client()
-pixels = [0] * 512
+pixels = [255] * 512
 
 eye_p = 0
 eye_b = 0
@@ -72,9 +72,9 @@ def change_dmx(delta):
     # Because DMX is 1 based and lists are 0, we subtract 1 from the value
     # when writing to a buffer list
     global dmx_cursor
-    pixels[dmx_cursor-1] = 0
-    pixels[dmx_cursor] = 0
-    pixels[dmx_cursor+1] = 0
+    pixels[dmx_cursor-1] = 255
+    pixels[dmx_cursor] = 255
+    pixels[dmx_cursor+1] = 255
 
     dmx_cursor += delta
 
@@ -84,15 +84,15 @@ def change_dmx(delta):
         dmx_cursor = 510
 
     pixels[dmx_cursor-1] = 255
-    pixels[dmx_cursor] = 255
-    pixels[dmx_cursor+1] = 255
+    pixels[dmx_cursor] = 0
+    pixels[dmx_cursor+1] = 0
 
 def goto_dmx(addr):
 
     global dmx_cursor
-    pixels[dmx_cursor-1] = 0
-    pixels[dmx_cursor] = 0
-    pixels[dmx_cursor+1] = 0
+    pixels[dmx_cursor-1] = 255
+    pixels[dmx_cursor] = 255
+    pixels[dmx_cursor+1] = 255
 
     dmx_cursor = addr
 
@@ -102,8 +102,8 @@ def goto_dmx(addr):
         dmx_cursor = 510
 
     pixels[dmx_cursor-1] = 255
-    pixels[dmx_cursor] = 255
-    pixels[dmx_cursor+1] = 255
+    pixels[dmx_cursor] = 0
+    pixels[dmx_cursor+1] = 0
 
 def clear_panel(panel):
     print "Clearing panel %s" % panel
@@ -204,7 +204,7 @@ def handle_mapping(id):
     try:
         num = int(id[:-1])
     except ValueError:
-        print "Invalid id '%s' ids must be an integer followed by either p or b like 17b or 42b" % id    
+        print "Invalid id '%s' ids must be an integer followed by either p or b like 17b or 42b" % id
 
     s = id[-1:]
     if s != "p" and s != "b":

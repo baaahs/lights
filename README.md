@@ -1,4 +1,4 @@
-BAAAHS 2015 Edition
+BAAAHS 2017 Edition
 ===================
 
 **IMPORTANT: Information about changing the URL for your local repo's origin is at the bottom of the file**
@@ -85,7 +85,31 @@ You can either fork the code on github (which anyone can do at anytime), make yo
 a pull request. This is perhaps the easiest way to jump in because anyone from the Intarwebs can do so at
 any point without needing any permission or anything like that.
 
-An alternate way to contribute is to simply clone the repo locally, *make your own branch*, commit your changes *to 
+### An example of the workflow described above:
+
+1. Fork the [baaahs lights repo](https://github.com/baaahs/lights)
+2. Go to the forked repo on your github account
+3. Clone the repo onto your dev enviornment
+  * `https://github.com/YOUR_GITHUB_USER_NAMEHERE/lights && cd lights`
+4. Set up an upstream remote to the BAAAHS repo
+  * `git remote add upstream https://github.com/baaahs/lights`
+5. Create a new branch that you can do work on
+  * `git checkout -b "show/MyCoolLightShow"
+  * Switch to that branch using: `git checkout show/MyCoolLightShow`
+6. Go do some work, write some shows, do fun stuff, save that new light show.
+7. Add that file with:
+  * `git add ./shows/MySuperCoolLightShow.py`
+8. Commit those files to your local branch and include a nice message describing the thing you did
+  * `git commit -m "Created a new light show called MySuperCoolLightShow"`
+9. Sync up your branch with the baaahs repo master branch
+  * `git pull --rebase upstream master`
+10. (If necessary): Fix any merge conflicts, add those files using `git add` then `git rebase --continue`
+11. Push up the commits to your fork on github
+  * `git push origin show/MyCoolLightShow`
+12. Submit a pull request on the baaahs lights repo page and request to merge your branch `show/MyCoolLightShow` into `master`
+
+
+An alternate way to contribute is to simply clone the repo locally, *make your own branch*, commit your changes *to
 your branch*, then push them and finally create a pull request. To push your changes you will need to be
 added as a collaborator, which any of the other collaborators should be able to do. Bothering Tom Seago is a good
 way to get this done.  The downside here is that you need to be careful to be working on your branch not
@@ -93,7 +117,7 @@ the master branch.
 
 For more info about how pull requests work, see https://help.github.com/articles/using-pull-requests/
 
-The alternate alternate path is to simple email/fb/carrier pigeon your .py file to Tom S. He's not in love 
+The alternate alternate path is to simple email/fb/carrier pigeon your .py file to Tom S. He's not in love
 with this plan, but will get it added eventually if you do so.
 
 ## OSC Control
@@ -102,15 +126,15 @@ Lighting can be controlled wirelessly over OSC. We're using [TouchOSC](http://he
 
 You'll need to install the app on your phone or tablet, then install a layout.
 
-1. Download the TouchOSC Editor from the [TouchOSC page](http://hexler.net/software/touchosc) (scroll down to 'Downloads') 
+1. Download the TouchOSC Editor from the [TouchOSC page](http://hexler.net/software/touchosc) (scroll down to 'Downloads')
 2. Open the show control layout from the baaahs repository (misc/BAAAHS Main.touchosc)
 3. Click 'Sync' in the TouchOSC Editor menubar and follow the on-screen instructions
-	
+
 For more details on controlling shows with OSC, check the 'doc' directory in this repository.
 
 ## Hardware Support
 
-Communicating with the hardware requires [OLA.](http://www.opendmx.net)
+Communicating with the hardware requires [OLA](https://www.openlighting.org/ola/).
 
 OS X:
 
@@ -118,17 +142,29 @@ OS X:
 
 Debian / Ubuntu:
 
+To build from source see https://www.openlighting.org/ola/linuxinstall/
+
+Since Jessie/Xenial OLA has been in the main repos, so just:
+    sudo apt-get update
+    sudo apt-get install ola ola-python
+
 More info about pre-built packages is at http://opendmx.net/index.php/OLA_Debian_/_Ubuntu
 
 Note that page doesn't mention *trusty*, which is Ubuntu 14.04 LTS, but
-there is a version in the repo that exists for that. Thus you cad
+there is a version in the repo that exists for that. Thus you can
 do the following on 14.04:
 
     sudo echo deb   http://apt.openlighting.org/ubuntu trusty main >> /etc/apt/sources.list
-    sudo apt-get update 
-    sudo apt-get install ola ola-python 
+    sudo apt-get update
+    sudo apt-get install ola ola-python
 
 Raspbian:
+
+To build from source see https://www.openlighting.org/ola/linuxinstall/
+
+Since Jessie/Xenial OLA has been in the main repos, so just:
+    sudo apt-get update
+    sudo apt-get install ola ola-python
 
     sudo echo deb http://apt.openlighting.org/raspbian/ wheezy main >> /etc/apt/sources.list
     sudo apt-get update

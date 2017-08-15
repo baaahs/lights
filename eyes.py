@@ -6,48 +6,48 @@ import controls_model as controls
 from color import clamp
 import config
 
-EYE_COLOR_WHITE         = 0
-EYE_COLOR_RED           = 9
-EYE_COLOR_ORANGE        = 17
-EYE_COLOR_AQUAMARINE    = 25
-EYE_COLOR_DEEP_GREEN    = 33
-EYE_COLOR_LIGHT_GREEN   = 41
-EYE_COLOR_LAVENDER      = 49
-EYE_COLOR_PINK          = 57
-EYE_COLOR_YELLOW        = 66
-EYE_COLOR_MAGENTA       = 74
-EYE_COLOR_CYAN          = 83
-EYE_COLOR_CTO2          = 92
-EYE_COLOR_CTO1          = 101
-EYE_COLOR_CTB           = 110
-EYE_COLOR_BLUE          = 119
+EYE_COLOR_WHITE = 0
+EYE_COLOR_RED = 9
+EYE_COLOR_ORANGE = 17
+EYE_COLOR_AQUAMARINE = 25
+EYE_COLOR_DEEP_GREEN = 33
+EYE_COLOR_LIGHT_GREEN = 41
+EYE_COLOR_LAVENDER = 49
+EYE_COLOR_PINK = 57
+EYE_COLOR_YELLOW = 66
+EYE_COLOR_MAGENTA = 74
+EYE_COLOR_CYAN = 83
+EYE_COLOR_CTO2 = 92
+EYE_COLOR_CTO1 = 101
+EYE_COLOR_CTB = 110
+EYE_COLOR_BLUE = 119
 
-EYE_DMX_PAN         = 1
-EYE_DMX_PAN_FINE    = 2
-EYE_DMX_TILT        = 3
-EYE_DMX_TILT_FINE   = 4
-EYE_DMX_COLOR       = 5
-EYE_DMX_STROBE      = 6
-EYE_DMX_DIMMER      = 7
-EYE_DMX_GOBO        = 8
-EYE_DMX_EFFECT      = 9
-EYE_DMX_LADDER_ROTATE   = 10
-EYE_DMX_8_ROTATE        = 11
-EYE_DMX_3_ROTATE        = 12
-EYE_DMX_FOCUS           = 13
-EYE_DMX_FROST           = 14
-EYE_DMX_PNT_SPEED       = 15
-EYE_DMX_LAMP            = 16
+EYE_DMX_PAN = 3
+EYE_DMX_PAN_FINE = 13
+EYE_DMX_TILT = 4
+EYE_DMX_TILT_FINE = 14
+EYE_DMX_COLOR = 6
+EYE_DMX_STROBE = 2
+EYE_DMX_DIMMER = 1
+EYE_DMX_GOBO = 7
+EYE_DMX_EFFECT = 8
+EYE_DMX_LADDER_ROTATE = 10
+EYE_DMX_8_ROTATE = 0
+EYE_DMX_3_ROTATE = 0
+EYE_DMX_FOCUS = 11
+EYE_DMX_FROST = 12
+EYE_DMX_PNT_SPEED = 5
+EYE_DMX_LAMP = 16
 
-EYE_RESET_NONE  = "none"
-EYE_RESET_ON    = "on"
-EYE_RESET_OFF   = "off"
+EYE_RESET_NONE = "none"
+EYE_RESET_ON = "on"
+EYE_RESET_OFF = "off"
 EYE_RESET_RESET = "reset"
 
 HEADLIGHT_FROST = eye_effect.EyeEffect(frost=eye_effect.FROST_STEADY, frost_speed=0.8)
 
-class Eye(object):
 
+class Eye(object):
     def __init__(self, model, side):
         self.model = model
         self.cm = None
@@ -57,8 +57,8 @@ class Eye(object):
         # mode we will be ignoring them and will be using the values from
         # the control model. These might still get changed while overridden,
         # in which case they will be used when the override is over.
-        
-        # Pan has a range of -270 to +270 
+
+        # Pan has a range of -270 to +270
         self._pan = 0.0
 
         # Tilt is -135 to +135
@@ -80,7 +80,6 @@ class Eye(object):
 
         self._reset_mode = EYE_RESET_NONE
         self._reset_changed_at = time.time()
-
 
     def __repr__(self):
         return "Eye side=%s" % self.side
@@ -107,7 +106,7 @@ class Eye(object):
 
     @property
     def pos(self):
-        return [self._pan, self,_tilt]
+        return [self._pan, self, _tilt]
 
     @pos.setter
     def pos(self, val):
@@ -116,7 +115,6 @@ class Eye(object):
 
         self.pan = val[0]
         self.tilt = val[1]
-
 
     @property
     def reset_mode(self):
@@ -159,16 +157,15 @@ class Eye(object):
         color_pos = self.color_pos
         dimmer = self.dimmer
 
-        s = self.side=="p"
+        s = self.side == "p"
 
         effect = self.effect
         ext_speed = 0.0
 
         if self.cm:
             # The effect _might_ override focus, but usually it won't
-            v = int(math.floor(self.cm.focus * 255.0))            
+            v = int(math.floor(self.cm.focus * 255.0))
             self.model.set_eye_dmx(s, EYE_DMX_FOCUS, v)
-
 
             if self.cm.eyes_mode == controls.EYES_MODE_HEADLIGHTS:
                 color_pos = 0
@@ -204,14 +201,13 @@ class Eye(object):
                     # print "Using effect %d" % ix
                     effect = self.cm.effects[ix]
                     ext_speed = self.cm.disco_effect_speed
-        
 
         # Translate these into proper DMX ranged values
-        dPan = int(((pan+270.0) / 540.0) * 0x0000ffff)
+        dPan = int(((pan + 270.0) / 540.0) * 0x0000ffff)
         self.model.set_eye_dmx(s, EYE_DMX_PAN, ((dPan >> 8) & 0x00ff))
         self.model.set_eye_dmx(s, EYE_DMX_PAN_FINE, (dPan & 0x00ff))
 
-        dTilt = int(((tilt+135.0) / 270.0) * 0x0000ffff)
+        dTilt = int(((tilt + 135.0) / 270.0) * 0x0000ffff)
         self.model.set_eye_dmx(s, EYE_DMX_TILT, ((dTilt >> 8) & 0x00ff))
         self.model.set_eye_dmx(s, EYE_DMX_TILT_FINE, (dTilt & 0x00ff))
 
@@ -220,7 +216,7 @@ class Eye(object):
         # Add in the brightness at the last moment
         self.model.set_eye_dmx(s, EYE_DMX_DIMMER, int(math.floor(255 * dimmer * self._brightness)))
 
-        #print "pan=%d dPan = %d  dTilt = %d" % (pan, dPan, dTilt)
+        # print "pan=%d dPan = %d  dTilt = %d" % (pan, dPan, dTilt)
         if effect is None:
             # Clear all effect settings
             eye_effect.clear_all(self)
@@ -236,7 +232,6 @@ class Eye(object):
             self.model.set_eye_dmx(s, EYE_DMX_LAMP, 60)
         elif self._reset_mode == EYE_RESET_RESET:
             self.model.set_eye_dmx(s, EYE_DMX_LAMP, 80)
-
 
     def set_xy_pos(self, xy_pos, sky):
         """
@@ -271,10 +266,9 @@ class Eye(object):
         #     self._pan = 360-self._pan
 
     def set_xyz_pos(self, xyz_pos, cap_pan=True):
-            pos = xyz_to_pnt(xyz_pos, self.side == "p", cap_pan)
-            self.pan = pos[0]
-            self.tilt = pos[1]
-
+        pos = xyz_to_pnt(xyz_pos, self.side == "p", cap_pan)
+        self.pan = pos[0]
+        self.tilt = pos[1]
 
     def set_eye_dmx(self, channel, value):
         # if self.side == "p" and value != 0 and value != 255:
@@ -283,7 +277,6 @@ class Eye(object):
 
 
 class MutableEye(Eye):
-
     def __init__(self, parent):
         Eye.__init__(self, parent.model, parent.side)
         self.muted = False
@@ -319,6 +312,7 @@ def xy_to_pnt(xy_pos, is_party, is_sky=False):
         xyz_pos[2] = -1.0
 
     return xyz_to_pnt(xyz_pos, is_party)
+
 
 def xyz_to_pnt(xyz_pos, is_party, cap_pan=True):
     """
@@ -364,7 +358,7 @@ def xyz_to_pnt(xyz_pos, is_party, cap_pan=True):
     s = math.sin(rot)
 
     # print "c=%f  s=%f" % (c,s)
-    #print "xyz0 before  = %f, %f, %f" % (x0,y0, z0)
+    # print "xyz0 before  = %f, %f, %f" % (x0,y0, z0)
     x = (x0 * c) + (y0 * s)
     y = (y0 * c) - (x0 * s)
 
@@ -382,7 +376,7 @@ def xyz_to_pnt(xyz_pos, is_party, cap_pan=True):
     # http://mathworld.wolfram.com/SphericalCoordinates.html
     # Note that what we've been calling xy is xz in the reference of the eye
 
-    r = math.sqrt(x*x + z0*z0 + y*y)
+    r = math.sqrt(x * x + z0 * z0 + y * y)
 
     pan_rads = math.atan2(z0, x)
     tilt_rads = math.acos(y / r)
@@ -390,27 +384,27 @@ def xyz_to_pnt(xyz_pos, is_party, cap_pan=True):
     # pan_rads = math.atan2(x,1)
     # print "pan_rads=%f  sin(fabs(pr))=%f" % (pan_rads, math.sin(math.fabs(pan_rads)))
 
-    # tilt_rads = math.atan2( y * math.sin(math.fabs(pan_rads)), x)    
+    # tilt_rads = math.atan2( y * math.sin(math.fabs(pan_rads)), x)
 
     pan = 90 - math.degrees(pan_rads)
     tilt = math.degrees(tilt_rads)
-    #print "%s pan=%f tilt=%f" % (side, pan, tilt)
+    # print "%s pan=%f tilt=%f" % (side, pan, tilt)
 
     # Keep pan away from lock by only using the lower half
     # and just reversing tilt. This should be a tad safer, but
     # more important should mean a faster transition to the same end point
     if cap_pan:
         if pan < -90:
-            #print "%s swap < -90" % side
+            # print "%s swap < -90" % side
             pan += 180
             tilt = -tilt
         elif pan > 90:
-            #print "%s swap > 90" % side
+            # print "%s swap > 90" % side
             pan -= 180
             tilt = -tilt
 
-    #if tilt > 135 or tilt < -135:
-        #print "%s TILT MAX" % side
+            # if tilt > 135 or tilt < -135:
+            # print "%s TILT MAX" % side
 
     # if tilt < 0:
     #     tilt += 360.0
@@ -443,5 +437,5 @@ def xyz_to_pnt(xyz_pos, is_party, cap_pan=True):
 
 
 
-    #print "%s final pan=%f tilt=%f" % (side, pan, tilt)
+    # print "%s final pan=%f tilt=%f" % (side, pan, tilt)
     return [pan, tilt]
