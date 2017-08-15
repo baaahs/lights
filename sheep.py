@@ -7,6 +7,7 @@ import types
 import controls_model as controls
 from eyes import Eye, MutableEye
 
+from shows.geom import *
 
 def load_geometry(mapfile):
     """
@@ -160,10 +161,10 @@ class Sheep(object):
             else:
                 return [str(cell) + self.side]
         else:
-            print "Did not find cell {} in {}. My cells are {}".format(cell, self, sorted(self.cells))
-            if int(cell) in self.cells:
-                print "Cast to int worked"
-            exit()
+            #print "Did not find cell {} in {}. My cells are {}".format(cell, self, sorted(self.cells))
+            #if int(cell) in self.cells:
+            #    print "Cast to int worked"
+            #exit()
             return []
 
     def _adapt_color(self, color):

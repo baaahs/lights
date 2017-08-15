@@ -9,6 +9,8 @@ import looping_show
 from randomcolor import random_color
 import morph
 
+import geom
+
 class EgPanels(looping_show.LoopingShow):
     # The full list of attributes that are honored during show loading in
     # some way is:
@@ -106,15 +108,15 @@ class EgPanels(looping_show.LoopingShow):
         mode = self.step_mode(5)
 
         if mode == 4:
-            _list = sheep.ALL
+            _list = geom.ALL
         elif mode == 3:
-            _list = [sheep.FACE, sheep.HEAD, sheep.EARS, sheep.THROAT, sheep.BREAST, sheep.SHOULDER, sheep.RACK, sheep.LOIN, sheep.LEG, sheep.BUTT, sheep.TAIL]
+            _list = [geom.FACE, geom.HEAD, geom.EARS, geom.THROAT, geom.BREAST, geom.SHOULDER, geom.RACK, geom.LOIN, geom.LEG, geom.BUTT, geom.TAIL]
         elif mode == 2:
-            _list = sheep.FRONT_SPIRAL
+            _list = geom.FRONT_SPIRAL
         elif mode == 1:
-            _list = sheep.VSTRIPES
+            _list = geom.VSTRIPES
         elif mode == 0:
-            _list = sheep.HSTRIPES
+            _list = geom.HSTRIPES
 
         # Because progress will never actually hit 1.0, this will always
         # produce a valid list index
