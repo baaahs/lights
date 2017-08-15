@@ -78,7 +78,7 @@ final int SHEEP_SCALE = 3;
 
 // setup() is called once by the environment to initialize things
 void setup() {
-  size(600, 400, P3D);
+  size(1200, 800, P3D);
   
   // Some UI stuff. Need to get G4P up and running before PeasyCam
   G4P.setGlobalColorScheme(G4P.YELLOW_SCHEME);
