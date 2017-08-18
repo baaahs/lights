@@ -80,15 +80,16 @@ class Path(object):
 		self.sheep = sheep
 		self.faders = [] # List that holds fader objects
 		self.heads = [] # coordinate list of growing heads
-		self.length = randint(1,5)
-		self.decay = 1.0 / randint(3,6)
+		# self.length = randint(1,5)
+		self.length = 5
+		# self.decay = 1.0 / randint(3,6)
+		self.decay = 1.0 / 6
 		self.color = Wheel(randint(0, MaxColor))
 		
 		# Plant first head
-		print self.sheep.all_cells()
-		print geom.BREAST
-		new_head = choice(self.sheep.all_cells())
+		# new_head = choice(self.sheep.all_cells())
 		# new_head = choice(geom.BREAST)
+		new_head = 13
 		self.heads.append(new_head)
 		new_fader = Fader(self.sheep, new_head, self.decay)
 		self.faders.append(new_fader)
@@ -135,9 +136,10 @@ class Heartbeat(object):
 		self.name = "Heartbeat"
 		self.sheep = sheep_sides.both
 		self.heartbeats = [] # List that holds Path objects
-		self.speed = 0.2
-		self.last_beat = 0
+		self.speed = 0.01
 		self.beat_frequency = 60 # BPM
+		self.last_beat = 0
+		self.short_beat_pending = False
 		
 		self.last_osc = time.time()
 		self.OSC = False	# Is Touch OSC working?
@@ -169,6 +171,13 @@ class Heartbeat(object):
 				new_path = Path(self.sheep)
 				self.heartbeats.append(new_path)
 				self.last_beat = time.time()
+				self.short_beat_pending = True
+
+			if self.short_beat_pending and time.time() > (self.last_beat + (60.0 / self.beat_frequency / 4)):
+				# Time for a short beat
+				new_path = Path(self.sheep)
+				self.heartbeats.append(new_path)
+				self.short_beat_pending = False
 
 			# Pick the background color - either random or Touch OSC
 
