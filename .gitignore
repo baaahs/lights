@@ -1,3 +1,10 @@
 *.pyc
 dmx_setup.json
 Stats
+
+# Virtualenv
+.Python
+bin
+pip-selfcheck.json
+lib
+python2.7
