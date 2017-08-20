@@ -5,17 +5,18 @@
 # TODO: Control background color, beat color and beat rate by Touch OSC
 #
 
-from random import randint # , choice
-from color import RGB, HSV
-import sheep
 import time
-import geom
+from random import randint, choice
+from color import RGB, HSV
 
-# import shows.geom
+# import sheep
+import shows.geom
+
 
 # Converts a 0-1536 color into rgb on a wheel by keeping one of the rgb channels off
 MAX_COLOR = 1536
-BEAT_START_CELL = 40
+BEAT_START_CELL = 13
+# BEAT_START_CELL = 40
 BG_DARKNESS = 0.6
 
 def Wheel(color):
@@ -58,44 +59,35 @@ def morph_color(color1, color2, fract):
 
     return HSV(morph_h, morph_s, morph_v)
 
+
 class Fader(object):
-    def __init__(self, sheep, cell, decay):
+    def __init__(self, sheep, cell, duration):
         self.sheep = sheep
         self.cell = cell
-        self.decay = decay
-        self.life = 1.0
+        self.duration = duration
+        self.start_time = time.time()
 
     def draw_fader(self, fore_color, back_color):
-        adj_color = morph_color(back_color, fore_color, self.life)
-        self.sheep.set_cell(self.cell, adj_color)
-        if self.life > 0:
-            self.life = max(self.life - self.decay, 0)
+        progress = (time.time() - self.start_time) / self.duration
+        if progress < 1.0:
+            adj_color = morph_color(fore_color, back_color, progress)
+            self.sheep.set_cell(self.cell, adj_color)
 
-    def age_fader(self):
-        self.life -= self.decay
-        if self.life > 0:
-            return True	# Still alive
-        else:
-            return False	# Life less than zero -> Kill
 
 class Path(object):
-    def __init__(self, sheep):
+    def __init__(self, sheep, duration):
         self.sheep = sheep
+        self.duration = duration
         self.faders = [] # List that holds fader objects
         self.heads = [] # coordinate list of growing heads
-        # self.length = randint(1,5)
-        self.length = 10
-        # self.decay = 1.0 / randint(3,6)
-        self.decay = 1.0 / self.length
         self.color = Wheel(randint(0, MAX_COLOR))
         # self.color = RGB(255, 0, 0)
-        self.alive = True
 
         # Plant first head
         # new_head = choice(self.sheep.all_cells())
         new_head = BEAT_START_CELL
         self.heads.append(new_head)
-        new_fader = Fader(self.sheep, new_head, self.decay)
+        new_fader = Fader(self.sheep, new_head, self.duration)
         self.faders.append(new_fader)
 
     def draw_path(self, background):
@@ -103,7 +95,7 @@ class Path(object):
             f.draw_fader(self.color, background)
 
     def path_alive(self):
-        return sum(f.life for f in self.faders) > 0
+        return not all(time.time() > (f.start_time + f.duration) for f in self.faders)
 
     def move_path(self):
         new_heads = []	# temporary list to hold new heads
@@ -115,7 +107,7 @@ class Path(object):
                 if self.is_empty(cell):
                     new_head = cell
                     new_heads.append(new_head)
-                    new_fader = Fader(self.sheep, new_head, self.decay)
+                    new_fader = Fader(self.sheep, new_head, self.duration)
                     self.faders.append(new_fader)
 
         self.heads.extend(new_heads)
@@ -130,8 +122,9 @@ class Heartbeat(object):
         self.sheep = sheep_sides.both
         self.heartbeats = [] # List that holds Path objects
         self.speed = 0.05
-        self.beat_frequency = 80 # BPM
+        self.beat_frequency = 100 # BPM
         self.last_beat = 0
+        self.beat_duration = 2
 
         self.last_osc = time.time()
         self.OSC = False	# Is Touch OSC working?
@@ -158,7 +151,7 @@ class Heartbeat(object):
         while True:
             if time.time() > (self.last_beat + (60.0 / self.beat_frequency)):
                 # Time for a new beat
-                new_path = Path(self.sheep)
+                new_path = Path(self.sheep, self.beat_duration)
                 self.heartbeats.append(new_path)
                 self.last_beat = time.time()
                 # self.short_beat_pending = True
