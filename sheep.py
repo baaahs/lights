@@ -6,7 +6,7 @@ import math
 import controls_model as controls
 from eyes import Eye, MutableEye
 
-from geom import ALL
+from geom import ALL, LOW, MEDIUM, HIGH, TOP, HSTRIPES, VSTRIPES, FRONT_SPIRAL, SHOULDER, RACK, LOIN, LEG, TAIL, BUTT, FACE, HEAD, EARS, THROAT, BREAST
 #from icicles.ice_geom import ALL
 
 def load_geometry(mapfile):
@@ -106,6 +106,24 @@ class Sheep(object):
             raise Exception("%s is not a valid side. use one of a,b,p")
         self.side = side
         self.cells = set(ALL)
+        self.LOW = LOW
+        self.MEDIUM = MEDIUM
+        self.HIGH = HIGH
+        self.TOP = TOP
+        self.HSTRIPES = HSTRIPES
+        self.VSTRIPES = VSTRIPES
+        self.FRONT_SPIRAL = FRONT_SPIRAL
+        self.SHOULDER = SHOULDER
+        self.RACK = RACK
+        self.LOIN = LOIN
+        self.LEG = LEG
+        self.TAIL = TAIL
+        self.BUTT = BUTT
+        self.FACE = FACE
+        self.HEAD = HEAD
+        self.EARS = EARS
+        self.THROAT = THROAT
+        self.BREAST = BREAST
         self.cm = None
         self.handle_colorized = False
 
