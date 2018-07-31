@@ -11,3 +11,5 @@ WORKDIR lights
 ENTRYPOINT python go.py --simulator --host host.docker.internal
 
 EXPOSE 9990/tcp
+EXPOSE 5700/udp
+EXPOSE 9000/udp
