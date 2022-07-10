@@ -1,4 +1,11 @@
 """
+Original Author: Greg Brown
+Guest Author Appearances by Steve Dudek, Tom Landers, John Major
+A cousin of this codebase can be found here: 
+https://github.com/iamh2o/rgbw_colorspace_converter. whre 
+you'll find a few fixes to the color conversion calculatons
+which have subtle bugs.
+
 Color
 
 Color class that can be used interchangably as RGB or HSV with
