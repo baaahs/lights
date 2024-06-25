@@ -5,7 +5,7 @@
 
 import color
 from color import RGB
-import geom
+from . import geom
 import random
 
 class Sparkle(object):

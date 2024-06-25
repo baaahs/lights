@@ -122,5 +122,5 @@ for p in pts:
 result[-1] = result[-1][:-1]
 
 result.append(']')
-print '\n'.join(result)
+print('\n'.join(result))
 

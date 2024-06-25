@@ -5,7 +5,7 @@ faces = []
 NUM_ROWS = 6
 NUM_COLS = 4
 
-print "%d rows with %d cols each" % (NUM_ROWS, NUM_COLS)
+print("%d rows with %d cols each" % (NUM_ROWS, NUM_COLS))
 
 # The cell size and margins are for the simulator file
 CELL_WIDTH = 4
@@ -65,7 +65,7 @@ with open("SheepSimulator/data/model.obj", "w") as f:
             f.write(" ")
         f.write("\n")
 
-print "wrote SheepSimulator/data/model.obj"
+print("wrote SheepSimulator/data/model.obj")
 
 
 # The simulator mapping file for panel names
@@ -78,7 +78,7 @@ with open("SheepSimulator/SheepPanelPolyMap.csv", "w") as f:
             f.write(str(panel-1))
             f.write(",p\n")
 
-print "wrote SheepSimulator/SheepPanelPolyMap.csv"
+print("wrote SheepSimulator/SheepPanelPolyMap.csv")
 
 
 # Geometry for shows
@@ -164,7 +164,7 @@ BREAST = [20, 21] # Breast
 
 """)
 
-print "Wrote geom.py"
+print("Wrote geom.py")
 
 
 def panelNum(c_ix, r_ix):
@@ -229,7 +229,7 @@ with open("data/geom.txt", "w") as f:
 
             f.write("\n")
 
-print "Wrote data/geom.txt"
+print("Wrote data/geom.txt")
 
 
 
@@ -262,4 +262,4 @@ with open("data/opc_mapping.json", "w") as f:
     # f.write("  }\n");
     f.write("}\n");
 
-print "Wrote data/opc_mapping.json"
+print("Wrote data/opc_mapping.json")

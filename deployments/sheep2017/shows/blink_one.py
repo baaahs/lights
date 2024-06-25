@@ -5,7 +5,7 @@ import time
 import random
 import math
 
-import looping_show
+from . import looping_show
 from randomcolor import random_color
 import morph
 
@@ -53,9 +53,9 @@ class BlinkOne(looping_show.LoopingShow):
         self.business_panels = sorted(self.business_panels)
         self.dmx_addrs = sorted(self.dmx_addrs)
 
-        print "party_panels = %s" % str(self.party_panels)
-        print "business_panels = %s" % str(self.business_panels)
-        print "dmx_addrs = %s" % str(self.dmx_addrs)
+        print("party_panels = %s" % str(self.party_panels))
+        print("business_panels = %s" % str(self.business_panels))
+        print("dmx_addrs = %s" % str(self.dmx_addrs))
 
         self.hertz = 3.0
 

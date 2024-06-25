@@ -1,12 +1,12 @@
 import random
 
-import geom
+from . import geom
 import color
-import looping_show
+from . import looping_show
 import math
 import tween
 
-from music import *
+from .music import *
 
 from randomcolor import random_color
 

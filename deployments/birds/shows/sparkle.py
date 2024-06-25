@@ -4,7 +4,7 @@
 # Shortest show ever: turn all panels white
 
 from color import RGB
-import geom
+from . import geom
 import random
 
 class Sparkle(object):

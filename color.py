@@ -197,7 +197,8 @@ def Hex(value):
     "Create a new Color from a hex string"
     value = value.lstrip('#')
     lv = len(value)
-    rgb_t = (int(value[i:i+lv/3], 16) for i in range(0, lv, lv/3))
+    lv_third = int(lv/3)
+    rgb_t = (int(value[i:i+lv_third], 16) for i in range(0, lv, lv_third))
     return RGB(*rgb_t)
 
 
@@ -491,22 +492,22 @@ if __name__=='__main__':
     # import doctest
     # doctest.testmod()
 
-    print "HSV RYB"
+    print("HSV RYB")
 
     for i in range(0,12):
         hsv = (i * 1/12.0, 1.0, 1.0)
         rgb = hsvRYB_to_rgb(hsv)
 
-        print "0x%.2x%.2x%.2x" % (round(rgb[0]), round(rgb[1]), round(rgb[2]))
+        print("0x%.2x%.2x%.2x" % (round(rgb[0]), round(rgb[1]), round(rgb[2])))
 
 
-    print 
-    print "Color from palette"
+    print() 
+    print("Color from palette")
 
     palette = [BLACK, WHITE]
-    print palette
+    print(palette)
     for x in range(0, 10):
         f = float(x) / 10.0
-        print "{} = {}".format(f, colorFromPalette(palette, f))
+        print("{} = {}".format(f, colorFromPalette(palette, f)))
 
 

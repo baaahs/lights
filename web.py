@@ -45,11 +45,11 @@ class SheepyWeb(object):
     @cherrypy.expose
     def change_run_time(self, run_time=None):
         try:
-            print "RUNTIME XXXXX:::: %s" % run_time
+            print("RUNTIME XXXXX:::: %s" % run_time)
             run_time = int(run_time)
             self.queue.put("inc runtime:%s"%run_time)
         except Exception as e:
-            print "\n\nCRASH\n\n", e
+            print("\n\nCRASH\n\n", e)
             #probably a string... do nothing!
             pass
         return "<a href='.'/>Back</a>"
@@ -76,9 +76,9 @@ Seconds:<input type=text name=run_time value=60><input type=submit></form>
     def run_show(self, show_name=None):
         if show_name:
             self.queue.put("run_show:"+show_name)
-            print "setting show to:", show_name
+            print("setting show to:", show_name)
         else:
-            print "didn't get a show name"
+            print("didn't get a show name")
 
         # XXX otherwise the runner.status() method
         # hasn't had time to update
@@ -102,7 +102,7 @@ Seconds:<input type=text name=run_time value=60><input type=submit></form>
     def start_show(self):
         data = cherrypy.request.json
         name = data.get("name")
-        print "Start show name='%s'" % name
+        print("Start show name='%s'" % name)
 
         self.runner.next_show(name=name)
 
@@ -114,7 +114,7 @@ Seconds:<input type=text name=run_time value=60><input type=submit></form>
     def start_eo_show(self):
         data = cherrypy.request.json
         name = data.get("name")
-        print "Start EO show name='%s'" % name
+        print("Start EO show name='%s'" % name)
 
         self.runner.next_eo_show(name=name)
 
@@ -195,7 +195,7 @@ Seconds:<input type=text name=run_time value=60><input type=submit></form>
         # Make sure force mute is enabled
         self.runner.set_force_mute(True)
 
-        print "Got data %s" % str(data)
+        print("Got data %s" % str(data))
 
         effect = None
         if data.get("effect"):
@@ -216,22 +216,22 @@ Seconds:<input type=text name=run_time value=60><input type=submit></form>
 
             if is_xyz:
                 p = [x, y, z]
-                print "Setting pos of %s" % str(p)
+                print("Setting pos of %s" % str(p))
                 eye.set_xyz_pos(p, False)
             else:
-                print "Setting party pan=%f, tilt=%f" % (x, y)      
+                print("Setting party pan=%f, tilt=%f" % (x, y))      
                 eye.pan = x
                 eye.tilt = y
 
             if isinstance(color_pos, int):
                 eye.color_pos = color_pos
             else:
-                print "NOT setting color_pos"
+                print("NOT setting color_pos")
 
             if isinstance(dimmer, float):
                 eye.dimmer = dimmer
             else:
-                print "NOT setting dimmer"
+                print("NOT setting dimmer")
 
         if data.get("set_business"):
             eye = self.runner.model.business_eye
@@ -240,22 +240,22 @@ Seconds:<input type=text name=run_time value=60><input type=submit></form>
 
             if is_xyz:
                 p = [x, y, z]
-                print "Setting pos of %s" % str(p)
+                print("Setting pos of %s" % str(p))
                 eye.set_xyz_pos(p, False)
             else:
-                print "Setting party pan=%f, tilt=%f" % (x, y)      
+                print("Setting party pan=%f, tilt=%f" % (x, y))      
                 eye.pan = x
                 eye.tilt = y
 
             if isinstance(color_pos, int):
                 eye.color_pos = color_pos
             else:
-                print "NOT setting color_pos"
+                print("NOT setting color_pos")
 
             if isinstance(dimmer, float):
                 eye.dimmer = dimmer
             else:
-                print "NOT setting dimmer"
+                print("NOT setting dimmer")
 
             eye.go();
 

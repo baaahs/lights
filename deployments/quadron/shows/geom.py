@@ -139,7 +139,7 @@ class Edge(object):
 
         to_others = self.distances[cell_id]
         out = []
-        for other_id, d in to_others.iteritems():
+        for other_id, d in to_others.items():
             if d < distance:
                 out.append(other_id)
 
@@ -226,7 +226,7 @@ PT_C = (-0.615, 1.0, 0.367)
 PT_D = ( 0.0,   2.0, 0.0)
 
 def o(base, off):
-    return map(sum, zip(base, off))
+    return list(map(sum, list(zip(base, off))))
 
 # EDGE_AC = (PT_C[0] - PT_A[0], PT_C[1] - PT_A[1], PT_C[2] - PT_A[2])
 # EDGE_AB = (PT_B[0] - PT_A[0], PT_B[1] - PT_A[1], PT_B[2] - PT_A[2])
@@ -271,7 +271,7 @@ faces = {
 }
 edges.update(faces)
 
-all_edges = CompositeEdge(base_edges.values())
+all_edges = CompositeEdge(list(base_edges.values()))
 
 party = CompositeEdge.using("BOTTOM_LEFT_ALL","TOP_REAR_ALL")
 business = CompositeEdge.using("BOTTOM_RIGHT_ALL", "TOP_FRONT_ALL")
@@ -284,8 +284,8 @@ business = CompositeEdge.using("BOTTOM_RIGHT_ALL", "TOP_FRONT_ALL")
 ALL = party.panel_nums
 
 # Some interesting slices
-by_edges = map(lambda edge: edge.cell_ids, base_edges.values())
-by_faces = map(lambda edge: edge.cell_ids, faces.values())
+by_edges = [edge.cell_ids for edge in list(base_edges.values())]
+by_faces = [edge.cell_ids for edge in list(faces.values())]
 
 # Moving perpendicular to the long axis, sliced into planes
 by_long_planes = []
@@ -389,23 +389,23 @@ if __name__=='__main__':
     # print edges
 
     all_mappings = []
-    for name, edge in base_edges.iteritems():
-        print "[{}]".format(name)
+    for name, edge in base_edges.items():
+        print("[{}]".format(name))
 
         if "1p" in edge.distances:
-            print edge.distances["1p"]
+            print(edge.distances["1p"])
         # print edge.distances
         lst = edge.mapping_list()
         # print lst
         all_mappings += lst
         # print
 
-    print
-    print "/* Begin JSON mapping */"
-    print "{"
+    print()
+    print("/* Begin JSON mapping */")
+    print("{")
     all_mappings.sort(key=lambda t: t[1])
     for item in all_mappings:
-        print "\t\"{}\": {},".format(item[0], item[1])
-    print "}"    
-    print "/* End JSON */"
+        print("\t\"{}\": {},".format(item[0], item[1]))
+    print("}")    
+    print("/* End JSON */")
 

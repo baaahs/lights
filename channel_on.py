@@ -13,7 +13,7 @@ pixels = [(0,0,0)] * max_pixels
 
 ch = int(sys.argv[1])
 
-print "Channel %d" % (ch)
+print("Channel %d" % (ch))
 
 start = ch * 64
 end = start + 64

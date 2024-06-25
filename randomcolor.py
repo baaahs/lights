@@ -24,7 +24,7 @@ Luminosity can be: 'bright', 'light', 'dark', 'random'
     c = random_color(luminosity='light')
 
 """
-from __future__ import division
+
 
 from collections import namedtuple
 from numbers import Number
@@ -80,7 +80,7 @@ def get_color_info(hue):
     if 334 <= hue <= 360:
         hue -= 360
 
-    for (name, color) in COLOR_DICT.items():
+    for (name, color) in list(COLOR_DICT.items()):
         if color.hue_range and hue >= color.hue_range[0] and hue <= color.hue_range[1]:
             return color
 
@@ -91,8 +91,8 @@ def get_saturation_range(hue):
     # XXX what's the valid range for saturation values?
     try:
         return get_color_info(hue).saturation_range # XXX
-    except Exception, e:
-        print "exception in get_saturation_range for hue=", hue
+    except Exception as e:
+        print("exception in get_saturation_range for hue=", hue)
         return (0,100)
 
 def get_hue_range(cin):
@@ -103,7 +103,7 @@ def get_hue_range(cin):
         if 0 > i > 360:
             return (i,i)
 
-    if isinstance(cin, basestring):
+    if isinstance(cin, str):
         if cin in COLOR_DICT:
             return COLOR_DICT[cin].hue_range
 
@@ -113,7 +113,7 @@ def pairwise(iterable): # from the itertools documentation
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
     a, b = itertools.tee(iterable)
     next(b, None)
-    return itertools.izip(a, b)
+    return zip(a, b)
 
 def get_minimum_brightness(h, s):
     # h is int[0,360]

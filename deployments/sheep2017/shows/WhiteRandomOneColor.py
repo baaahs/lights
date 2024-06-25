@@ -30,7 +30,7 @@ class WhiteRandomOneColor(object):
 
 	def next_frame(self):
 		while True:
-			for cell, panel in self.panel_map.iteritems():
+			for cell, panel in self.panel_map.items():
 
 				adj_color = self.color.copy()
 				adj_color.v = panel.intensity / 100.0

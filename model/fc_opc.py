@@ -3,7 +3,7 @@ Communicate with "panels" that are controlled by a fadecandy
 fc_server instance
 
 """
-import opc
+from . import opc
 import json
 
 # # Panels 1-44, 'p' for party, 'b' for business
@@ -22,8 +22,8 @@ class FCOPCModel(object):
 
 
     def __init__(self, server_ip_port="localhost:7890", debug=False, max_pixels=512, filename="data/opc_mapping.json", ignore_business=False):
-        print "Connecting to OPC server %s, max_pixels=%d" % (server_ip_port, max_pixels)
-        print "Loading mapping from {}".format(filename)
+        print("Connecting to OPC server %s, max_pixels=%d" % (server_ip_port, max_pixels))
+        print("Loading mapping from {}".format(filename))
 
         # long lived connections and not verbose debug
         self.opc = opc.ThreadedClient(server_ip_port, True, False)
@@ -54,7 +54,7 @@ class FCOPCModel(object):
     # Model basics
 
     def cell_ids(self):
-        return self.panel_map.keys()
+        return list(self.panel_map.keys())
 
     def set_cell(self, cell, color):
         if self.ignore_business and cell[-1] == "b":

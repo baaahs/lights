@@ -6,7 +6,7 @@ import config
 import random
 import math
 
-import looping_show
+from . import looping_show
 import eye_effect
 import eyes
 
@@ -108,7 +108,7 @@ class DiscoQueen(looping_show.LoopingShow):
             max_tilt = abs_intensity * 40.0
             max_pan = abs_intensity * 130.0
 
-            self.last = self.next
+            self.last = self.__next__
             self.next = [
                 [ 
                     next[0][0] + (random.uniform(-1.0, 1.0) * max_pan),
@@ -126,7 +126,7 @@ class DiscoQueen(looping_show.LoopingShow):
             self.next[0][1] = clamp(self.next[0][1], -135.0, 135.0)
             self.next[1][1] = clamp(self.next[1][1], -135.0, 135.0)
 
-            print "ai=%f last=%s  new=%s" % (abs_intensity, str(self.last), str(self.next))
+            print("ai=%f last=%s  new=%s" % (abs_intensity, str(self.last), str(self.__next__)))
 
             # Choose some random things for different beats
             max_dimmer = 0.5 + (self.cm.intensified * 0.5)
@@ -153,11 +153,11 @@ class DiscoQueen(looping_show.LoopingShow):
                     self.pe.color_pos += 7
                     if self.pe.color_pos > 127:
                         self.pe.color_pos -= 127
-                    print "-- New color = %d" % self.pe.color_pos
+                    print("-- New color = %d" % self.pe.color_pos)
                 
 
-                print "Effect is now %s" % str(self.effect)
-                print "Next effect at %d (now=%d)" % (next_effect_at, loop_instance)
+                print("Effect is now %s" % str(self.effect))
+                print("Next effect at %d (now=%d)" % (next_effect_at, loop_instance))
 
 
         if not self.cm.modifiers[4]:

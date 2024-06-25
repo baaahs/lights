@@ -24,7 +24,7 @@ Can optionally generate a sequence that cycles, returning an
 infinite list of colors useful for indefinite length
 animations
 """
-from __future__ import division
+
 
 import itertools
 import colorsys
@@ -42,11 +42,11 @@ def frange(start, stop = None, step = 1):
 
     frange([start,] stop [, step ])"""
     if stop is None:
-        for x in xrange(int(ceil(start))):
+        for x in range(int(ceil(start))):
             yield x
     else:
         # create a generator expression for the index values
-        indices = (i for i in xrange(0, int((stop-start)/step)))
+        indices = (i for i in range(0, int((stop-start)/step)))
         # yield results
         for i in indices:
             yield start + step*i
@@ -85,7 +85,7 @@ def pairwise(iterable): # from the itertools documentation
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
     a, b = itertools.tee(iterable)
     next(b, None)
-    return itertools.izip(a, b)
+    return zip(a, b)
 
 def color_transition(start_color, end_color, steps=20):
     """    
@@ -103,7 +103,7 @@ def color_transition(start_color, end_color, steps=20):
     s_seq = hsv_transition(s1,s2,steps)
     v_seq = hsv_transition(v1,v2,steps)
 
-    for (h,s,v) in itertools.izip(h_seq, s_seq, v_seq):
+    for (h,s,v) in zip(h_seq, s_seq, v_seq):
         yield HSV(h%1, s, v)
 
 def multistep_color_transition(color_list, steps=20, continuous=False):
@@ -131,6 +131,6 @@ def transition_list(start_color, end_color, steps=20):
     t = color_transition(start_color, end_color, steps=steps)
 
     for i in range(0, steps):
-        _list.append(t.next())
+        _list.append(next(t))
 
     return _list

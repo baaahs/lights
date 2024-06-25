@@ -166,7 +166,7 @@ class LoopingShow(object):
             self._pdns.append((cursor / total_time, time / total_time, name))
             cursor += time
 
-        print str(self._pdns)
+        print(str(self._pdns))
 
 
     def next_frame(self):

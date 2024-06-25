@@ -1,7 +1,7 @@
 import math
 import sys
 
-import ice_geom
+from . import ice_geom
 
 all_sizes = ice_geom.BACK_ROW_SIZES + ice_geom.FRONT_ROW_SIZES
 
@@ -67,6 +67,6 @@ result.append('        }')
 result.append('    ]')
 result.append('}')
 
-print '\n'.join(result)
+print('\n'.join(result))
 
 

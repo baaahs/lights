@@ -39,12 +39,12 @@ class RandomColors(object):
 		elif name == 'colorB':
 			channel = 2
 
-		for cell, panel in self.panel_map.iteritems():
+		for cell, panel in self.panel_map.items():
 			panel.OSC_update_panel(channel, rgb255)
 
 	def next_frame(self):
 		while True:
-			for cell, panel in self.panel_map.iteritems():
+			for cell, panel in self.panel_map.items():
 				self.sheep.set_cell(cell, panel.get_color())
 				panel.update_panel()
 			

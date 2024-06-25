@@ -566,7 +566,7 @@ class ControlsModel(object):
 
     def _notify_color(self):
         if self.debug:
-            print "_notify_color"
+            print("_notify_color")
         for listener in self.listeners:
             if listener.control_color_changed:
                 listener.control_color_changed()
@@ -727,7 +727,7 @@ class ControlsModel(object):
 
     def _notify_eye_changed(self, isParty):
         if self.debug:
-            print "_notify_eye_changed isParty=%s" % isParty
+            print("_notify_eye_changed isParty=%s" % isParty)
         for listener in self.listeners:
             try:
                 listener.control_eye_changed(isParty)
@@ -801,7 +801,7 @@ class ControlsModel(object):
         can be changed using the tech interface.
         """
         if c_ix < 0 or c_ix > 1:
-            print "Don't understand color ix %d" % c_ix
+            print("Don't understand color ix %d" % c_ix)
             return
 
         self.chosen_colors_ix[c_ix] = v_ix
@@ -822,11 +822,11 @@ class ControlsModel(object):
         are interpreted as 0-255, floats are interpreted as 0.0-1.0
         """
         if c_ix < 0 or c_ix > 1:
-            print "Don't understand color ix %d" % c_ix
+            print("Don't understand color ix %d" % c_ix)
             return
 
         if len(data) < 3:
-            print "Not enough data values to set rgb color: %s" % (str(data))
+            print("Not enough data values to set rgb color: %s" % (str(data)))
             return
 
         if isinstance(data[0], float):
@@ -851,7 +851,7 @@ class ControlsModel(object):
 
     def _notify_chosen_color_changed(self, c_ix):
         if self.debug:
-            print "_notify_chosen_color_changed"
+            print("_notify_chosen_color_changed")
         for listener in self.listeners:
             try:
                 listener.control_chosen_color_changed(c_ix)
@@ -877,7 +877,7 @@ class ControlsModel(object):
         if len(self._tap_times) == 0:
             # It is the first tap so record it and move on
             self._tap_times.append(now)
-            print "First tap"
+            print("First tap")
             return
 
         # There is at least one previous time.
@@ -889,7 +889,7 @@ class ControlsModel(object):
         if elapsed > 2.0:
             # OMG! So long ago! It's totally time to reset
             self._tap_times = [now]
-            print "Elapsed was %f, resettting" % elapsed
+            print("Elapsed was %f, resettting" % elapsed)
             return
 
         # Hmm, okay, not all that old, so let's add it and then process
@@ -902,7 +902,7 @@ class ControlsModel(object):
         # There are now 1 to 8 elements in the list
         if len(self._tap_times) < 4:
             # Not enough
-            print "Only have %d taps, not enough" % len(self._tap_times)
+            print("Only have %d taps, not enough" % len(self._tap_times))
             return
 
         # I'm not sure if this is the "right" way to find intervals, but it makes sense to me.
@@ -922,7 +922,7 @@ class ControlsModel(object):
         avg_interval = int_total / num_ints
 
         # Reference time is 120bpm, which is 0.5s between quarter notes (i.e. taps)
-        print "avgInterval=%f  intTotal=%f numInts=%d" % (avg_interval, int_total, num_ints)
+        print("avgInterval=%f  intTotal=%f numInts=%d" % (avg_interval, int_total, num_ints))
         self.speed_multi = 0.5 / avg_interval
 
         self._notify_speed_changed()
@@ -933,7 +933,7 @@ class ControlsModel(object):
 
     def _notify_speed_changed(self):
         if self.debug:
-            print "_notify_speed_changed"
+            print("_notify_speed_changed")
         for listener in self.listeners:
             try:
                 listener.control_speed_changed()
@@ -950,7 +950,7 @@ class ControlsModel(object):
 
     def _notify_intensified_changed(self):
         if self.debug:
-            print "_notify_intensified_changed"
+            print("_notify_intensified_changed")
         for listener in self.listeners:
             try:
                 listener.control_intensified_changed()
@@ -965,7 +965,7 @@ class ControlsModel(object):
 
     def _notify_colorized_changed(self):
         if self.debug:
-            print "_notify_colorized_changed"
+            print("_notify_colorized_changed")
         for listener in self.listeners:
             try:
                 listener.control_colorized_changed()
@@ -980,7 +980,7 @@ class ControlsModel(object):
 
     def _notify_brightness_changed(self):
         if self.debug:
-            print "_notify_brightness_changed"
+            print("_notify_brightness_changed")
         for listener in self.listeners:
             try:
                 listener.control_brightness_changed(self.brightness)
@@ -1005,7 +1005,7 @@ class ControlsModel(object):
 
     def _notify_modifiers_changed(self):
         if self.debug:
-            print "_notify_modifiers_changed"
+            print("_notify_modifiers_changed")
         for listener in self.listeners:
             try:
                 listener.control_modifiers_changed()
@@ -1033,7 +1033,7 @@ class ControlsModel(object):
 
     def _notify_step_modifiers_changed(self):
         if self.debug:
-            print "_notify_step_modifiers_changed"
+            print("_notify_step_modifiers_changed")
         for listener in self.listeners:
             try:
                 listener.control_step_modifiers_changed()
@@ -1045,7 +1045,7 @@ class ControlsModel(object):
         # when TouchOSC clients are out of sync. However, only allow
         # known modes to get set.
         if mode != EYES_MODE_DISCO and mode != EYES_MODE_HEADLIGHTS and mode != EYES_MODE_SHOW:
-            print "Unknown eyes mode %s" % mode
+            print("Unknown eyes mode %s" % mode)
             return
 
         self.eyes_mode = mode
@@ -1062,7 +1062,7 @@ class ControlsModel(object):
 
     def _notify_eyes_mode_changed(self):
         if self.debug:
-            print "_notify_eyes_mode_changed"
+            print("_notify_eyes_mode_changed")
         for listener in self.listeners:
             try:
                 listener.control_eyes_mode_changed()
@@ -1095,7 +1095,7 @@ class ControlsModel(object):
 
     def _notify_disco_color_changed(self):
         if self.debug:
-            print "_notify_disco_color_changed"
+            print("_notify_disco_color_changed")
         for listener in self.listeners:
             try:
                 listener.control_disco_color_changed()
@@ -1108,7 +1108,7 @@ class ControlsModel(object):
 
     def _notify_disco_brightness_changed(self):
         if self.debug:
-            print "_notify_disco_brightness_changed"
+            print("_notify_disco_brightness_changed")
         for listener in self.listeners:
             try:
                 listener.control_disco_brightness_changed()
@@ -1138,7 +1138,7 @@ class ControlsModel(object):
 
     def _notify_disco_effect_changed(self):
         if self.debug:
-            print "_notify_disco_effect_changed"
+            print("_notify_disco_effect_changed")
         for listener in self.listeners:
             try:
                 listener.control_disco_effect_changed()
@@ -1148,7 +1148,7 @@ class ControlsModel(object):
 
     def set_headlights_mode(self, mode):
         if mode != HEADLIGHTS_MODE_NORMAL and mode != HEADLIGHTS_MODE_LEFT and mode != HEADLIGHTS_MODE_BOTH and mode != HEADLIGHTS_MODE_RIGHT:
-            print "Unknown headlights mode %s" % mode
+            print("Unknown headlights mode %s" % mode)
             return
 
         self.headlights_mode = mode
@@ -1159,7 +1159,7 @@ class ControlsModel(object):
 
     def _notify_headlights_mode_changed(self):
         if self.debug:
-            print "_notify_headlights_mode_changed"
+            print("_notify_headlights_mode_changed")
         for listener in self.listeners:
             try:
                 listener.control_headlights_mode_changed()
@@ -1189,7 +1189,7 @@ class ControlsModel(object):
 
     def _notify_focus_changed(self):
         if self.debug:
-            print "_notify_focus_changed"
+            print("_notify_focus_changed")
         for listener in self.listeners:
             try:
                 listener.control_focus_changed()
@@ -1208,7 +1208,7 @@ class ControlsModel(object):
 
         xyz_pos = [xr, 10.0, yr]
 
-        print "in=(%f,%f) xyz = %s" % (x,y, str(xyz_pos))
+        print("in=(%f,%f) xyz = %s" % (x,y, str(xyz_pos)))
 
         self.p_eye_pos = eyes.xyz_to_pnt(xyz_pos, True)
         self._notify_eye_changed(True)
@@ -1273,7 +1273,7 @@ class ControlsModel(object):
     def set_show_target_mode(self, mode):
 
         if mode != SHOW_TARGET_MODE_NONE and mode != SHOW_TARGET_MODE_UP and mode != SHOW_TARGET_MODE_DOWN and mode != SHOW_TARGET_MODE_PNT and mode != SHOW_TARGET_MODE_FRONT:
-            print "Unrecognized show target mode %s" % mode
+            print("Unrecognized show target mode %s" % mode)
             return
 
         self.show_target_mode = mode
@@ -1283,7 +1283,7 @@ class ControlsModel(object):
 
     def _notify_show_target_mode_changed(self):
         if self.debug:
-            print "_notify_show_target_mode_changed"
+            print("_notify_show_target_mode_changed")
         for listener in self.listeners:
             try:
                 listener.control_show_target_mode_changed()
@@ -1297,7 +1297,7 @@ class ControlsModel(object):
 
     def _notify_master_names_changed(self):
         if self.debug:
-            print "_notify_master_names_changed"
+            print("_notify_master_names_changed")
         for listener in self.listeners:
             try:
                 listener.control_master_names_changed()
@@ -1310,7 +1310,7 @@ class ControlsModel(object):
 
     def _notify_eo_names_changed(self):
         if self.debug:
-            print "_notify_eo_names_changed"
+            print("_notify_eo_names_changed")
         for listener in self.listeners:
             try:
                 listener.control_eo_names_changed()
@@ -1324,7 +1324,7 @@ class ControlsModel(object):
 
     def _notify_overlay_names_changed(self):
         if self.debug:
-            print "_notify_overlay_names_changed"
+            print("_notify_overlay_names_changed")
         for listener in self.listeners:
             try:
                 listener.control_overlay_names_changed()
@@ -1338,7 +1338,7 @@ class ControlsModel(object):
 
     def _notify_master_name_changed(self):
         if self.debug:
-            print "_notify_master_name_changed"
+            print("_notify_master_name_changed")
         for listener in self.listeners:
             try:
                 listener.control_master_name_changed()
@@ -1351,7 +1351,7 @@ class ControlsModel(object):
 
     def _notify_eo_name_changed(self):
         if self.debug:
-            print "_notify_eo_name_changed"
+            print("_notify_eo_name_changed")
         for listener in self.listeners:
             try:
                 listener.control_eo_name_changed()
@@ -1370,7 +1370,7 @@ class ControlsModel(object):
 
     def _notify_max_time_changed(self):
         if self.debug:
-            print "_notify_max_time_changed"
+            print("_notify_max_time_changed")
         for listener in self.listeners:
             try:
                 listener.control_max_time_changed()
@@ -1384,7 +1384,7 @@ class ControlsModel(object):
 
     def _notify_message_changed(self):
         if self.debug:
-            print "_notify_message_changed"
+            print("_notify_message_changed")
         for listener in self.listeners:
             try:
                 listener.control_message_changed()
@@ -1394,7 +1394,7 @@ class ControlsModel(object):
 
     def set_effect_preset(self, ix, effect):
         if ix < 0 or ix > len(self.effects)-1:
-            print "Invalid index %d" % ix
+            print("Invalid index %d" % ix)
             return False
 
         self.effects[ix] = effect

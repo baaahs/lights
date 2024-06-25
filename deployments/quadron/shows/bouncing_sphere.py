@@ -1,6 +1,6 @@
 import time
 
-import geom
+from . import geom
 import palette
 import color
 
@@ -62,11 +62,11 @@ class BouncingSphere(object):
 
             # 1. Update our model
 
-            velocity = map(lambda v: v * self.cm.speed_multi, self.base_velocity)
+            velocity = [v * self.cm.speed_multi for v in self.base_velocity]
 
             # Move our position based on our velocity
-            displacement = map(lambda v: elapsed_time * v, velocity)
-            self.pos = map(sum, zip(self.pos, displacement))
+            displacement = [elapsed_time * v for v in velocity]
+            self.pos = list(map(sum, list(zip(self.pos, displacement))))
 
             # Check for boundary excess and fix velocity if we have reflected
             for i in range(3):
@@ -92,7 +92,7 @@ class BouncingSphere(object):
             p = palette.chosen
 
             # Shade every pixel
-            for id, xyz in geom.cells_in_space.iteritems():
+            for id, xyz in geom.cells_in_space.items():
                 distance = geom.distance_to(self.pos, xyz)
 
                 # Color is based on distance

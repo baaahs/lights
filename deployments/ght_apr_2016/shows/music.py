@@ -6,7 +6,7 @@ from bisect import bisect
 import geom
 
 import color
-import looping_show
+from . import looping_show
 import tween
 
 
@@ -375,7 +375,7 @@ class Phrase(object):
 
     def dump(self):
         for idx, start in enumerate(self.note_starts):
-            print "%f = %f, %f" % (start, self.note_levels[idx], self.note_hues[idx])
+            print("%f = %f, %f" % (start, self.note_levels[idx], self.note_hues[idx]))
 
 
 # class CompoundPhrase(Phrase):
@@ -425,5 +425,5 @@ if __name__ == '__main__':
         for pos in range(20):
             prog = pos * 0.05
             note = phrase.note_at(prog, bar)
-            print "%d %f %s" % (bar, prog, note)
+            print("%d %f %s" % (bar, prog, note))
 

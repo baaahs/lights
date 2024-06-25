@@ -24,15 +24,15 @@ class Watchdog(object):
 
             if since_last > 10.0:
                 # OMG OMG OMG!!!!
-                print "\n\n   OMG OMG OMG!!!!!"
-                print "   Watchdog timer was not pinged frequently enough."
-                print "   Exiting with extreme prejudice because we assume a show is hung.\n\n"
-                print "%f" % since_last
+                print("\n\n   OMG OMG OMG!!!!!")
+                print("   Watchdog timer was not pinged frequently enough.")
+                print("   Exiting with extreme prejudice because we assume a show is hung.\n\n")
+                print("%f" % since_last)
 
                 os._exit(1)
 
             if self.must_die:
-                print "\n\n Must die set. Exiting"
+                print("\n\n Must die set. Exiting")
                 os._exit(2)
 
 
@@ -44,9 +44,9 @@ class Watchdog(object):
         self.time_to_stop = True
 
     def manual_reset(self):
-        print "--------------------------------------------------------"
-        print "  MANUAL SERVER RESET"
-        print "--------------------------------------------------------"
+        print("--------------------------------------------------------")
+        print("  MANUAL SERVER RESET")
+        print("--------------------------------------------------------")
 
         self.must_die = True
 

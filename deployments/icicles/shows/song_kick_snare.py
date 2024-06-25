@@ -3,9 +3,9 @@ import random
 from icicles import ice_geom 
 
 import color
-import looping_show
+from . import looping_show
 
-from music import *
+from .music import *
 
 
 

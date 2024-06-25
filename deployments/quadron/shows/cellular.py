@@ -1,4 +1,4 @@
-import geom
+from . import geom
 
 import color
 import palette
@@ -7,7 +7,7 @@ import time
 import random
 import math
 
-import looping_show
+from . import looping_show
 from randomcolor import random_color
 import tween
 
@@ -42,7 +42,7 @@ class CellularState(threading.Thread):
 
 
     def run(self):
-        print "Cellular state generation thread started"
+        print("Cellular state generation thread started")
         try:
             while not self.time_to_die.is_set():
                 self.next_state_used.wait()
@@ -58,7 +58,7 @@ class CellularState(threading.Thread):
 
                 self.next_state = {}
                 total_alive = 0
-                for name, edge in geom.base_edges.iteritems():
+                for name, edge in geom.base_edges.items():
                     for cell_id in edge.cell_ids:
                         neighbors = edge.cells_that_neighbor(cell_id, 0.10)
 
@@ -91,9 +91,9 @@ class CellularState(threading.Thread):
                         if new_cell_state == 1.0:
                             total_alive += 1
 
-                ids = self.next_state.keys()
+                ids = list(self.next_state.keys())
                 if total_alive < 80:
-                    print "Aaack. Need more cells"
+                    print("Aaack. Need more cells")
                     # Aack! Need some random new stuff
                     while total_alive < 100:
                         maybe = random.choice(ids)
@@ -114,7 +114,7 @@ class CellularState(threading.Thread):
                 total_time = time.time() - started_at
                 self.next_state_ready.set()
 
-                print "cellular frame time = {0:.0f}ms  total_alive={1}".format(total_time * 1000.0, total_alive)
+                print("cellular frame time = {0:.0f}ms  total_alive={1}".format(total_time * 1000.0, total_alive))
 
 
         except Exception as e:
@@ -122,7 +122,7 @@ class CellularState(threading.Thread):
 
         # Always make sure this is set once we exit
         self.time_to_die.set()
-        print "Cellular state generation thread finished! :)"
+        print("Cellular state generation thread finished! :)")
 
 
 
@@ -229,7 +229,7 @@ class Cellular(looping_show.LoopingShow):
             self.buffer.advance()
 
             # Just show the current state
-            for cid, state in self.state.current_state.iteritems():
+            for cid, state in self.state.current_state.items():
 
                 if self.cm.modifiers[0]:
                     # Hard on/off. No color gradiation

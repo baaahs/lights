@@ -1,7 +1,7 @@
 import shows.geom as geom
 
 
-print "{"
+print("{")
 
 # for x in geom.ALL:
 #     mapped = x
@@ -33,8 +33,8 @@ for ix, bird in enumerate(geom.BIRDS):
 
     base = channel * 64
     for c_ix, c in enumerate(bird):
-        print "\"%dp\": %d," % (c, base + c_ix)
+        print("\"%dp\": %d," % (c, base + c_ix))
 #        print "\"%dp\": %d,   %d  %d  %d" % (c, base + c_ix, ix, c_ix, channel)
 
 
-print "}"
+print("}")

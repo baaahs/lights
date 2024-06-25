@@ -73,7 +73,7 @@ class Client(object):
 
     def _debug(self, m):
         if self.verbose:
-            print('    %s' % str(m))
+            print(('    %s' % str(m)))
 
     def _ensure_connected(self):
         """Set up a connection if one doesn't already exist.
@@ -224,7 +224,7 @@ class ThreadedClient(threading.Thread):
 
     def _debug(self, m):
         if self.verbose:
-            print('    %s' % str(m))
+            print(('    %s' % str(m)))
 
     def _ensure_connected(self):
         """Set up a connection if one doesn't already exist.

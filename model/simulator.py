@@ -72,7 +72,7 @@ class SimulatorModel(object):
 
     def go(self):
         "Send all of the buffered commands"
-        for (cell, color) in self.dirty.items():
+        for (cell, color) in list(self.dirty.items()):
             num = cell[:-1]
             side = cell[-1]
 
@@ -83,16 +83,16 @@ class SimulatorModel(object):
 
             msg = "%s %s %s,%s,%s" % (side, num, r,g,b)
             if self.debug:
-                print msg
-            self.sock.send(msg)
-            self.sock.send('\n')
+                print(msg)
+            self.sock.send(msg.encode())
+            self.sock.send('\n'.encode())
 
         self.dirty = {}
 
-        for (ch, val) in self.dmx.items():
+        for (ch, val) in list(self.dmx.items()):
             msg = "dmx %d %d\n" % (ch,val)
             if self.debug:
-                print msg,
-            self.sock.send(msg)
+                print(msg, end=' ')
+            self.sock.send(msg.encode())
 
         self.dmx = {}

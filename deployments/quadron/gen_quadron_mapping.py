@@ -1,9 +1,9 @@
 import shows.geom as geom
 
 
-print "{"
+print("{")
 
 for x in geom.ALL:
-    print "\"%dp\": %d," % (x, x)
+    print("\"%dp\": %d," % (x, x))
 
-print "}"
+print("}")

@@ -49,7 +49,7 @@ for ring_num in range(1, NUM_RINGS+1):
     for quadrant in range(0,4):
         qdir_x = float( ((quadrant % 2) * 2) - 1 )
         qdir_y = float( (((quadrant / 2) * 2) - 1) * -1 )
-        print "Quadrant: ", qdir_x, qdir_y
+        print("Quadrant: ", qdir_x, qdir_y)
 
         # Quadrant:  -1 1
         # Quadrant:  1 1
@@ -67,7 +67,7 @@ for ring_num in range(1, NUM_RINGS+1):
             start = move_diagonally(xy, qdir_x * -1, qdir_y, start_d)
             end = move_diagonally(start, qdir_x * -1, qdir_y, TUBE_LENGTH)
 
-            print "ring=%d, tube=%d, %s  %s" % (ring_num, tube_num, start, end)
+            print("ring=%d, tube=%d, %s  %s" % (ring_num, tube_num, start, end))
 
 
             # Lists in .obj seem to be 1 based
@@ -141,7 +141,7 @@ with open("SheepSimulator/data/model.obj", "w") as f:
             f.write(" ")
         f.write("\n")
 
-print "wrote SheepSimulator/data/model.obj"
+print("wrote SheepSimulator/data/model.obj")
 
 
 # The simulator mapping file for panel names
@@ -155,7 +155,7 @@ with open("SheepSimulator/SheepPanelPolyMap.csv", "w") as f:
         f.write(",p\n")
         ix += 1
 
-print "wrote SheepSimulator/SheepPanelPolyMap.csv"
+print("wrote SheepSimulator/SheepPanelPolyMap.csv")
 
 
 # # Geometry for shows

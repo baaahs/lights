@@ -32,7 +32,7 @@ class DoubleBuffer(object):
         Go through all cells that we have in next and morph them
         towards their next color at the given progress value
         """
-        for cell_id in self.next.keys():
+        for cell_id in list(self.next.keys()):
             next_color = self.next[cell_id]
 
             if cell_id in self.last:
@@ -48,7 +48,7 @@ class DoubleBuffer(object):
         Go through all cells that we have in next and morph them
         towards their next color at the given progress value
         """
-        for cell_id in self.next.keys():
+        for cell_id in list(self.next.keys()):
             next_color = self.next[cell_id]
 
             if cell_id in self.last:
@@ -66,5 +66,5 @@ class DoubleBuffer(object):
         """
         Advance next to last, establishing an empty next
         """
-        self.last = self.next
+        self.last = self.__next__
         self.next = {}

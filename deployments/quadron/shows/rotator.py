@@ -1,4 +1,4 @@
-import geom
+from . import geom
 
 import color
 import time
@@ -6,7 +6,7 @@ import time
 import random
 import math
 
-import looping_show
+from . import looping_show
 from randomcolor import random_color
 import tween
 

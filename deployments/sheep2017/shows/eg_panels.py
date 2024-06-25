@@ -5,11 +5,11 @@ import time
 import random
 import math
 
-import looping_show
+from . import looping_show
 from randomcolor import random_color
 import morph
 
-import geom
+from . import geom
 
 class EgPanels(looping_show.LoopingShow):
     # The full list of attributes that are honored during show loading in

@@ -1,7 +1,7 @@
 import math
 import sys
 
-import ice_geom
+from . import ice_geom
 
 PIXEL_SPACING = 1.0 / 30.0
 RADIUS_SPREAD = 0.0015625
@@ -69,6 +69,6 @@ for i, size in enumerate(ice_geom.FRONT_ROW_SIZES):
 result[-1] = result[-1][:-1]
 
 result.append(']')
-print '\n'.join(result)
+print('\n'.join(result))
 
 

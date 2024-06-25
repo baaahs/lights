@@ -12,10 +12,10 @@ libavahi-compat-libdnssd1
 
 def register_callback(sdRef, flags, errorCode, name, regtype, domain):
     if errorCode == pybonjour.kDNSServiceErr_NoError:
-        print "Advertising Bonjour service '%s' %s (%s)" % (name, domain, regtype)
+        print("Advertising Bonjour service '%s' %s (%s)" % (name, domain, regtype))
     else:
-        print "error registering bonjour server!"
-        print errorCode
+        print("error registering bonjour server!")
+        print(errorCode)
 
 def serve_forever(name, port, shutdownEvent, regtype = "_osc._udp"):
 
@@ -33,5 +33,5 @@ def serve_forever(name, port, shutdownEvent, regtype = "_osc._udp"):
         except KeyboardInterrupt:
             pass
     finally:
-        print "Shutting down bonjour advertisement"
+        print("Shutting down bonjour advertisement")
         sdRef.close()

@@ -5,7 +5,7 @@ import time
 import random
 import math
 
-import looping_show
+from . import looping_show
 from randomcolor import random_color
 import tween
 
@@ -96,7 +96,7 @@ class Rotator(looping_show.LoopingShow):
         #     p_end += 1.0
 
         if debug:
-            print "%.2f,%.2f  %.2f  %.2f,%.2f" % (el_start, el_end, p, p_start, p_end)
+            print("%.2f,%.2f  %.2f  %.2f,%.2f" % (el_start, el_end, p, p_start, p_end))
         # Get the easy cases out of the way
         # if p_end < el_start and (p_end - 1.0) < el_start:
         #     # Haven't reached it yet

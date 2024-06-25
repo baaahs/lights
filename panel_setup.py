@@ -27,38 +27,38 @@ dmx_cursor = 1
 
 def print_mapping(a):
     if len(a) == 0:
-        print "     ",
+        print("     ", end=' ')
         return
 
-    print "%3d" % (a[0]),
+    print("%3d" % (a[0]), end=' ')
     if len(a) > 1:
-        print u"\u2026",
+        print("\u2026", end=' ')
     else:
-        print " ",
+        print(" ", end=' ')
 
 
 
 def print_known():
-    print " panel number[ party dmx, business dmx]"
+    print(" panel number[ party dmx, business dmx]")
     for i in range(1, MAX_PANEL):
         if i > 1 and (i-1) % 6 == 0:
-            print ""
+            print("")
 
         p = panels[i]
-        print "%2d[" % i,
+        print("%2d[" % i, end=' ')
 
         print_mapping(p[0])
-        print ",",
+        print(",", end=' ')
         print_mapping(p[1])
 
 
-        print "]",
+        print("]", end=' ')
 
-    print ""
+    print("")
 
 
 def callback(s):
-    print s
+    print(s)
 
 def go():
     data = array.array('B')
@@ -106,21 +106,21 @@ def goto_dmx(addr):
     pixels[dmx_cursor+1] = 0
 
 def clear_panel(panel):
-    print "Clearing panel %s" % panel
+    print("Clearing panel %s" % panel)
     panels[panel] = [[],[]]
 
 def show_mapping(m):
     for x in m:
-        print "%3d " % (x),
+        print("%3d " % (x), end=' ')
 
 def show_panel(panel):
     global skip_known
     skip_known = True
 
-    print "Panel %d" % panel
-    print "   party: ",
+    print("Panel %d" % panel)
+    print("   party: ", end=' ')
     show_mapping(panels[panel][0])
-    print "\nbusiness: ",
+    print("\nbusiness: ", end=' ')
     show_mapping(panels[panel][1])
 
 
@@ -128,17 +128,17 @@ def print_help():
     global skip_known
     skip_known = True
 
-    print "help - show this summary"
-    print "exit - exit if data has not changed"
-    print "quit - exit if data has not changed, must use quit! if the data has changed"
-    print "save - save the current mapping to dmx_setup.json (which is not the file loaded by default)"
-    print "n, no, next - Advance DMX mapping by 3"
-    print "p, prev     - Move DMX cursor backwards by 3"
-    print "u           - Bump DMX up by 1"
-    print "d           - Bump DMX down by 1"
-    print "goto <num>  - Move cursor to channel <num>"
-    print "clear <panel_num> - Remove all mappings for <panel_num>"
-    print "show  <panel_num> - Show detail for <panel_num>"
+    print("help - show this summary")
+    print("exit - exit if data has not changed")
+    print("quit - exit if data has not changed, must use quit! if the data has changed")
+    print("save - save the current mapping to dmx_setup.json (which is not the file loaded by default)")
+    print("n, no, next - Advance DMX mapping by 3")
+    print("p, prev     - Move DMX cursor backwards by 3")
+    print("u           - Bump DMX up by 1")
+    print("d           - Bump DMX down by 1")
+    print("goto <num>  - Move cursor to channel <num>")
+    print("clear <panel_num> - Remove all mappings for <panel_num>")
+    print("show  <panel_num> - Show detail for <panel_num>")
 
 def write_mapping(f, panel, m):
     f.write("\t")
@@ -194,7 +194,7 @@ def save():
 
         f.write("}\n")
 
-    print "\n Saved to dmx_setup.json"
+    print("\n Saved to dmx_setup.json")
     is_dirty = False
     skip_known = True
 
@@ -204,11 +204,11 @@ def handle_mapping(id):
     try:
         num = int(id[:-1])
     except ValueError:
-        print "Invalid id '%s' ids must be an integer followed by either p or b like 17b or 42b" % id
+        print("Invalid id '%s' ids must be an integer followed by either p or b like 17b or 42b" % id)
 
     s = id[-1:]
     if s != "p" and s != "b":
-        print "Invalid id '%s' ids must be an integer followed by either p or b like 17b or 42b" % id
+        print("Invalid id '%s' ids must be an integer followed by either p or b like 17b or 42b" % id)
         return
 
     s_ix = 0
@@ -226,7 +226,7 @@ def handle_command(cmd):
             print_help()
         elif cmd == "exit" or cmd == "quit":
             if is_dirty:
-                print "Use quit! to exit without saving"
+                print("Use quit! to exit without saving")
             else:
                 return False
         elif cmd == "quit!" or cmd == "q!":
@@ -272,7 +272,7 @@ if __name__=='__main__':
                 continue
 
             if num >= MAX_PANEL:
-                print "Ignoring %s because max panel is %d" % (key, MAX_PANEL)
+                print("Ignoring %s because max panel is %d" % (key, MAX_PANEL))
                 continue
 
             v = PANEL_MAP[key]
@@ -295,18 +295,18 @@ if __name__=='__main__':
             print_known()
         skip_known = False
 
-        print ""
+        print("")
 
-        print "DMX = %d  What's on? (enter a panel id or 'help' for more)" % (dmx_cursor)
+        print("DMX = %d  What's on? (enter a panel id or 'help' for more)" % (dmx_cursor))
 
         go()
         try:
-            cmd = raw_input("> ")
+            cmd = input("> ")
         except KeyboardInterrupt:
             cmd = "exit"
 
         if not handle_command(cmd):
-            print ""
+            print("")
             break
 
 

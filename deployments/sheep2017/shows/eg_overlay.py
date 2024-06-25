@@ -1,7 +1,7 @@
 import color
 import sheep
 
-import looping_show
+from . import looping_show
 import eye_effect
 
 

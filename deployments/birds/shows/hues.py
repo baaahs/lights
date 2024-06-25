@@ -5,7 +5,7 @@
 
 import color
 
-import geom
+from . import geom
             
 class Hues(object):
     name = "_Hues"

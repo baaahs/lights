@@ -32,7 +32,7 @@ with open('data/dmx_mapping.json', 'r') as f:
 
 # what should we do this callback?
 def callback(state):
-    print state
+    print(state)
 
 class OLAModel(object):
     def __init__(self, max_dmx, universe=0):

@@ -55,7 +55,7 @@ def get_hostname(default=None):
         import socket
         name = socket.gethostname()
         return name.split('.')[0]
-    except Exception, e:
+    except Exception as e:
         return default
 
 

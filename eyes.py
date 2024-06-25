@@ -126,7 +126,7 @@ class Eye(object):
             return
 
         if val != EYE_RESET_NONE and val != EYE_RESET_ON and val != EYE_RESET_OFF and val != EYE_RESET_RESET:
-            print "Unknown eye reset mode %s" % val
+            print("Unknown eye reset mode %s" % val)
             return
 
         self._reset_mode = val

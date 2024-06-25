@@ -85,7 +85,7 @@ class RandomOneColor(object):
 
 	def next_frame(self):
 		while True:
-			for cell, panel in self.panel_map.iteritems():
+			for cell, panel in self.panel_map.items():
 				if self.OSC:	# Which color to use?
 					adj_color = self.OSCcolor.copy()
 				else:

@@ -49,7 +49,7 @@ class TestGeom(object):
             self.both.set_cell(focus, RGB(255,0,0))
 
             edges = sheep.edge_neighbors(focus)
-            print "edges = %s" % str(edges)
+            print("edges = %s" % str(edges))
             if edges != None:
                 for p in edges:
                     self.both.set_cell(p, RGB(0,255,0))

@@ -35,7 +35,7 @@ class SectorMapper(object):
         if sector is None:
             return
 
-        for name, percent in sector.iteritems():
+        for name, percent in sector.items():
             if name[0] == '_':
                 continue
 

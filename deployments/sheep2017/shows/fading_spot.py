@@ -5,7 +5,7 @@ import time
 import random
 import math
 
-import looping_show
+from . import looping_show
 import eye_effect
 
 class FadingSpot(looping_show.LoopingShow):
@@ -118,6 +118,6 @@ class FadingSpot(looping_show.LoopingShow):
         self.pe.pan = 90
         self.be.pan = 90
 
-        tilt = self.last + ((self.next - self.last) * progress)
+        tilt = self.last + ((self.__next__ - self.last) * progress)
         self.pe.tilt = tilt
         self.be.tilt = tilt

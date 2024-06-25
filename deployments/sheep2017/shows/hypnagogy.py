@@ -1,4 +1,4 @@
-from __future__ import division
+
 
 import sheep
 from color import RGB
@@ -17,7 +17,7 @@ class Hypnagogy(object):
 
         self.hertz = 30
         self.speed = 1 / self.hertz
-        print "Running at %d Hertz (%f delay)" % (self.hertz, self.speed)
+        print("Running at %d Hertz (%f delay)" % (self.hertz, self.speed))
 
         self.color1 = RGB(255,148,0) # orange
         self.color2 = RGB(148,0,255) # purple

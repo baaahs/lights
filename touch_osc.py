@@ -44,7 +44,7 @@ class TouchOSC(object):
         self.cm.add_listener(self)
 
     def control_color_changed(self):
-        print "Color changed in TouchOSC"
+        print("Color changed in TouchOSC")
         
         # Send 6 update messages for the color labels
         self._send1("/color/lblRed", str(self.cm.color.r))
@@ -82,8 +82,8 @@ class TouchOSC(object):
                 self._send1("/eyes/dimmer/2", self.cm.b_brightness)
 
             self._send1("/eyes/skyPos", float(self.cm.eye_sky_pos))
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
 
 
     # def control_eyeMovementLock_changed(self):
@@ -386,8 +386,8 @@ class TouchOSC(object):
         #print "Send %s" % msg
         try:
             self.client.send(msg)
-        except Exception, e:
-            print "Exception while sending OSC message [%s]: %s" % (msg, e)
+        except Exception as e:
+            print("Exception while sending OSC message [%s]: %s" % (msg, e))
             #traceback.print_exc()
 
 
@@ -450,7 +450,7 @@ class TouchOSC(object):
             if "TouchOSC" in fullname:
                 # yay! it's one of the things we were looking for
                 addr = (hosttarget, port)
-                print "Adding a TouchOSC client %s:%s" % addr
+                print("Adding a TouchOSC client %s:%s" % addr)
 
                 self.svc_names_to_addr[self.svc_name] = addr
 
@@ -458,7 +458,7 @@ class TouchOSC(object):
 
                 self._send_all_state()
             else:
-                print "Ignoring this because it's not a TouchOSC client"
+                print("Ignoring this because it's not a TouchOSC client")
 
 
     def browse_callback(self, sdRef, flags, interfaceIndex, errorCode, serviceName,
@@ -467,7 +467,7 @@ class TouchOSC(object):
             return
 
         if not (flags & pybonjour.kDNSServiceFlagsAdd):
-            print 'Service removed %s' % serviceName
+            print('Service removed %s' % serviceName)
             if serviceName in self.svc_names_to_addr:
                 addr = self.svc_names_to_addr[serviceName]
                 self.client.delOSCTarget( addr )
@@ -492,7 +492,7 @@ class TouchOSC(object):
             while not self.resolved:
                 ready = select.select([resolve_sdRef], [], [], self.timeout)
                 if resolve_sdRef not in ready[0]:
-                    print 'Resolve timed out'
+                    print('Resolve timed out')
                     break
                 pybonjour.DNSServiceProcessResult(resolve_sdRef)
             else:

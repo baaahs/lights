@@ -4,7 +4,7 @@ from bisect import bisect
 from icicles import ice_geom
 
 import color
-import looping_show
+from . import looping_show
 import tween
 
 
@@ -243,9 +243,9 @@ class TargetRandomizer(object):
 
             self.instrument.target = target
 
-            print "Target is now %s" % target
+            print("Target is now %s" % target)
 
-        print "%f %s" % (loop_instance + progress, note)
+        print("%f %s" % (loop_instance + progress, note))
         self.instrument.update_at_progress(progress, loop_instance, note)        
 
 
@@ -373,7 +373,7 @@ class Phrase(object):
 
     def dump(self):
         for idx, start in enumerate(self.note_starts):
-            print "%f = %f, %f" % (start, self.note_levels[idx], self.note_hues[idx])
+            print("%f = %f, %f" % (start, self.note_levels[idx], self.note_hues[idx]))
 
 
 # class CompoundPhrase(Phrase):
@@ -423,5 +423,5 @@ if __name__ == '__main__':
         for pos in range(20):
             prog = pos * 0.05
             note = phrase.note_at(prog, bar)
-            print "%d %f %s" % (bar, prog, note)
+            print("%d %f %s" % (bar, prog, note))
 

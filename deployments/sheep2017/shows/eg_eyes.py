@@ -5,7 +5,7 @@ import time
 import random
 import math
 
-import looping_show
+from . import looping_show
 import eye_effect
 
 class EgEyes(looping_show.LoopingShow):
@@ -108,7 +108,7 @@ class EgEyes(looping_show.LoopingShow):
             max_tilt = abs_intensity * 40.0
             max_pan = abs_intensity * 130.0
 
-            self.last = self.next
+            self.last = self.__next__
             self.next = [
                 [ 
                     next[0][0] + (random.uniform(-1.0, 1.0) * max_pan),

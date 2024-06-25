@@ -1,9 +1,9 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 import sys
 import time
 import datetime
 import traceback
-import Queue
+import queue
 import threading
 import signal
 import random
@@ -37,14 +37,14 @@ _use_cherrypy = True
 
 def _stacktraces(signum, frame):
     txt = []
-    for threadId, stack in sys._current_frames().items():
+    for threadId, stack in list(sys._current_frames().items()):
         txt.append("\n# ThreadID: %s" % threadId)
         for filename, lineno, name, line in traceback.extract_stack(stack):
             txt.append('File: "%s", line %d, in %s' % (filename, lineno, name))
             if line:
                 txt.append("  %s" % (line.strip()))
 
-    print "\n".join(txt)
+    print(("\n".join(txt)))
 
 signal.signal(signal.SIGQUIT, _stacktraces)
 
@@ -141,10 +141,10 @@ class ShowRunner(threading.Thread):
         self.eo_shows = sorted(self.eo_shows)
 
         # Print them to the console for debugging
-        print "Master shows: %s" % str(self.master_shows)
-        print "Eyes Only shows: %s" % str(self.eo_shows)
-        print "Overlay shows: %s" % str(self.overlay_shows)
-        print "Random eligible shows: %s" % str(self.random_eligible_shows)
+        print("Master shows: %s" % str(self.master_shows))
+        print("Eyes Only shows: %s" % str(self.eo_shows))
+        print("Overlay shows: %s" % str(self.overlay_shows))
+        print("Random eligible shows: %s" % str(self.random_eligible_shows))
 
         self.randseq = self.random_show_name()
 
@@ -197,9 +197,9 @@ class ShowRunner(threading.Thread):
 
         seen = []
         while True:
-            print "Random eligible shows = {}".format(seq)
+            print("Random eligible shows = {}".format(seq))
             if len(seq) == 0:
-                print "\n\nABORT! No more random eligible shows\n"
+                print("\n\nABORT! No more random eligible shows\n")
                 os._exit(100)
 
             n = random.choice(seq)
@@ -254,7 +254,7 @@ class ShowRunner(threading.Thread):
                 if m:
                     msgs.append(m)
 
-        except Queue.Empty:
+        except queue.Empty:
             pass
 
         if msgs:
@@ -262,10 +262,10 @@ class ShowRunner(threading.Thread):
                 self.process_command(m)
 
     def process_command(self, msg):
-        if isinstance(msg,basestring):
+        if isinstance(msg,str):
             if msg == "shutdown":
                 self.running = False
-                print "ShowRunner shutting down"
+                print("ShowRunner shutting down")
             elif msg == "clear":
                 self.clear()
                 time.sleep(2)
@@ -280,7 +280,7 @@ class ShowRunner(threading.Thread):
             # osc message
             # ('/1/command', [value])
             try:
-                print "OSC:", msg
+                print("OSC:", msg)
 
                 (addr,val) = msg
                 addr = addr.split('/z')[0]
@@ -297,7 +297,7 @@ class ShowRunner(threading.Thread):
                             self.next_show(self.prev_show.name)
                     elif cmd == 'speed':
                         self.speed_x = speed_interpolation(val)
-                        print "setting speed_x to:", self.speed_x
+                        print("setting speed_x to:", self.speed_x)
 
                     pass
                 elif ns == '2':
@@ -316,7 +316,7 @@ class ShowRunner(threading.Thread):
                 pass
 
         else:
-            print "ignoring unknown msg:", str(msg)
+            print("ignoring unknown msg:", str(msg))
 
     def clear(self):
         self.model.both.clear()
@@ -326,14 +326,14 @@ class ShowRunner(threading.Thread):
 
         if self.profile:
             # Stop it
-            print "****** Stopping profiling"
+            print("****** Stopping profiling")
             self.profile.disable()
             self.profile.dump_stats("Stats")
         elif self.do_profiling:
             # Start a profiler
             self.do_profiling = False
             self.profile = cProfile.Profile()
-            print "****** Starting profiling"
+            print("****** Starting profiling")
             self.profile.enable()
 
 
@@ -350,11 +350,11 @@ class ShowRunner(threading.Thread):
                     return
                     
             else:
-                print "unknown show:", name
+                print("unknown show:", name)
 
         if not s:
-            print "Choosing random show. Server running since {}".format(util.prettydate(self.runner_start))
-            name = self.randseq.next()
+            print("Choosing random show. Server running since {}".format(util.prettydate(self.runner_start)))
+            name = next(self.randseq)
             self.is_a_random_selection = True
             s = self.shows[name]
 
@@ -376,12 +376,12 @@ class ShowRunner(threading.Thread):
         except Exception as e:
             traceback.print_exc()
 
-            print "\nUnable to instantiate show {} -- Removing it from random eligibility and choosing something random.".format(name)
+            print("\nUnable to instantiate show {} -- Removing it from random eligibility and choosing something random.".format(name))
             self.random_eligible_shows.remove(name)
             self.next_show()
             return
 
-        print "next show:" + self.show.name
+        print("next show:" + self.show.name)
         self.framegen = self.show.next_frame()
         # self.show_params = hasattr(self.show, 'set_param')
         # if self.show_params:
@@ -477,7 +477,7 @@ class ShowRunner(threading.Thread):
     def select_master(self, index):
         ix = self.master_cursor + index
         if ix > len(self.master_shows) - 1:
-            print "Index out of range for master show. Ignoring"
+            print("Index out of range for master show. Ignoring")
             return
 
         name = self.master_shows[ix]
@@ -499,7 +499,7 @@ class ShowRunner(threading.Thread):
     def select_eo(self, index):
         ix = self.eo_cursor + index
         if ix > len(self.eo_shows) - 1:
-            print "Index out of range for eo show. Ignoring"
+            print("Index out of range for eo show. Ignoring")
             return
 
         name = self.eo_shows[ix]
@@ -518,11 +518,11 @@ class ShowRunner(threading.Thread):
     def start_overlay(self, index):
         ix = self.overlay_cursor + index
         if ix > len(self.overlay_shows) - 1:
-            print "Index out of range for overlay show. Ignoring"
+            print("Index out of range for overlay show. Ignoring")
             return
 
         name = self.overlay_shows[ix]
-        print "Start overlay show %s" % name
+        print("Start overlay show %s" % name)
 
         # Mute the mutable model
         self._set_model_muted(True)
@@ -548,11 +548,11 @@ class ShowRunner(threading.Thread):
     def stop_overlay(self, index):
         ix = self.overlay_cursor + index
         if ix > len(self.overlay_shows) - 1:
-            print "Index out of range for overlay show. Ignoring"
+            print("Index out of range for overlay show. Ignoring")
             return
 
         name = self.overlay_shows[ix]
-        print "Stopping overlay show %s" % name
+        print("Stopping overlay show %s" % name)
 
         # Unmute the mutable model
         if not self.force_muted:
@@ -596,19 +596,19 @@ class ShowRunner(threading.Thread):
     def get_next_frame(self):
         "return a delay or None"
         try:
-            return self.framegen.next()
+            return next(self.framegen)
         except StopIteration:
             return None
 
     def get_next_eo_frame(self):
         try:
-            return self.eo_framegen.next()
+            return next(self.eo_framegen)
         except StopIteration:
             return None
 
     def get_next_overlay_frame(self):
         try:
-            return self.overlay_framegen.next()
+            return next(self.overlay_framegen)
         except StopIteration:
             return None
 
@@ -708,7 +708,7 @@ class ShowRunner(threading.Thread):
 
                 # Maybe this show is done?
                 if self.show_runtime > self.max_show_time:
-                    print "max show time elapsed, changing shows"
+                    print("max show time elapsed, changing shows")
                     self.next_show()
                     next_frame_at = show_started_at = time.time()
                 else:
@@ -743,7 +743,7 @@ class ShowRunner(threading.Thread):
             except Exception:
                 traceback.print_exc()
 
-                print "\nException running show {} -- Removing it from random eligibility and choosing something else random.".format(self.show.name)
+                print("\nException running show {} -- Removing it from random eligibility and choosing something else random.".format(self.show.name))
                 if self.show.name in self.random_eligible_shows:
                     self.random_eligible_shows.remove(self.show.name)
                 self.next_show()
@@ -753,7 +753,7 @@ def osc_listener(q, cm, port=5700):
     import osc_serve
 
     listen_address=('0.0.0.0', port)
-    print "Starting OSC Listener on %s:%d" % listen_address
+    print("Starting OSC Listener on %s:%d" % listen_address)
     osc = osc_serve.create_server(listen_address, q, cm)
     st = threading.Thread(name="OSC Listener", target=osc.serve_forever)
     st.daemon = True
@@ -778,7 +778,7 @@ class SheepServer(object):
         self.args = args
         self.sheep_model = sheep_model
 
-        self.queue = Queue.LifoQueue()
+        self.queue = queue.LifoQueue()
         self.controls_model = controls_model.ControlsModel(args.debug)
 
         # Let the global chosen palette have at the controls model
@@ -818,33 +818,33 @@ class SheepServer(object):
             (t, flag) = bonjour_server(name="Sheep@" + util.get_hostname("unknown"))
             self.bonjour_thread = t
             self.bonjour_exit_flag = flag
-        except Exception, e:
-            print "WARNING: Can't create bonjour service"
-            print e
+        except Exception as e:
+            print("WARNING: Can't create bonjour service")
+            print(e)
 
         # OSC listener
         try:
             self.osc_thread, self.osc_s = osc_listener(self.queue, self.controls_model)
-        except Exception, e:
-            print "WARNING: Can't create OSC listener"
-            print e
+        except Exception as e:
+            print("WARNING: Can't create OSC listener")
+            print(e)
 
         try:
             self.touch_osc = touch_osc.TouchOSC(self.controls_model, self.osc_s)
             self.touch_osc_thread = start_touch_osc(self.touch_osc)
-        except Exception, e:
-            print "WARNING: Can't create TouchOSC watcher"
-            print e
+        except Exception as e:
+            print("WARNING: Can't create TouchOSC watcher")
+            print(e)
 
         # Show runner
         self.runner = ShowRunner(self.sheep_model, self.queue, self.controls_model, args.max_time)
         if args.shows:
-            print "setting show:", args.shows[0]
+            print("setting show:", args.shows[0])
             self.runner.next_show(args.shows[0])
 
     def start(self):
         if self.running:
-            print "start() called, but sheep is already running!"
+            print("start() called, but sheep is already running!")
             return
 
         try:
@@ -860,8 +860,8 @@ class SheepServer(object):
             self.runner.start()
 
             self.running = True
-        except Exception, e:
-            print "Exception starting sheep!"
+        except Exception as e:
+            print("Exception starting sheep!")
             traceback.print_exc()
 
     def stop(self):
@@ -869,7 +869,7 @@ class SheepServer(object):
         if self.running: # should be safe to call multiple times
             try:
                 if self.bonjour_thread:
-                    print "Setting bonjour exit flag"
+                    print("Setting bonjour exit flag")
                     self.bonjour_exit_flag.set()
 
                 # OSC listener is a daemon thread so it will clean itself up
@@ -878,18 +878,18 @@ class SheepServer(object):
                 self.queue.put("shutdown")
 
                 self.running = False
-            except Exception, e:
-                print "Exception stopping sheep!"
+            except Exception as e:
+                print("Exception stopping sheep!")
                 traceback.print_exc()
 
     def go_headless(self):
         "Run without the web interface"
-        print "Running without web interface"
+        print("Running without web interface")
         try:
             while True:
                 time.sleep(999) # control-c breaks out of time.sleep
         except KeyboardInterrupt:
-            print "Exiting on keyboard interrupt"
+            print("Exiting on keyboard interrupt")
 
         self.stop()
 
@@ -902,7 +902,7 @@ class SheepServer(object):
 
         port = 9990
         _dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "web", "static"))
-        print _dir
+        print(_dir)
 
         config = {
             'global': {
@@ -971,13 +971,13 @@ if __name__=='__main__':
 
     ############
     # Now load the config file to get new values potentially
-    print "Loading configuration from {}".format(args.config)
+    print("Loading configuration from {}".format(args.config))
     config.load(args.config)
     # print "config = {}".format(config.copy())
     # print "args = {}".format(args)
 
     if args.mode == default_config["mode"] and config.has("mode"):
-        print "Updating mode to {}".format(config.get("mode"))
+        print("Updating mode to {}".format(config.get("mode")))
         args.mode = config.get("mode")
 
     if args.max_time == default_config["max_time"] and config.has("max_time"):
@@ -1001,33 +1001,33 @@ if __name__=='__main__':
     # print "\n\nargs now = {}".format(args)
 
     if args.list:
-        print "Available shows:"
-        print ', '.join([s[0] for s in shows.load_shows()])
+        print("Available shows:")
+        print(', '.join([s[0] for s in shows.load_shows()]))
         sys.exit(0)
 
 
 
     if args.mode == "mirror":
         from model.ola_model import OLAModel
-        print "Mirroring to both OLA universe %d and sim %s:%d" % (args.universe, args.sim_host, args.sim_port)
+        print("Mirroring to both OLA universe %d and sim %s:%d" % (args.universe, args.sim_host, args.sim_port))
         sim = SimulatorModel(args.sim_host, port=args.sim_port, debug=args.debug)
         ola = OLAModel(512, universe=args.universe)
         model = MirrorModel(sim, ola)
 
     elif args.mode == "simulator":
         # sim_host = "localhost"
-        print "Using SheepSimulator at %s:%d" % (args.sim_host, args.sim_port)
+        print("Using SheepSimulator at %s:%d" % (args.sim_host, args.sim_port))
         model = SimulatorModel(args.sim_host, port=args.sim_port, debug=args.debug)
 
     elif args.mode == "mirror_opc":
-        print "Mirroring to both OPC and sim %s:%d" % (args.sim_host, args.sim_port)
+        print("Mirroring to both OPC and sim %s:%d" % (args.sim_host, args.sim_port))
         sim = SimulatorModel(args.sim_host, port=args.sim_port, debug=args.debug)
         opc_model = FCOPCModel("%s:%d" % (args.opc_host, args.opc_port), args.debug, args.max_pixels)
         model = MirrorModel(sim, opc_model)
 
     elif args.mode == "birds":
         # sim_host = "localhost"
-        print "Configuring for birds servers %s:%d" % (args.opc_host, args.opc_port)
+        print("Configuring for birds servers %s:%d" % (args.opc_host, args.opc_port))
 
         fc_local = FCOPCModel("10.2.1.1:7890", args.debug, filename="data/fc-birds.json", max_pixels=900)
         model = fc_local
@@ -1037,18 +1037,18 @@ if __name__=='__main__':
     elif args.mode == "quadron":
         # sim_host = "localhost"
         server_str = "%s:%d" % (args.opc_host, args.opc_port)
-        print "Configuring for quadron FC server @ %s" % server_str
+        print("Configuring for quadron FC server @ %s" % server_str)
 
         model = FCOPCModel(server_str, args.debug, filename="deployments/quadron/mapping.json", max_pixels=832)
 
     elif args.mode == "opc":
         # sim_host = "localhost"
-        print "Using OPC Server at %s:%d" % (args.opc_host, args.opc_port)
+        print("Using OPC Server at %s:%d" % (args.opc_host, args.opc_port))
         model = FCOPCModel("%s:%d" % (args.opc_host, args.opc_port), args.debug, args.max_pixels)
 
     else:
         from model.ola_model import OLAModel
-        print "Using OLA model universe=%d" % args.universe
+        print("Using OLA model universe=%d" % args.universe)
         model = OLAModel(512, universe=args.universe)
 
 
@@ -1064,8 +1064,8 @@ if __name__=='__main__':
         else:
             app.go_headless()
 
-    except Exception, e:
-        print "Unhandled exception running sheep!"
+    except Exception as e:
+        print("Unhandled exception running sheep!")
         traceback.print_exc()
     finally:
         app.stop()

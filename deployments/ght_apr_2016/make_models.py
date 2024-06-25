@@ -288,7 +288,7 @@ with open("SheepSimulator/data/model.obj", "w") as f:
             f.write(" ")
         f.write("\n")
 
-print "wrote SheepSimulator/data/model.obj"
+print("wrote SheepSimulator/data/model.obj")
 
 
 # The simulator mapping file for panel names
@@ -302,7 +302,7 @@ with open("SheepSimulator/SheepPanelPolyMap.csv", "w") as f:
         f.write(",p\n")
         ix += 1
 
-print "wrote SheepSimulator/SheepPanelPolyMap.csv"
+print("wrote SheepSimulator/SheepPanelPolyMap.csv")
 
 
 # # Geometry for shows

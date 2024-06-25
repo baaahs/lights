@@ -52,7 +52,7 @@ def edge_neighbors(panel):
             return []
 
         return out
-    except Exception, e:
+    except Exception as e:
         return []
 
 def vertex_neighbors(panel):
@@ -64,7 +64,7 @@ def vertex_neighbors(panel):
             return []
 
         return out
-    except Exception, e:
+    except Exception as e:
         return []
 
 ##
@@ -109,7 +109,7 @@ class Sheep(object):
         # Figure out the list of valid side ids for us based on what our model
         # will actually allow
         model_ids = self.model.cell_ids()
-        print self
+        print(self)
         #print "model_ids = {}".format(model_ids)
         if self.side == 'a':
             valid_suffixes = ['b', 'p']
@@ -128,7 +128,7 @@ class Sheep(object):
                     if not v in self.cells:
                         self.cells.append(v)
 
-        print "cells = {}".format(sorted(self.cells))
+        print("cells = {}".format(sorted(self.cells)))
 
         self.cm = None
         self.handle_colorized = False
@@ -152,7 +152,7 @@ class Sheep(object):
         Translate an integer cell id into a model cell identifier
         'a' will be translated into two cells
         """
-        if isinstance(cell, types.StringType):
+        if isinstance(cell, bytes):
             return [cell]
 
         if cell in self.cells:
@@ -349,18 +349,18 @@ if __name__=='__main__':
 
         def cell_ids(self):
             # return PANEL_IDS        
-            return PANEL_MAP.keys()
+            return list(PANEL_MAP.keys())
 
 
     test_model = TestModel()
 
-    print test_model.cell_ids()
+    print(test_model.cell_ids())
 
     sheep_p = Sheep(test_model, 'p')
-    print sheep_p.cells
+    print(sheep_p.cells)
 
     sheep_b = Sheep(test_model, 'b')
-    print sheep_b.cells
+    print(sheep_b.cells)
 
     sheep_a = Sheep(test_model, 'a')
-    print sheep_a.cells
+    print(sheep_a.cells)

@@ -8,7 +8,7 @@ import math
 import tween
 import util
 
-import looping_show
+from . import looping_show
 import eye_effect
 import eyes
 

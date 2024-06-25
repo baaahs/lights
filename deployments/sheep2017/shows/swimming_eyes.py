@@ -5,7 +5,7 @@ import time
 import random
 import math
 
-import looping_show
+from . import looping_show
 import eye_effect
 import eyes
 import tween

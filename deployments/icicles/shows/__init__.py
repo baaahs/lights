@@ -48,8 +48,8 @@ def load_shows(path=None):
                                 name = t.name
                             _shows.append( (name, t) )
 
-        except Exception, e:
-            print "exception loading module from %s, skipping" % m
+        except Exception as e:
+            print("exception loading module from %s, skipping" % m)
             import traceback
             traceback.print_exc()
     # sort show tuples by name before returning them

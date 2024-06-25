@@ -128,7 +128,7 @@ class ChosenPalette(Palette):
 
     def control_chosen_color_changed(self, ix):
         self.colors = [self.cm.chosen_colors[0], self.cm.chosen_colors[1] ]
-        print "Updated chosen colors palette to " + str(self)
+        print("Updated chosen colors palette to " + str(self))
 
 
 def from_hexes(*hexes):
@@ -137,7 +137,7 @@ def from_hexes(*hexes):
     a Palette from that list
     """
 
-    colors = map(lambda h: color.Hex(h), hexes)
+    colors = [color.Hex(h) for h in hexes]
     return Palette(colors)
 
 # A glue function so we can copy code from Arduino world
@@ -235,24 +235,24 @@ def palette_for_step_mode(mode):
 
 ###########
 if __name__=='__main__':
-    print common
-    print
-    print common_key_order
-    print common_names_as_step_modes()
+    print(common)
+    print()
+    print(common_key_order)
+    print(common_names_as_step_modes())
 
-    print "Step modes...."
-    print palette_for_step_mode(0)
-    print palette_for_step_mode(1)
-    print palette_for_step_mode(2)      
+    print("Step modes....")
+    print(palette_for_step_mode(0))
+    print(palette_for_step_mode(1))
+    print(palette_for_step_mode(2))      
 
 
     #####
-    print
-    print "      Loop    Ramp   "  
+    print()
+    print("      Loop    Ramp   ")  
 
     p = from_hexes("#000000", "#ffffff")
 
     for it in range(0, 25, 1):
         t = float(it) / 10
-        print "{0:.1f}  {1}  {2}".format(t, p.color_in_loop(t).hex, p.color_in_ramp(t).hex)
+        print("{0:.1f}  {1}  {2}".format(t, p.color_in_loop(t).hex, p.color_in_ramp(t).hex))
 
