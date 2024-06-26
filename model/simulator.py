@@ -82,8 +82,8 @@ class SimulatorModel(object):
                 r,g,b = color.rgb
 
             msg = "%s %s %s,%s,%s" % (side, num, r,g,b)
-            if self.debug:
-                print(msg)
+            # if self.debug:
+            #     print(msg)
             self.sock.send(msg.encode())
             self.sock.send('\n'.encode())
 
@@ -91,8 +91,8 @@ class SimulatorModel(object):
 
         for (ch, val) in list(self.dmx.items()):
             msg = "dmx %d %d\n" % (ch,val)
-            if self.debug:
-                print(msg, end=' ')
+            # if self.debug:
+            #     print(msg, end=' ')
             self.sock.send(msg.encode())
 
         self.dmx = {}

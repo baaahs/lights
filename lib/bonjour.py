@@ -19,6 +19,9 @@ def register_callback(sdRef, flags, errorCode, name, regtype, domain):
 
 def serve_forever(name, port, shutdownEvent, regtype = "_osc._udp"):
 
+    # Disabling because not working
+    return
+
     sdRef = pybonjour.DNSServiceRegister(name = name,
                                          regtype = regtype,
                                          port = port,

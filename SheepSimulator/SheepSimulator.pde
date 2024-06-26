@@ -1,3 +1,5 @@
+
+
 //
 //   SHIT TO START WITH
 //
@@ -450,7 +452,7 @@ void processCommand(String cmd) {
   int g    = Integer.valueOf(m.group(4));
   int b    = Integer.valueOf(m.group(5));
 
-  //System.out.println("side:"+side+" "+String.format("panel:%d to r:%d g:%d b:%d", panel, r, g, b));
+  System.out.println("side:"+side+" "+String.format("panel:%d to r:%d g:%d b:%d", panel, r, g, b));
   
   if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255 ) {
      System.out.println("Bypassing last entry because an r,g,b value was not between 0 and 255:"+r+","+g+","+b); 
@@ -564,6 +566,7 @@ class Sheep {
 
   PShape sheepModel;
   PShape[] sheepPanelArray;
+  color[] polyColors; // Do it ourselves I guess?
   
   PVector[] panelCenters;
 
@@ -580,6 +583,8 @@ class Sheep {
     sheepModel = loadShape(fileName); 
 
     sheepPanelArray = sheepModel.getChildren();
+    
+    polyColors = new color[sheepPanelArray.length];
     
     // Darken unmapped surfaces
     HashSet<Integer> all = new HashSet<Integer>();
@@ -691,8 +696,17 @@ class Sheep {
       for (Integer polygon : polygons) {
   
         if (polygon != null && polygon != -1) {
-          sheepPanelArray[polygon].setFill(c);
-
+          //sheepPanelArray[polygon].setFill(c);
+          PShape poly = sheepModel.getChild(polygon);
+          if (poly != null) {
+            System.out.println("Set "+polygon+" to "+Integer.toHexString(c));
+            //c = color(0xffff0000);
+            poly.setFill(c);
+            
+            polyColors[polygon] = c;
+          } else {
+            System.out.println("Did not find poly #"+polygon);
+          }
         }
       }
     } else {
@@ -747,6 +761,8 @@ class Sheep {
    * the surfaces (which you can see with showLabels mode)
    */
   public void setContrastingColors() {
+    return;
+    /*
     int[] divColors = {
 color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),color(128,177,211),color(253,180,98),color(179,222,105),color(252,205,229),color(217,217,217),color(188,128,189),color(204,235,197),color(255,237,111)
     };
@@ -785,9 +801,11 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
         cIx = 0;
       }
     }
+    */
   }
   
   public void draw() {
+    try {
     // Wrapping this draw in push & pop matrix means that any
     // visual changes we make here (such as camera position,
     // rotation, etc.) won't be left hanging around when this
@@ -796,8 +814,22 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
     
     // To draw the sheep using the current style of every panel,
     // we only need a single shape call.
-    shape(sheepModel);
+    for(int i=0; i<sheepModel.getChildCount(); i++) {
+      PShape kid = sheepModel.getChild(i);
+      kid.setFill(new Integer(polyColors[i]));
+      //kid.setFill(0xff0000ff);
+      System.out.print(Integer.toHexString(polyColors[i]));
+      System.out.print(" ");
+      //kid.setFill(0xff0ff000);
+    }
+    
+    
+    PShape kid = sheepModel.getChild(122);
+    kid.setFill(0xffff0000);
 
+    
+    shape(sheepModel);
+    
     // The eyes also have to get rendered. They are not part of
     // the loaded model but were added later
     leftEye.draw();
@@ -839,6 +871,9 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
     // This restores the matrix that was pushed at the beginning of 
     // this function.
     popMatrix();
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
   }
   
   void paintList(ArrayList<Integer> list, boolean isParty) {
@@ -1035,6 +1070,7 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
       anchor = new Anchor(app);
       
       cone = new Cone(app, 40, new PVector(0, 1, 0), new PVector(0, BEAM_LENGTH, 0));
+      //cone = new DoubleCone(BEAM_MAX_SPOT, BEAM_MAX_SPOT, BEAM_LENGTH, 0, Orientation(new PVector(0, 1, 0), new PVector(0, BEAM_LENGTH, 0)));
       cone.setSize(BEAM_MAX_SPOT, BEAM_MAX_SPOT, BEAM_LENGTH);
       cone.fill(0x80ffff00);
       cone.drawMode(Shape3D.SOLID);
@@ -1045,7 +1081,7 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
 //      cone.moveTo(position);
       
       anchor.rotateToY(radians(offsetDegrees));
-//      cone.rotateToY(radians(offsetDegrees));
+      cone.rotateToY(radians(offsetDegrees));
       
       // Some beginning values for DMX
       channelValues[DMX_PAN] = 128;

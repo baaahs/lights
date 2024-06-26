@@ -265,7 +265,7 @@ class OSCMessage(object):
 		"""Clear any arguments appended so far
 		"""
 		self.typetags = ","
-		self.message  = b""
+		self.message  = ""
 
 	def append(self, argument, typehint=None):
 		"""Appends data to the message, updating the typetags based on
@@ -295,14 +295,14 @@ class OSCMessage(object):
 			tag, binary = OSCArgument(argument, typehint)
 
 		self.typetags += tag
-		self.message += binary
+		self.message += binary.decode('latin-1')
 		
 	def getBinary(self):
 		"""Returns the binary representation of the message
 		"""
 		binary = OSCString(self.address)
 		binary += OSCString(self.typetags)
-		binary += self.message
+		binary += self.message.encode('latin-1')
 		
 		return binary
 
@@ -791,9 +791,11 @@ def OSCTimeTag(time):
 def _readString(data):
 	"""Reads the next (null-terminated) block of data
 	"""
-	length   = string.find(data,"\0")
+	# length   = string.find(data,"\0")
+	length   = data.find(0)
 	nextData = int(math.ceil((length+1) / 4.0) * 4)
-	return (data[0:length], data[nextData:])
+	out, rest = (data[0:length], data[nextData:])
+	return out.decode(), rest
 
 def _readBlob(data):
 	"""Reads the next (numbered) block of data
@@ -893,6 +895,7 @@ def decodeOSC(data):
 	elif len(rest)>0:
 		if not len(typetags):
 			typetags, rest = _readString(rest)
+
 		decoded.append(address)
 		decoded.append(typetags)
 		if typetags.startswith(","):
@@ -1180,7 +1183,9 @@ class OSCClient(object):
 		
 		try:
 			self._ensureConnected(address)
-			self.socket.sendall(msg.getBinary())
+			data = msg.getBinary()
+			print("> %s %s" % (address, data.encode()))
+			self.socket.sendall(data)
 			
 			if self.client_address:
 				self.socket.connect(self.client_address)
@@ -1214,7 +1219,9 @@ class OSCClient(object):
 			raise OSCClientError("Timed out waiting for file descriptor")
 		
 		try:
-			self.socket.sendall(msg.getBinary())
+			data = msg.getBinary()
+			print("> %s" % data.encode())
+			self.socket.sendall(data)
 		except socket.error as e:
 			if e[0] in (7, 65):	# 7 = 'no address associated with nodename',  65 = 'no route to host'
 				raise e
@@ -1654,6 +1661,7 @@ class OSCMultiClient(OSCClient):
 			if len(filters):
 				out = self._filterMessage(filters, msg)
 				if not out:			# this catches 'None' and empty bundles.
+					print("Not out")
 					continue
 			else:
 				out = msg
@@ -1671,6 +1679,7 @@ class OSCMultiClient(OSCClient):
 				raise OSCClientError("Timed out waiting for file descriptor")
 			
 			try:
+				print(">> %s" % binary.decode("latin-1"))
 				while len(binary):
 					sent = self.socket.sendto(binary, address)
 					binary = binary[sent:]
@@ -2088,6 +2097,7 @@ class OSCServer(UDPServer, OSCAddressSpace):
 		(e_type, e) = sys.exc_info()[:2]
 		self.printErr("%s on request from %s: %s" % (e_type.__name__, getUrlStr(client_address), str(e)))
 
+		self.print_tracebacks = True
 		if self.print_tracebacks:
 			import traceback
 			traceback.print_exc() # XXX But this goes to stderr!

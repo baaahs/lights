@@ -1067,6 +1067,8 @@ class ControlsModel(object):
             try:
                 listener.control_eyes_mode_changed()
             except AttributeError:
+                import traceback
+                traceback.print_exc()  # XXX But this goes to stderr!
                 pass # ignore
 
 
@@ -1184,7 +1186,7 @@ class ControlsModel(object):
     def set_eyes_focus(self, focus):
         self.focus = focus
 
-        self._notify_focus_changed(self)
+        self._notify_focus_changed()
 
 
     def _notify_focus_changed(self):

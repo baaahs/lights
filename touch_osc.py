@@ -383,9 +383,9 @@ class TouchOSC(object):
     def _send1(self, addr, txt):
         msg = OSCMessage(addr)
         msg.append(txt)
-        #print "Send %s" % msg
         try:
             self.client.send(msg)
+            print("Sent %s" % msg)
         except Exception as e:
             print("Exception while sending OSC message [%s]: %s" % (msg, e))
             #traceback.print_exc()
