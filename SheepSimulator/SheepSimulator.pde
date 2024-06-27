@@ -558,6 +558,8 @@ void invertShape(PShape shape) {
 /*******************************************************************************/
 /*******************************************************************************/
 
+static int drawCount = 0;
+
 /**
  * The sheep holds the model and it's surfaces. It further provides access to
  * the Eyes.
@@ -761,8 +763,6 @@ class Sheep {
    * the surfaces (which you can see with showLabels mode)
    */
   public void setContrastingColors() {
-    return;
-    /*
     int[] divColors = {
 color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),color(128,177,211),color(253,180,98),color(179,222,105),color(252,205,229),color(217,217,217),color(188,128,189),color(204,235,197),color(255,237,111)
     };
@@ -801,7 +801,6 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
         cIx = 0;
       }
     }
-    */
   }
   
   public void draw() {
@@ -814,18 +813,23 @@ color(141,211,199),color(255,255,179),color(190,186,218),color(251,128,114),colo
     
     // To draw the sheep using the current style of every panel,
     // we only need a single shape call.
-    for(int i=0; i<sheepModel.getChildCount(); i++) {
-      PShape kid = sheepModel.getChild(i);
-      kid.setFill(new Integer(polyColors[i]));
-      //kid.setFill(0xff0000ff);
-      System.out.print(Integer.toHexString(polyColors[i]));
-      System.out.print(" ");
-      //kid.setFill(0xff0ff000);
-    }
+    //for(int i=0; i<sheepModel.getChildCount(); i++) {
+    //  PShape kid = sheepModel.getChild(i);
+    //  kid.setFill(new Integer(polyColors[i]));
+    //  System.out.print(Integer.toHexString(polyColors[i]));
+    //  System.out.print(" ");
+    //  if (drawCount < 3) {
+    //    kid.setFill(0xff0000ff);
+    //  } else {
+    //    kid.setFill(0xff0ff000);
+    //  }
+    //}
+    //System.out.println("\n["+drawCount+"]");
+    //drawCount++;
     
     
-    PShape kid = sheepModel.getChild(122);
-    kid.setFill(0xffff0000);
+    //PShape kid = sheepModel.getChild(122);
+    //kid.setFill(0xffff0000);
 
     
     shape(sheepModel);
